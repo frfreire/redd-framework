@@ -236,3 +236,7 @@ Thumbs.db*
 **/channel-artifacts/*
 !**/channel-artifacts/.gitkeep
 .env
+run-mvp-direct.ps1 
+run-mvp-direct.sh 
+run-mvp.ps1 
+run-mvp.sh
