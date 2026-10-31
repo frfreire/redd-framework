@@ -1,0 +1,121 @@
+# SondaPreSim (jabs.example): hashes de identidade consumidos pela thread principal em cada trecho pre-simulacao; JVM padrao; ref=SondaHash ref 300000
+base     MCO2     N=10   inicio                               delta=0
+base     MCO2     N=10   1 parse dos argumentos               delta=0
+base     MCO2     N=10   2 semantica do n                     delta=0
+base     MCO2     N=10   3 parseXxx e durations (comum)       delta=9
+base     MCO2     N=10   4 describeSizing (so atual)          delta=0
+base     MCO2     N=10   5 println Args                       delta=6
+base     MCO2     N=10   6 println durations                  delta=0
+base     MCO2     N=10   7 println sizing (so atual)          delta=0
+base     MCO2     N=10   8 cabecalho '#' do CSV (so atual)    delta=0
+base     MCO2     N=10   TOTAL pre-simulacao                  delta=15
+base     AMBIFY   N=10   inicio                               delta=0
+base     AMBIFY   N=10   1 parse dos argumentos               delta=0
+base     AMBIFY   N=10   2 semantica do n                     delta=0
+base     AMBIFY   N=10   3 parseXxx e durations (comum)       delta=9
+base     AMBIFY   N=10   4 describeSizing (so atual)          delta=0
+base     AMBIFY   N=10   5 println Args                       delta=6
+base     AMBIFY   N=10   6 println durations                  delta=0
+base     AMBIFY   N=10   7 println sizing (so atual)          delta=0
+base     AMBIFY   N=10   8 cabecalho '#' do CSV (so atual)    delta=0
+base     AMBIFY   N=10   TOTAL pre-simulacao                  delta=15
+base     OFFSET   N=40   inicio                               delta=0
+base     OFFSET   N=40   1 parse dos argumentos               delta=0
+base     OFFSET   N=40   2 semantica do n                     delta=0
+base     OFFSET   N=40   3 parseXxx e durations (comum)       delta=9
+base     OFFSET   N=40   4 describeSizing (so atual)          delta=0
+base     OFFSET   N=40   5 println Args                       delta=6
+base     OFFSET   N=40   6 println durations                  delta=0
+base     OFFSET   N=40   7 println sizing (so atual)          delta=0
+base     OFFSET   N=40   8 cabecalho '#' do CSV (so atual)    delta=0
+base     OFFSET   N=40   TOTAL pre-simulacao                  delta=15
+base     ARQ      N=7    inicio                               delta=0
+base     ARQ      N=7    1 parse dos argumentos               delta=0
+base     ARQ      N=7    2 semantica do n                     delta=0
+base     ARQ      N=7    3 parseXxx e durations (comum)       delta=9
+base     ARQ      N=7    4 describeSizing (so atual)          delta=0
+base     ARQ      N=7    5 println Args                       delta=6
+base     ARQ      N=7    6 println durations                  delta=0
+base     ARQ      N=7    7 println sizing (so atual)          delta=0
+base     ARQ      N=7    8 cabecalho '#' do CSV (so atual)    delta=0
+base     ARQ      N=7    TOTAL pre-simulacao                  delta=15
+antigo   MCO2     N=10   inicio                               delta=0
+antigo   MCO2     N=10   1 parse dos argumentos               delta=1
+antigo   MCO2     N=10   2 semantica do n                     delta=1
+antigo   MCO2     N=10   3 parseXxx e durations (comum)       delta=9
+antigo   MCO2     N=10   4 describeSizing (so atual)          delta=10
+antigo   MCO2     N=10   5 println Args                       delta=6
+antigo   MCO2     N=10   6 println durations                  delta=0
+antigo   MCO2     N=10   7 println sizing (so atual)          delta=0
+antigo   MCO2     N=10   8 cabecalho '#' do CSV (so atual)    delta=0
+antigo   MCO2     N=10   TOTAL pre-simulacao                  delta=27
+antigo   AMBIFY   N=10   inicio                               delta=0
+antigo   AMBIFY   N=10   1 parse dos argumentos               delta=1
+antigo   AMBIFY   N=10   2 semantica do n                     delta=1
+antigo   AMBIFY   N=10   3 parseXxx e durations (comum)       delta=9
+antigo   AMBIFY   N=10   4 describeSizing (so atual)          delta=10
+antigo   AMBIFY   N=10   5 println Args                       delta=6
+antigo   AMBIFY   N=10   6 println durations                  delta=0
+antigo   AMBIFY   N=10   7 println sizing (so atual)          delta=0
+antigo   AMBIFY   N=10   8 cabecalho '#' do CSV (so atual)    delta=0
+antigo   AMBIFY   N=10   TOTAL pre-simulacao                  delta=27
+antigo   OFFSET   N=40   inicio                               delta=0
+antigo   OFFSET   N=40   1 parse dos argumentos               delta=1
+antigo   OFFSET   N=40   2 semantica do n                     delta=1
+antigo   OFFSET   N=40   3 parseXxx e durations (comum)       delta=9
+antigo   OFFSET   N=40   4 describeSizing (so atual)          delta=6
+antigo   OFFSET   N=40   5 println Args                       delta=6
+antigo   OFFSET   N=40   6 println durations                  delta=0
+antigo   OFFSET   N=40   7 println sizing (so atual)          delta=0
+antigo   OFFSET   N=40   8 cabecalho '#' do CSV (so atual)    delta=0
+antigo   OFFSET   N=40   TOTAL pre-simulacao                  delta=23
+antigo   ARQ      N=7    inicio                               delta=0
+antigo   ARQ      N=7    1 parse dos argumentos               delta=1
+antigo   ARQ      N=7    2 semantica do n                     delta=1
+antigo   ARQ      N=7    3 parseXxx e durations (comum)       delta=9
+antigo   ARQ      N=7    4 describeSizing (so atual)          delta=6
+antigo   ARQ      N=7    5 println Args                       delta=6
+antigo   ARQ      N=7    6 println durations                  delta=0
+antigo   ARQ      N=7    7 println sizing (so atual)          delta=0
+antigo   ARQ      N=7    8 cabecalho '#' do CSV (so atual)    delta=0
+antigo   ARQ      N=7    TOTAL pre-simulacao                  delta=23
+novo     MCO2     N=10   inicio                               delta=0
+novo     MCO2     N=10   1 parse dos argumentos               delta=0
+novo     MCO2     N=10   2 semantica do n                     delta=0
+novo     MCO2     N=10   3 parseXxx e durations (comum)       delta=9
+novo     MCO2     N=10   4 describeSizing (so atual)          delta=0
+novo     MCO2     N=10   5 println Args                       delta=6
+novo     MCO2     N=10   6 println durations                  delta=0
+novo     MCO2     N=10   7 println sizing (so atual)          delta=0
+novo     MCO2     N=10   8 cabecalho '#' do CSV (so atual)    delta=0
+novo     MCO2     N=10   TOTAL pre-simulacao                  delta=15
+novo     AMBIFY   N=10   inicio                               delta=0
+novo     AMBIFY   N=10   1 parse dos argumentos               delta=0
+novo     AMBIFY   N=10   2 semantica do n                     delta=0
+novo     AMBIFY   N=10   3 parseXxx e durations (comum)       delta=9
+novo     AMBIFY   N=10   4 describeSizing (so atual)          delta=0
+novo     AMBIFY   N=10   5 println Args                       delta=6
+novo     AMBIFY   N=10   6 println durations                  delta=0
+novo     AMBIFY   N=10   7 println sizing (so atual)          delta=0
+novo     AMBIFY   N=10   8 cabecalho '#' do CSV (so atual)    delta=0
+novo     AMBIFY   N=10   TOTAL pre-simulacao                  delta=15
+novo     OFFSET   N=40   inicio                               delta=0
+novo     OFFSET   N=40   1 parse dos argumentos               delta=0
+novo     OFFSET   N=40   2 semantica do n                     delta=0
+novo     OFFSET   N=40   3 parseXxx e durations (comum)       delta=9
+novo     OFFSET   N=40   4 describeSizing (so atual)          delta=0
+novo     OFFSET   N=40   5 println Args                       delta=6
+novo     OFFSET   N=40   6 println durations                  delta=0
+novo     OFFSET   N=40   7 println sizing (so atual)          delta=0
+novo     OFFSET   N=40   8 cabecalho '#' do CSV (so atual)    delta=0
+novo     OFFSET   N=40   TOTAL pre-simulacao                  delta=15
+novo     ARQ      N=7    inicio                               delta=0
+novo     ARQ      N=7    1 parse dos argumentos               delta=0
+novo     ARQ      N=7    2 semantica do n                     delta=0
+novo     ARQ      N=7    3 parseXxx e durations (comum)       delta=9
+novo     ARQ      N=7    4 describeSizing (so atual)          delta=0
+novo     ARQ      N=7    5 println Args                       delta=6
+novo     ARQ      N=7    6 println durations                  delta=0
+novo     ARQ      N=7    7 println sizing (so atual)          delta=0
+novo     ARQ      N=7    8 cabecalho '#' do CSV (so atual)    delta=0
+novo     ARQ      N=7    TOTAL pre-simulacao                  delta=15

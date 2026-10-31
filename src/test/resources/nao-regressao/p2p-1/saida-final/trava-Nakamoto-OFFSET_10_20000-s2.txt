@@ -1,0 +1,6 @@
+semente=2 timeout=30s por execucao; 4 execucoes em paralelo
+
+== OFFSET n=10 duracao=20000s semente=2
+   execucoes (rc, segundos): base-a=TIMEOUT,30s, base-b=TIMEOUT,30s, atual-a=0,1s, atual-b=0,1s
+   INCONCLUSIVO: execucao com erro/timeout
+exit=2

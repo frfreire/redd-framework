@@ -1,0 +1,33 @@
+# N1 rodada 3: invocacao do validate-metrics.sh/.ps1 (--byzantine=0,33, flag que a baseline nunca leu)
+# MVPComparison, JVM padrao, modo legacy, semente 1, 1 trial, UMA JVM por vez; base = /tmp/opencode/base-325f4e3
+# (classes da baseline 325f4e3, sem mvn); atual = target/classes da raiz. Hash = sha256 normalizado (EvidenciaHashes:
+# sem linhas '#', sem colunas 'hash'), igual ao de nao_regressao.py.
+# Comando (base e atual diferem so no 1o elemento do classpath):
+#   java -cp <RAIZ>/target/classes:<m2>/commons-math3-3.6.1.jar:<m2>/fastcsv-2.1.0.jar jabs.example.MVPComparison \
+#        --protocols=P --validators=N --trials=1 --duration=D --seed=1 --byzantine=0,33 --output=<dir>  > .out 2> .err
+#   ARQ    N=7  D=5
+#   AMBIFY N=10 D=60
+#   MCO2   N=50 D=600
+rc base e atual: 0 nos 6 casos (a baseline termina; o atual tambem termina; antes da rodada 3 o atual abortava)
+
+ad97e7fab09a5d965df3e7b594be80ed698dc25b837980e937fb81ebcdd069ee    8 base-ARQ/arq-7v-t0.csv
+ad97e7fab09a5d965df3e7b594be80ed698dc25b837980e937fb81ebcdd069ee    8 atual-ARQ/arq-7v-t0.csv           IDENTICO
+81eca07fb061a117e6356ae6ab206817c60e059e81db01f625b8c4ec318b097d    1 base-ARQ/mvp-results.csv
+81eca07fb061a117e6356ae6ab206817c60e059e81db01f625b8c4ec318b097d    1 atual-ARQ/mvp-results.csv         IDENTICO
+c1ef88eb0d67d907ef882692ac4fb9cac635e8a48d0481f5c80bd76b16d7f35a    9 base-AMBIFY/ambify-10v-t0.csv
+c1ef88eb0d67d907ef882692ac4fb9cac635e8a48d0481f5c80bd76b16d7f35a    9 atual-AMBIFY/ambify-10v-t0.csv    IDENTICO
+1bfffb4a5c023e7a9c911c8835fa08b16b044b4d7344fff8e6b117d60961ac67    1 base-AMBIFY/mvp-results.csv
+1bfffb4a5c023e7a9c911c8835fa08b16b044b4d7344fff8e6b117d60961ac67    1 atual-AMBIFY/mvp-results.csv     IDENTICO
+b0357019b292638294ac962bfa27a45d9fea1156234de11bb4fd37c1612a0101   14 base-MCO2/mco2-50v-t0.csv
+b0357019b292638294ac962bfa27a45d9fea1156234de11bb4fd37c1612a0101   14 atual-MCO2/mco2-50v-t0.csv       IDENTICO
+11e94bd80240f2fd3c54b19d45e72f4ed9f09773dbe43331df2c9ba2d48de3eb    1 base-MCO2/mvp-results.csv
+11e94bd80240f2fd3c54b19d45e72f4ed9f09773dbe43331df2c9ba2d48de3eb    1 atual-MCO2/mvp-results.csv       IDENTICO
+
+# stderr: base-*.err = so as linhas do logger/cenario (148 a 175 bytes);
+#         atual-*.err = as mesmas linhas + UMA linha inicial:
+#   AVISO: flag desconhecida '--byzantine' ignorada (nunca e lida por MVPComparison). Flags conhecidas: --validators
+#   --protocols --trials --duration --durations --seed --output --csv-out --enable-tx --tx-interval --n-semantics
+# stdout do atual difere do da baseline SO nas linhas que a N1 acrescentou de proposito ('n-semantics=legacy',
+# 'Network sizing: ...', 'Network built: ...', conferido por leitura no AMBIFY) e nos nomes de pasta do --output;
+# nenhuma menciona --byzantine. Os CSV nao tem o aviso.
+# Os .out/.err brutos ficam em /tmp/opencode/n1-byz-r3/ (nao copiados: contem so logs de simulacao).

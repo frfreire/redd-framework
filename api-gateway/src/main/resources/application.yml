@@ -1,0 +1,95 @@
+# Configuracao da API Gateway REDD+.
+#
+# Profile default (ativo quando a aplicacao roda fora de container, direto
+# no host, ex. "mvn spring-boot:run" ou "java -jar target/*.jar") -- os
+# defaults abaixo apontam para os paths ABSOLUTOS REAIS do host, dentro de
+# docker/fabric-network/organizations/..., conforme o ambiente de
+# desenvolvimento documentado em AGENTS.md.
+#
+# Profile "docker" (ver secao "---" no final deste arquivo) -- os mesmos
+# valores sao lidos de variaveis de ambiente, com defaults apontando para
+# /crypto/<org>.redd.network/... dentro do container (paths que serao
+# montados como volume pelo docker-compose da rede Fabric, de
+# responsabilidade de outro agente).
+#
+# Convencao de nomes de variavel de ambiente (profile docker):
+#   FABRIC_ORG_<ORG>_MSP_ID
+#   FABRIC_ORG_<ORG>_CERT_PATH
+#   FABRIC_ORG_<ORG>_KEY_PATH
+#   FABRIC_ORG_<ORG>_TLS_CA_PATH
+#   FABRIC_ORG_<ORG>_PEER_ENDPOINT
+#   FABRIC_ORG_<ORG>_PEER_HOST_OVERRIDE
+# onde <ORG> e DEVELOPER, VERIFIER ou MARKETPLACE.
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: redd-api-gateway
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    br.com.redd.apigateway: INFO
+    org.hyperledger.fabric.client: INFO
+
+fabric:
+  developer:
+    msp-id: DeveloperMSP
+    cert-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/developer.redd.network/users/Admin@developer.redd.network/msp/signcerts/Admin@developer.redd.network-cert.pem
+    key-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/developer.redd.network/users/Admin@developer.redd.network/msp/keystore/priv_sk
+    tls-ca-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/developer.redd.network/peers/peer0.developer.redd.network/tls/ca.crt
+    peer-endpoint: localhost:7051
+    peer-host-override: peer0.developer.redd.network
+  verifier:
+    msp-id: VerifierMSP
+    cert-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/verifier.redd.network/users/Admin@verifier.redd.network/msp/signcerts/Admin@verifier.redd.network-cert.pem
+    key-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/verifier.redd.network/users/Admin@verifier.redd.network/msp/keystore/priv_sk
+    tls-ca-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/verifier.redd.network/peers/peer0.verifier.redd.network/tls/ca.crt
+    peer-endpoint: localhost:8051
+    peer-host-override: peer0.verifier.redd.network
+  marketplace:
+    msp-id: MarketplaceMSP
+    cert-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/marketplace.redd.network/users/Admin@marketplace.redd.network/msp/signcerts/Admin@marketplace.redd.network-cert.pem
+    key-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/marketplace.redd.network/users/Admin@marketplace.redd.network/msp/keystore/priv_sk
+    tls-ca-path: /home/fabricio.freire/Projetos/redd+_blockchain/docker/fabric-network/organizations/peerOrganizations/marketplace.redd.network/peers/peer0.marketplace.redd.network/tls/ca.crt
+    peer-endpoint: localhost:9051
+    peer-host-override: peer0.marketplace.redd.network
+
+---
+# Profile "docker": ativado via SPRING_PROFILES_ACTIVE=docker no container.
+# Hostnames apontam para a rede docker "redd-network" (nomes de servico do
+# docker-compose da rede Fabric), e os paths de credencial apontam para
+# /crypto/<org>.redd.network/... (volume montado pelo docker-compose,
+# responsabilidade do agente redd-fabric-network-agent).
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+fabric:
+  developer:
+    msp-id: ${FABRIC_ORG_DEVELOPER_MSP_ID:DeveloperMSP}
+    cert-path: ${FABRIC_ORG_DEVELOPER_CERT_PATH:/crypto/developer.redd.network/users/Admin@developer.redd.network/msp/signcerts/Admin@developer.redd.network-cert.pem}
+    key-path: ${FABRIC_ORG_DEVELOPER_KEY_PATH:/crypto/developer.redd.network/users/Admin@developer.redd.network/msp/keystore/priv_sk}
+    tls-ca-path: ${FABRIC_ORG_DEVELOPER_TLS_CA_PATH:/crypto/developer.redd.network/peers/peer0.developer.redd.network/tls/ca.crt}
+    peer-endpoint: ${FABRIC_ORG_DEVELOPER_PEER_ENDPOINT:peer0.developer.redd.network:7051}
+    peer-host-override: ${FABRIC_ORG_DEVELOPER_PEER_HOST_OVERRIDE:peer0.developer.redd.network}
+  verifier:
+    msp-id: ${FABRIC_ORG_VERIFIER_MSP_ID:VerifierMSP}
+    cert-path: ${FABRIC_ORG_VERIFIER_CERT_PATH:/crypto/verifier.redd.network/users/Admin@verifier.redd.network/msp/signcerts/Admin@verifier.redd.network-cert.pem}
+    key-path: ${FABRIC_ORG_VERIFIER_KEY_PATH:/crypto/verifier.redd.network/users/Admin@verifier.redd.network/msp/keystore/priv_sk}
+    tls-ca-path: ${FABRIC_ORG_VERIFIER_TLS_CA_PATH:/crypto/verifier.redd.network/peers/peer0.verifier.redd.network/tls/ca.crt}
+    peer-endpoint: ${FABRIC_ORG_VERIFIER_PEER_ENDPOINT:peer0.verifier.redd.network:8051}
+    peer-host-override: ${FABRIC_ORG_VERIFIER_PEER_HOST_OVERRIDE:peer0.verifier.redd.network}
+  marketplace:
+    msp-id: ${FABRIC_ORG_MARKETPLACE_MSP_ID:MarketplaceMSP}
+    cert-path: ${FABRIC_ORG_MARKETPLACE_CERT_PATH:/crypto/marketplace.redd.network/users/Admin@marketplace.redd.network/msp/signcerts/Admin@marketplace.redd.network-cert.pem}
+    key-path: ${FABRIC_ORG_MARKETPLACE_KEY_PATH:/crypto/marketplace.redd.network/users/Admin@marketplace.redd.network/msp/keystore/priv_sk}
+    tls-ca-path: ${FABRIC_ORG_MARKETPLACE_TLS_CA_PATH:/crypto/marketplace.redd.network/peers/peer0.marketplace.redd.network/tls/ca.crt}
+    peer-endpoint: ${FABRIC_ORG_MARKETPLACE_PEER_ENDPOINT:peer0.marketplace.redd.network:9051}
+    peer-host-override: ${FABRIC_ORG_MARKETPLACE_PEER_HOST_OVERRIDE:peer0.marketplace.redd.network}

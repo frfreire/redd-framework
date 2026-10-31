@@ -1,0 +1,6 @@
+semente=3 timeout=30s por execucao; 4 execucoes em paralelo
+
+== MCO2 n=4 duracao=60s semente=3
+   execucoes (rc, segundos): base-a=TIMEOUT,30s, base-b=TIMEOUT,30s, atual-a=0,0s, atual-b=0,0s
+   INCONCLUSIVO: execucao com erro/timeout
+exit=2

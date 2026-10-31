@@ -1,0 +1,17 @@
+# crypto-config-orderer.yaml
+#
+# Material criptografico (MSP + TLS) da organizacao do orderer
+# (OrdererMSP), dominio redd.network, consumido por
+# scripts/rede/gerar-cripto.sh via `cryptogen generate`.
+#
+# Gera: organizations/ordererOrganizations/redd.network/
+#   - orderers/orderer.redd.network/{msp,tls}
+#   - users/Admin@redd.network/{msp,tls}
+#   - msp/ (MSP da organizacao, usado como OrdererOrg.MSPDir no configtx.yaml)
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: redd.network
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer

@@ -1,0 +1,9 @@
+semente=3 timeout=900s por execucao; 4 execucoes em paralelo
+
+== AMBIFY n=10 duracao=60s semente=3
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (10 linhas) 
+   atual    a x b                : IDENTICO (8 linhas) 
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (10 linhas) ambify-10v-t0.csv: 9 vs 7 linhas; mvp-results.csv linha 1: [('Tb_avg', '0.418719', '0.445545'), ('Cb_avg', '0.003734', '0.001920'), ('Tt_avg', '5.793928', '5.422482')]
+exit=1
+tempo_total_s=0

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>br.com.redd</groupId>
+  <artifactId>chaincode-java</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>redd-chaincode</name>
+  <description>
+    Contrato inteligente (chaincode) Hyperledger Fabric do demo REDD+:
+    ciclo de vida de projetos REDD+ e creditos de carbono (registro,
+    MRV, verificacao, emissao, transferencia e aposentadoria).
+  </description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+
+    <fabric-chaincode-shim.version>2.5.11</fabric-chaincode-shim.version>
+    <fabric-protos.version>0.3.7</fabric-protos.version>
+    <protobuf-java.version>4.36.2</protobuf-java.version>
+    <jackson.version>2.17.2</jackson.version>
+    <junit.version>5.10.3</junit.version>
+    <mockito.version>5.20.0</mockito.version>
+
+    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+    <maven-surefire-plugin.version>3.3.1</maven-surefire-plugin.version>
+  </properties>
+
+  <dependencies>
+    <!-- Fabric chaincode shim: ContractInterface, ContractRouter, ChaincodeStub, etc. -->
+    <dependency>
+      <groupId>org.hyperledger.fabric-chaincode-java</groupId>
+      <artifactId>fabric-chaincode-shim</artifactId>
+      <version>${fabric-chaincode-shim.version}</version>
+    </dependency>
+
+    <!-- QueryResponseMetadata (bookmark da consulta paginada) e exposto em tempo de
+         compilacao por QueryResultsIteratorWithMetadata; o shim so o traz como runtime.
+         Mesmas versoes ja resolvidas transitivamente (nenhuma versao nova no uber-jar). -->
+    <dependency>
+      <groupId>org.hyperledger.fabric</groupId>
+      <artifactId>fabric-protos</artifactId>
+      <version>${fabric-protos.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf-java.version}</version>
+    </dependency>
+
+    <!-- Serializacao JSON dos assets (ProjetoREDD, RelatorioMRV, CreditoCarbono) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <!-- Testes -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>chaincode-java</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <release>17</release>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+
+      <!-- Gera um JAR executavel (uber-jar) cujo main delega para o shim,
+           que roteia as @Transaction do(s) @Contract encontrados no classpath. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven-shade-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.hyperledger.fabric.contract.ContractRouter</mainClass>
+                </transformer>
+                <!-- Sem este transformer, os varios jars do gRPC (grpc-core,
+                     grpc-netty-shaded, etc.) registram providers concorrentes
+                     em META-INF/services/io.grpc.{NameResolverProvider,
+                     ManagedChannelProvider,ServerProvider} e o shade plugin,
+                     por padrao, mantem so o ULTIMO arquivo lido (sobrescreve
+                     em vez de mesclar). O resultado observado foi que apenas
+                     o provider "uds" (Unix Domain Socket, do pacote shaded
+                     netty) sobrevivia, fazendo newChannelBuilder() do
+                     ChaincodeBase (chamado internamente pelo modo CCaaS para
+                     a conexao de volta ao peer via CORE_PEER_ADDRESS) tentar
+                     resolver um host:porta comum (ex. peer0...:7052) como
+                     "unix:///host:porta", falhando com IllegalArgumentException
+                     "Address types of NameResolver 'unix' ... not supported".
+                     O ServicesResourceTransformer mescla (concatena) o
+                     conteudo de cada arquivo META-INF/services/* de todos os
+                     jars, preservando o provider "dns" padrao do grpc-core. -->
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+              <!-- Remove arquivos de assinatura (.SF/.DSA/.RSA/.EC) de jars
+                   assinados (ex.: BouncyCastle, dependencia transitiva do
+                   fabric-chaincode-shim). Sem isso o uber-jar resultante
+                   falha ao iniciar com
+                   "SecurityException: Invalid signature file digest",
+                   porque o shading combina classes de varios jars sob um
+                   unico manifest, invalidando a assinatura original. -->
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/*.EC</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

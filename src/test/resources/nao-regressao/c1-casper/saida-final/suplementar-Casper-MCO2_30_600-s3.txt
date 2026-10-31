@@ -1,0 +1,8 @@
+semente=3 timeout=900s por execucao; 4 execucoes em paralelo
+
+== MCO2 n=30 duracao=600s semente=3
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (29 linhas) 
+   atual    a x b                : IDENTICO (29 linhas) 
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (29 linhas) mco2-30v-t0.csv linha 1: [('Time', '356.2448633421152', '356.16593823728493'), ('NodeID', '0', '17'), ('BlockFinalizationTime', '175.0230420643663', '174.94411695953605')]; mvp-results.csv linha 1: [('Tb_avg', '304.790397', '304.710686'), ('Cb_avg', '0.058163', '0.069795'), ('Tt_avg', '364.424947', '364.345174')]
+exit=1

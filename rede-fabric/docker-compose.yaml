@@ -1,0 +1,460 @@
+# docker-compose.yaml — rede Hyperledger Fabric do demo REDD+ (3 orgs).
+#
+# DECISAO DE ARQUITETURA — CA unico compartilhado (nao 1 CA por org):
+# Esta rede usa `cryptogen` (ver scripts/rede/gerar-cripto.sh) para gerar
+# todo o material criptografico de bootstrap (MSPs, TLS, admins, users).
+# Os containers fabric-ca NAO sao usados no fluxo de bootstrap (nenhum
+# `register`/`enroll` e executado contra eles) — por isso, em vez de subir
+# 3 CAs ociosos (1 por organizacao), mantemos um UNICO container
+# `ca.redd.network` disponivel para fluxos futuros de emissao dinamica de
+# identidade (ex.: onboarding de um novo usuario de uma organizacao sem
+# precisar regenerar todo o cryptogen). Isso simplifica a topologia sem
+# comprometer a demo, que depende de cryptogen, nao de Fabric CA, para
+# funcionar.
+#
+# TLS esta habilitado em orderer e peers (cryptogen gera material TLS por
+# padrao); a comunicacao externa ao `cli` tambem usa TLS.
+#
+# DECISAO DE ARQUITETURA — servicos CCaaS do chaincode no profile `ccaas`:
+# Os 3 containers do chaincode Java (um por organizacao, modo
+# Chaincode-as-a-Service — ver justificativa completa em
+# scripts/rede/deploy-chaincode.sh) estao definidos aqui com
+# `profiles: ["ccaas"]`, portanto NAO sobem com um simples
+# `docker compose up -d` — isso e intencional, pois existe uma dependencia
+# circular real: o valor de CORE_CHAINCODE_ID_NAME (o PACKAGE_ID) so e
+# conhecido DEPOIS que `peer lifecycle chaincode install` roda, o que por
+# sua vez exige que o chaincode ja esteja empacotado. Nao e possivel
+# conhecer esse valor no momento em que a rede base sobe.
+#
+# A solucao e um arquivo `.env` (neste mesmo diretorio, nao versionado —
+# ver .gitignore) que `scripts/rede/deploy-chaincode.sh` ESCREVE
+# automaticamente apos o install de cada organizacao, com as variaveis
+# CCAAS_PACKAGE_ID_DEVELOPER / _VERIFIER / _MARKETPLACE. O script entao
+# sobe (ou re-sobe, apos upgrade de sequence) os 3 servicos com:
+#   docker compose -f docker-compose.yaml --profile ccaas up -d --build \
+#     chaincode-ccaas-developer chaincode-ccaas-verifier chaincode-ccaas-marketplace
+# O Compose detecta a mudanca de env var (novo PACKAGE_ID) e recria o
+# container automaticamente, sem precisar de `docker rm -f` manual.
+---
+networks:
+  redd-network:
+    name: redd-network
+
+volumes:
+  orderer.redd.network:
+  peer0.developer.redd.network:
+  peer0.verifier.redd.network:
+  peer0.marketplace.redd.network:
+  couchdb0.developer:
+  couchdb0.verifier:
+  couchdb0.marketplace:
+
+services:
+
+  # ---------------------------------------------------------------------
+  # CA compartilhado (ver decisao de arquitetura no topo do arquivo).
+  # ---------------------------------------------------------------------
+  ca.redd.network:
+    image: mirror.gcr.io/hyperledger/fabric-ca:1.5
+    container_name: ca.redd.network
+    hostname: ca.redd.network
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-redd
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_PORT=7054
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:17054
+    ports:
+      - "7054:7054"
+      - "17054:17054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./organizations/fabric-ca:/etc/hyperledger/fabric-ca-server
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # Orderer (etcdraft, no unico — ver comentario em configtx/configtx.yaml)
+  # ---------------------------------------------------------------------
+  orderer.redd.network:
+    image: mirror.gcr.io/hyperledger/fabric-orderer:2.5
+    container_name: orderer.redd.network
+    hostname: orderer.redd.network
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # Sem system channel: canal e criado via Channel Participation API.
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTAUTHREQUIRED=true
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+    working_dir: /root
+    command: orderer
+    ports:
+      - "7050:7050"
+      - "7053:7053"
+      - "9443:9443"
+    volumes:
+      - ./organizations/ordererOrganizations/redd.network/orderers/orderer.redd.network/msp:/var/hyperledger/orderer/msp
+      - ./organizations/ordererOrganizations/redd.network/orderers/orderer.redd.network/tls:/var/hyperledger/orderer/tls
+      - orderer.redd.network:/var/hyperledger/production/orderer
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # CouchDB — state database de cada peer (1 por organizacao).
+  # ---------------------------------------------------------------------
+  couchdb0.developer:
+    image: mirror.gcr.io/couchdb:3.3
+    container_name: couchdb0.developer
+    hostname: couchdb0.developer
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb0.developer:/opt/couchdb/data
+    networks:
+      - redd-network
+
+  couchdb0.verifier:
+    image: mirror.gcr.io/couchdb:3.3
+    container_name: couchdb0.verifier
+    hostname: couchdb0.verifier
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "6984:5984"
+    volumes:
+      - couchdb0.verifier:/opt/couchdb/data
+    networks:
+      - redd-network
+
+  couchdb0.marketplace:
+    image: mirror.gcr.io/couchdb:3.3
+    container_name: couchdb0.marketplace
+    hostname: couchdb0.marketplace
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "7984:5984"
+    volumes:
+      - couchdb0.marketplace:/opt/couchdb/data
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # Peer0 — DeveloperMSP (proponente do projeto REDD+)
+  # ---------------------------------------------------------------------
+  peer0.developer.redd.network:
+    image: mirror.gcr.io/hyperledger/fabric-peer:2.5
+    container_name: peer0.developer.redd.network
+    hostname: peer0.developer.redd.network
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.developer.redd.network
+      - CORE_PEER_ADDRESS=peer0.developer.redd.network:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.developer.redd.network:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.developer.redd.network:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.developer.redd.network:7051
+      - CORE_PEER_LOCALMSPID=DeveloperMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=redd-network
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.developer:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+    working_dir: /root
+    command: peer node start
+    ports:
+      - "7051:7051"
+      - "9444:9444"
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ./organizations/peerOrganizations/developer.redd.network/peers/peer0.developer.redd.network/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/developer.redd.network/peers/peer0.developer.redd.network/tls:/etc/hyperledger/fabric/tls
+      - peer0.developer.redd.network:/var/hyperledger/production
+    depends_on:
+      - couchdb0.developer
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # Peer0 — VerifierMSP (verificador/auditor independente do MRV)
+  # ---------------------------------------------------------------------
+  peer0.verifier.redd.network:
+    image: mirror.gcr.io/hyperledger/fabric-peer:2.5
+    container_name: peer0.verifier.redd.network
+    hostname: peer0.verifier.redd.network
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.verifier.redd.network
+      - CORE_PEER_ADDRESS=peer0.verifier.redd.network:8051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.verifier.redd.network:8052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.verifier.redd.network:8051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.verifier.redd.network:8051
+      - CORE_PEER_LOCALMSPID=VerifierMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=redd-network
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.verifier:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9445
+    working_dir: /root
+    command: peer node start
+    ports:
+      - "8051:8051"
+      - "9445:9445"
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ./organizations/peerOrganizations/verifier.redd.network/peers/peer0.verifier.redd.network/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/verifier.redd.network/peers/peer0.verifier.redd.network/tls:/etc/hyperledger/fabric/tls
+      - peer0.verifier.redd.network:/var/hyperledger/production
+    depends_on:
+      - couchdb0.verifier
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # Peer0 — MarketplaceMSP (comprador / mercado de creditos)
+  # ---------------------------------------------------------------------
+  peer0.marketplace.redd.network:
+    image: mirror.gcr.io/hyperledger/fabric-peer:2.5
+    container_name: peer0.marketplace.redd.network
+    hostname: peer0.marketplace.redd.network
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.marketplace.redd.network
+      - CORE_PEER_ADDRESS=peer0.marketplace.redd.network:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.marketplace.redd.network:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.marketplace.redd.network:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.marketplace.redd.network:9051
+      - CORE_PEER_LOCALMSPID=MarketplaceMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=redd-network
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.marketplace:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9446
+    working_dir: /root
+    command: peer node start
+    ports:
+      - "9051:9051"
+      - "9446:9446"
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ./organizations/peerOrganizations/marketplace.redd.network/peers/peer0.marketplace.redd.network/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/marketplace.redd.network/peers/peer0.marketplace.redd.network/tls:/etc/hyperledger/fabric/tls
+      - peer0.marketplace.redd.network:/var/hyperledger/production
+    depends_on:
+      - couchdb0.marketplace
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # CLI (fabric-tools) — usado pelos scripts de bootstrap
+  # (gerar-cripto.sh roda cryptogen num container fabric-tools AVULSO via
+  # `docker run`, nao neste `cli`; este `cli` e usado por criar-canal.sh e
+  # deploy-chaincode.sh via `docker exec`, pois precisa ver os peers e o
+  # orderer na mesma rede `redd-network`).
+  # ---------------------------------------------------------------------
+  cli:
+    image: mirror.gcr.io/hyperledger/fabric-tools:2.5
+    container_name: cli
+    hostname: cli
+    tty: true
+    stdin_open: true
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_LOCALMSPID=DeveloperMSP
+      - CORE_PEER_TLS_ROOTCERT_FILE=/workspace/organizations/peerOrganizations/developer.redd.network/peers/peer0.developer.redd.network/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/workspace/organizations/peerOrganizations/developer.redd.network/users/Admin@developer.redd.network/msp
+      - CORE_PEER_ADDRESS=peer0.developer.redd.network:7051
+      - FABRIC_CFG_PATH=/workspace/configtx
+    working_dir: /workspace
+    command: /bin/bash
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ./organizations:/workspace/organizations
+      - ./configtx:/workspace/configtx
+      - ./channel-artifacts:/workspace/channel-artifacts
+      - ../chaincode:/workspace/chaincode
+    depends_on:
+      - orderer.redd.network
+      - peer0.developer.redd.network
+      - peer0.verifier.redd.network
+      - peer0.marketplace.redd.network
+    networks:
+      - redd-network
+
+  # ---------------------------------------------------------------------
+  # Chaincode-as-a-Service (CCaaS) — profile `ccaas`, nao sobe por padrao.
+  # Ver decisao de arquitetura e explicacao da dependencia circular
+  # (PACKAGE_ID) no topo deste arquivo. Subido/atualizado exclusivamente
+  # por scripts/rede/deploy-chaincode.sh via `--profile ccaas up -d`,
+  # usando os valores escritos em rede-fabric/.env.
+  # ---------------------------------------------------------------------
+  chaincode-ccaas-developer:
+    build: ../chaincode
+    image: redd-chaincode-ccaas:1.0
+    container_name: redd-chaincode-ccaas-developer
+    hostname: redd-chaincode-ccaas-developer
+    profiles: ["ccaas"]
+    environment:
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
+      - CORE_CHAINCODE_ID_NAME=${CCAAS_PACKAGE_ID_DEVELOPER:?defina CCAAS_PACKAGE_ID_DEVELOPER em rede-fabric/.env (gerado por scripts/rede/deploy-chaincode.sh apos o install)}
+      - CORE_PEER_LOCALMSPID=DeveloperMSP
+      - CORE_PEER_ADDRESS=peer0.developer.redd.network:7052
+    networks:
+      - redd-network
+    depends_on:
+      - peer0.developer.redd.network
+
+  chaincode-ccaas-verifier:
+    build: ../chaincode
+    image: redd-chaincode-ccaas:1.0
+    container_name: redd-chaincode-ccaas-verifier
+    hostname: redd-chaincode-ccaas-verifier
+    profiles: ["ccaas"]
+    environment:
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
+      - CORE_CHAINCODE_ID_NAME=${CCAAS_PACKAGE_ID_VERIFIER:?defina CCAAS_PACKAGE_ID_VERIFIER em rede-fabric/.env (gerado por scripts/rede/deploy-chaincode.sh apos o install)}
+      - CORE_PEER_LOCALMSPID=VerifierMSP
+      - CORE_PEER_ADDRESS=peer0.verifier.redd.network:8052
+    networks:
+      - redd-network
+    depends_on:
+      - peer0.verifier.redd.network
+
+  chaincode-ccaas-marketplace:
+    build: ../chaincode
+    image: redd-chaincode-ccaas:1.0
+    container_name: redd-chaincode-ccaas-marketplace
+    hostname: redd-chaincode-ccaas-marketplace
+    profiles: ["ccaas"]
+    environment:
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
+      - CORE_CHAINCODE_ID_NAME=${CCAAS_PACKAGE_ID_MARKETPLACE:?defina CCAAS_PACKAGE_ID_MARKETPLACE em rede-fabric/.env (gerado por scripts/rede/deploy-chaincode.sh apos o install)}
+      - CORE_PEER_LOCALMSPID=MarketplaceMSP
+      - CORE_PEER_ADDRESS=peer0.marketplace.redd.network:9052
+    networks:
+      - redd-network
+    depends_on:
+      - peer0.marketplace.redd.network
+
+  # ---------------------------------------------------------------------
+  # API Gateway + Web UI — profile `app`, nao sobe por padrao.
+  #
+  # Ao contrario dos servicos CCaaS, aqui NAO ha dependencia circular de
+  # valor-descoberto-em-runtime: a API Gateway sempre conecta aos MESMOS
+  # 3 peers (enderecos fixos conhecidos de antemao), usando o material
+  # criptografico de bootstrap (cryptogen) montado como volume somente
+  # leitura — nao ha PACKAGE_ID nem nenhum outro valor dinamico envolvido.
+  # Por isso estes 2 servicos podem subir junto com a rede base via
+  # `docker compose --profile app up -d --build`, sem passar por um
+  # script de deploy dedicado (diferente do chaincode).
+  # ---------------------------------------------------------------------
+  api-gateway:
+    build: ../api-gateway
+    image: redd-api-gateway:1.0
+    container_name: redd-api-gateway
+    hostname: redd-api-gateway
+    profiles: ["app"]
+    environment:
+      - FABRIC_ORG_DEVELOPER_CERT_PATH=/crypto/developer.redd.network/users/Admin@developer.redd.network/msp/signcerts/Admin@developer.redd.network-cert.pem
+      - FABRIC_ORG_DEVELOPER_KEY_PATH=/crypto/developer.redd.network/users/Admin@developer.redd.network/msp/keystore/priv_sk
+      - FABRIC_ORG_DEVELOPER_TLS_CA_PATH=/crypto/developer.redd.network/peers/peer0.developer.redd.network/tls/ca.crt
+      - FABRIC_ORG_DEVELOPER_PEER_ENDPOINT=peer0.developer.redd.network:7051
+      - FABRIC_ORG_DEVELOPER_PEER_HOST_OVERRIDE=peer0.developer.redd.network
+      - FABRIC_ORG_VERIFIER_CERT_PATH=/crypto/verifier.redd.network/users/Admin@verifier.redd.network/msp/signcerts/Admin@verifier.redd.network-cert.pem
+      - FABRIC_ORG_VERIFIER_KEY_PATH=/crypto/verifier.redd.network/users/Admin@verifier.redd.network/msp/keystore/priv_sk
+      - FABRIC_ORG_VERIFIER_TLS_CA_PATH=/crypto/verifier.redd.network/peers/peer0.verifier.redd.network/tls/ca.crt
+      - FABRIC_ORG_VERIFIER_PEER_ENDPOINT=peer0.verifier.redd.network:8051
+      - FABRIC_ORG_VERIFIER_PEER_HOST_OVERRIDE=peer0.verifier.redd.network
+      - FABRIC_ORG_MARKETPLACE_CERT_PATH=/crypto/marketplace.redd.network/users/Admin@marketplace.redd.network/msp/signcerts/Admin@marketplace.redd.network-cert.pem
+      - FABRIC_ORG_MARKETPLACE_KEY_PATH=/crypto/marketplace.redd.network/users/Admin@marketplace.redd.network/msp/keystore/priv_sk
+      - FABRIC_ORG_MARKETPLACE_TLS_CA_PATH=/crypto/marketplace.redd.network/peers/peer0.marketplace.redd.network/tls/ca.crt
+      - FABRIC_ORG_MARKETPLACE_PEER_ENDPOINT=peer0.marketplace.redd.network:9051
+      - FABRIC_ORG_MARKETPLACE_PEER_HOST_OVERRIDE=peer0.marketplace.redd.network
+    ports:
+      # Porta externa 8082 (nao 8080): este host ja usa 8080 para outro
+      # projeto (Airflow) nao relacionado a este demo. A API continua
+      # ouvindo na porta 8080 DENTRO do container; apenas o mapeamento
+      # externo muda. Ajuste conforme a porta disponivel no seu ambiente.
+      - "8082:8080"
+    volumes:
+      - ./organizations/peerOrganizations:/crypto:ro
+    networks:
+      - redd-network
+    depends_on:
+      - peer0.developer.redd.network
+      - peer0.verifier.redd.network
+      - peer0.marketplace.redd.network
+
+  web-ui:
+    build: ../web-ui
+    image: redd-webui:1.0
+    container_name: redd-webui
+    hostname: redd-webui
+    profiles: ["app"]
+    ports:
+      - "8090:80"
+    volumes:
+      # Sobrescreve o config.js da imagem (que aponta para localhost:8080,
+      # usado no desenvolvimento local sem Docker) para apontar para a
+      # porta externa real da api-gateway neste compose (ver comentario
+      # de porta no servico api-gateway acima). O browser do usuario
+      # acessa a API via localhost do HOST, nunca via nome de servico
+      # interno do Docker.
+      - ./webui-config/config.js:/usr/share/nginx/html/config.js:ro
+    networks:
+      - redd-network
+    depends_on:
+      - api-gateway

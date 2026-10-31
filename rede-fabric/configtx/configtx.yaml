@@ -1,0 +1,223 @@
+# configtx.yaml — definição do canal de aplicação RedChannel.
+#
+# MODELO: Channel Participation API (Fabric >= 2.3), SEM system channel.
+# O orderer sobe com ORDERER_GENERAL_BOOTSTRAPMETHOD=none (ver
+# docker-compose.yaml) e o bloco genesis do canal é criado diretamente a
+# partir do profile abaixo (que contem Orderer + Application no mesmo
+# profile, sem Consortiums), via:
+#
+#   configtxgen -profile RedChannel -channelID redchannel \
+#     -outputBlock channel-artifacts/redchannel.block
+#
+# O bloco e entao submetido ao orderer com `osnadmin channel join` e aos
+# peers com `peer channel join`. Esse e o mesmo padrao usado pelo
+# test-network oficial do Hyperledger Fabric a partir da versao 2.3+.
+#
+# Caminhos de MSP (MSPDir/ClientTLSCert/ServerTLSCert) sao resolvidos pelo
+# configtxgen de forma relativa ao proprio diretorio onde este arquivo
+# configtx.yaml esta (nao ao cwd do processo) quando FABRIC_CFG_PATH
+# aponta para esse diretorio. Nos scripts deste projeto, o container
+# `cli` (fabric-tools) monta rede-fabric/ em /workspace e
+# invoca configtxgen com FABRIC_CFG_PATH=/workspace/configtx — por isso
+# os caminhos abaixo usam `../organizations/...` (subindo de
+# /workspace/configtx para /workspace/organizations).
+---
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: ../organizations/ordererOrganizations/redd.network/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+  - &DeveloperOrg
+    Name: DeveloperMSP
+    ID: DeveloperMSP
+    MSPDir: ../organizations/peerOrganizations/developer.redd.network/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('DeveloperMSP.admin','DeveloperMSP.peer','DeveloperMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('DeveloperMSP.admin','DeveloperMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('DeveloperMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('DeveloperMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.developer.redd.network
+        Port: 7051
+
+  - &VerifierOrg
+    Name: VerifierMSP
+    ID: VerifierMSP
+    MSPDir: ../organizations/peerOrganizations/verifier.redd.network/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('VerifierMSP.admin','VerifierMSP.peer','VerifierMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('VerifierMSP.admin','VerifierMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('VerifierMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('VerifierMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.verifier.redd.network
+        Port: 8051
+
+  - &MarketplaceOrg
+    Name: MarketplaceMSP
+    ID: MarketplaceMSP
+    MSPDir: ../organizations/peerOrganizations/marketplace.redd.network/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('MarketplaceMSP.admin','MarketplaceMSP.peer','MarketplaceMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('MarketplaceMSP.admin','MarketplaceMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('MarketplaceMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('MarketplaceMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.marketplace.redd.network
+        Port: 9051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_5: true
+
+Application: &ApplicationDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    # Política de endosso do CANAL.
+    #
+    # ANALOGIA COM O GAUNTLET LOOP: assim como o chaincode-builder nunca
+    # tem seu codigo aceito sem a segunda opiniao independente do
+    # chaincode-critic (e, em caso de divergencia, do chaincode-arbiter),
+    # nenhuma transacao de escrita no ledger deste canal e valida com a
+    # assinatura de uma unica organizacao. Exigir AND(DeveloperMSP.peer,
+    # VerifierMSP.peer) e a traducao, em infraestrutura Fabric, da mesma
+    # regra de negocio: o proponente do projeto REDD+ (Developer) nunca
+    # pode, sozinho, decidir a validade de um dado de MRV ou a emissao de
+    # um credito — a verificacao independente (Verifier) e sempre uma
+    # segunda assinatura obrigatoria. MarketplaceMSP participa do canal e
+    # pode ser incluido na policy do CHAINCODE para transacoes de
+    # transferencia/aposentadoria (ver scripts/rede/deploy-chaincode.sh),
+    # mas nao e exigido nesta policy minima de canal.
+    Endorsement:
+      Type: Signature
+      Rule: "AND('DeveloperMSP.peer','VerifierMSP.peer')"
+    # Politica do CICLO DE VIDA do chaincode (approve/commit de definicao).
+    # Obrigatoria para o lifecycle _lifecycle do Fabric 2.x: sem ela, o
+    # `peer lifecycle chaincode commit` falha ("policy
+    # '/Channel/Application/LifecycleEndorsement' not found").
+    # Padrao do test-network oficial: maioria das organizacoes do canal,
+    # cada uma avaliada pela politica Endorsement da propria org (definida
+    # acima em cada &...Org como OR('<Org>MSP.peer')). Com 3 orgs, o commit
+    # exige approve de pelo menos 2. Isto e distinto da politica de
+    # endosso de TRANSACAO (Endorsement, acima, AND Developer+Verifier).
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer.redd.network:7050
+  EtcdRaft:
+    # Nó único de orderer — adequado apenas para demo/desenvolvimento.
+    # Em producao, EtcdRaft.Consenters exigiria no minimo 3 nos distintos
+    # (tolerancia a falha de 1 orderer sem perder quorum de consenso), cada
+    # um com seu proprio certificado TLS e endereco.
+    Consenters:
+      - Host: orderer.redd.network
+        Port: 7050
+        ClientTLSCert: ../organizations/ordererOrganizations/redd.network/orderers/orderer.redd.network/tls/server.crt
+        ServerTLSCert: ../organizations/ordererOrganizations/redd.network/orderers/orderer.redd.network/tls/server.crt
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+    - *OrdererOrg
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  # Profile unico do canal de aplicacao REDD+. Contem Orderer+Application
+  # no mesmo profile (sem Consortiums) porque a rede opera sem system
+  # channel — o orderer e bootstrapado com BOOTSTRAPMETHOD=none e o canal
+  # e criado diretamente via Channel Participation API (osnadmin).
+  RedChannel:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *DeveloperOrg
+        - *VerifierOrg
+        - *MarketplaceOrg
+      Capabilities:
+        <<: *ApplicationCapabilities

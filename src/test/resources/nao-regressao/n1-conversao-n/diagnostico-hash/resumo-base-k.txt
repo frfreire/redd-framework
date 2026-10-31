@@ -1,0 +1,32 @@
+base-AMBIFY-10-60-s1-k0 rc=0 0s  ambify-10v-t0.csv c9cb3a45f606 linhas=9 | mvp-results.csv 026a376f7e8a linhas=1
+base-AMBIFY-10-60-s1-k0-rep rc=0 0s  ambify-10v-t0.csv c9cb3a45f606 linhas=9 | mvp-results.csv 026a376f7e8a linhas=1  == IDENTICO a base-AMBIFY-10-60-s1-k0   <- repeticao de k=0
+base-AMBIFY-10-60-s1-k1 rc=0 0s  ambify-10v-t0.csv 19bfa96659ce linhas=9 | mvp-results.csv 1eae1f2790ed linhas=1  != DIVERGENTE de base-AMBIFY-10-60-s1-k0
+base-AMBIFY-10-60-s1-k2 rc=0 0s  ambify-10v-t0.csv 3943453c3d5d linhas=9 | mvp-results.csv fabc3fd78aae linhas=1  != DIVERGENTE de base-AMBIFY-10-60-s1-k0
+base-AMBIFY-10-60-s1-k5 rc=0 0s  ambify-10v-t0.csv 00281e63ba7c linhas=7 | mvp-results.csv f0a212646c8a linhas=1  != DIVERGENTE de base-AMBIFY-10-60-s1-k0
+base-AMBIFY-10-60-s1-k10 rc=0 0s  ambify-10v-t0.csv 80a2cbaf66c7 linhas=9 | mvp-results.csv 642b1f9179bf linhas=1  != DIVERGENTE de base-AMBIFY-10-60-s1-k0
+base-AMBIFY-10-60-s1-k50 rc=0 0s  ambify-10v-t0.csv 0b0d52d2675a linhas=9 | mvp-results.csv 983de50a89df linhas=1  != DIVERGENTE de base-AMBIFY-10-60-s1-k0
+base-AMBIFY-10-60-s1-k200 rc=0 0s  ambify-10v-t0.csv 51a5bfa32189 linhas=9 | mvp-results.csv ed158ce20503 linhas=1  != DIVERGENTE de base-AMBIFY-10-60-s1-k0
+base-MCO2-50-600-s2-k0 rc=0 0s  mco2-50v-t0.csv 1dd39eac5d30 linhas=14 | mvp-results.csv 6f4312e4f49c linhas=1
+base-MCO2-50-600-s2-k0-rep rc=0 0s  mco2-50v-t0.csv 1dd39eac5d30 linhas=14 | mvp-results.csv 6f4312e4f49c linhas=1  == IDENTICO a base-MCO2-50-600-s2-k0   <- repeticao de k=0
+base-MCO2-50-600-s2-k1 rc=0 0s  mco2-50v-t0.csv e16cc039a5f8 linhas=14 | mvp-results.csv acf7e604966d linhas=1  != DIVERGENTE de base-MCO2-50-600-s2-k0
+base-MCO2-50-600-s2-k2 rc=0 0s  mco2-50v-t0.csv 1af8077fa4b1 linhas=14 | mvp-results.csv b07ee3a03137 linhas=1  != DIVERGENTE de base-MCO2-50-600-s2-k0
+base-MCO2-50-600-s2-k5 rc=0 1s  mco2-50v-t0.csv e060c4ccb449 linhas=14 | mvp-results.csv b2058cf3118c linhas=1  != DIVERGENTE de base-MCO2-50-600-s2-k0
+base-MCO2-50-600-s2-k10 rc=0 0s  mco2-50v-t0.csv 023821520ae2 linhas=14 | mvp-results.csv 16b838b738be linhas=1  != DIVERGENTE de base-MCO2-50-600-s2-k0
+base-MCO2-50-600-s2-k50 rc=0 0s  mco2-50v-t0.csv d72504f380ca linhas=0 | mvp-results.csv 5228a8233ab8 linhas=1  != DIVERGENTE de base-MCO2-50-600-s2-k0
+base-MCO2-50-600-s2-k200 rc=0 0s  mco2-50v-t0.csv d72504f380ca linhas=0 | mvp-results.csv 5228a8233ab8 linhas=1  != DIVERGENTE de base-MCO2-50-600-s2-k0
+base-OFFSET-40-20000-s1-k0 rc=0 3s  mvp-results.csv d0062814d73c linhas=1 | offset-40v-t0.csv 118f1427191e linhas=29
+base-OFFSET-40-20000-s1-k0-rep rc=0 2s  mvp-results.csv d0062814d73c linhas=1 | offset-40v-t0.csv 118f1427191e linhas=29  == IDENTICO a base-OFFSET-40-20000-s1-k0   <- repeticao de k=0
+base-OFFSET-40-20000-s1-k1 rc=0 3s  mvp-results.csv b0d048af5105 linhas=1 | offset-40v-t0.csv 5800ee0b7f2c linhas=30  != DIVERGENTE de base-OFFSET-40-20000-s1-k0
+base-OFFSET-40-20000-s1-k2 rc=0 3s  mvp-results.csv b38b5b467407 linhas=1 | offset-40v-t0.csv 62470eb80930 linhas=27  != DIVERGENTE de base-OFFSET-40-20000-s1-k0
+base-OFFSET-40-20000-s1-k5 rc=0 2s  mvp-results.csv 31cfc432d967 linhas=1 | offset-40v-t0.csv 68700ef5ba2f linhas=26  != DIVERGENTE de base-OFFSET-40-20000-s1-k0
+base-OFFSET-40-20000-s1-k10 rc=0 3s  mvp-results.csv 7519511e070d linhas=1 | offset-40v-t0.csv e6dc7d1346f9 linhas=22  != DIVERGENTE de base-OFFSET-40-20000-s1-k0
+base-OFFSET-40-20000-s1-k50 rc=0 3s  mvp-results.csv b395d5f3fe66 linhas=1 | offset-40v-t0.csv 8288c3d1aba6 linhas=27  != DIVERGENTE de base-OFFSET-40-20000-s1-k0
+base-OFFSET-40-20000-s1-k200 rc=0 2s  mvp-results.csv 3a8d2ce17893 linhas=1 | offset-40v-t0.csv b03a1d90b6e3 linhas=28  != DIVERGENTE de base-OFFSET-40-20000-s1-k0
+base-ARQ-7-60-s1-k0 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1
+base-ARQ-7-60-s1-k0-rep rc=0 1s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0   <- repeticao de k=0
+base-ARQ-7-60-s1-k1 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0
+base-ARQ-7-60-s1-k2 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0
+base-ARQ-7-60-s1-k5 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0
+base-ARQ-7-60-s1-k10 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0
+base-ARQ-7-60-s1-k50 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0
+base-ARQ-7-60-s1-k200 rc=0 0s  arq-7v-t0.csv 2c7e34585893 linhas=37 | mvp-results.csv d83cccf4a268 linhas=1  == IDENTICO a base-ARQ-7-60-s1-k0

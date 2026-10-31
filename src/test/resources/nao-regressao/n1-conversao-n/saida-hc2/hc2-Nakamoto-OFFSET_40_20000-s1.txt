@@ -1,0 +1,9 @@
+semente=1 timeout=900s por execucao; 4 execucoes em paralelo
+
+== OFFSET n=40 duracao=20000s semente=1
+   execucoes (rc, segundos): base-a=0,83s, base-b=0,74s, atual-a=0,84s, atual-b=0,83s
+   baseline a x b (pre-existente?): IDENTICO (26 linhas) 
+   atual    a x b                : IDENTICO (26 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (26 linhas) 
+exit=0
+tempo_total_s=83

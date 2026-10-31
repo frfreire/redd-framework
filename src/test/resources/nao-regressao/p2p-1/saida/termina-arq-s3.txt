@@ -1,0 +1,7 @@
+semente=3 timeout=900s por execucao; 4 execucoes em paralelo
+
+== ARQ n=7 duracao=60s semente=3
+   execucoes (rc, segundos): base-a=0,3s, base-b=0,3s, atual-a=0,2s, atual-b=0,3s
+   baseline a x b (pre-existente?): IDENTICO (44 linhas) 
+   atual    a x b                : IDENTICO (44 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (44 linhas) 

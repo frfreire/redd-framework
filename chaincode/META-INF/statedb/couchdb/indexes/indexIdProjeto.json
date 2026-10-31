@@ -1,0 +1,8 @@
+{
+  "index": {
+    "fields": ["idProjeto", "_id"]
+  },
+  "ddoc": "indexIdProjetoDoc",
+  "name": "indexIdProjeto",
+  "type": "json"
+}

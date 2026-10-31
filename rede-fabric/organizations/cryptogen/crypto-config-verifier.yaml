@@ -1,0 +1,20 @@
+# crypto-config-verifier.yaml
+#
+# Material criptografico (MSP + TLS) da organizacao VerifierMSP
+# (verificador independente de MRV), dominio verifier.redd.network,
+# consumido por scripts/rede/gerar-cripto.sh via `cryptogen generate`.
+#
+# Gera: organizations/peerOrganizations/verifier.redd.network/
+#   - peers/peer0.verifier.redd.network/{msp,tls}
+#   - users/Admin@verifier.redd.network/{msp,tls}
+#   - users/User1@verifier.redd.network/{msp,tls}
+#   - msp/ (MSP da organizacao, usado como VerifierOrg.MSPDir no configtx.yaml)
+
+PeerOrgs:
+  - Name: Verifier
+    Domain: verifier.redd.network
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

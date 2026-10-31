@@ -1,0 +1,52 @@
+classe  familia   caso             sem exit base x base atual x atual base x atual rc,segundos(base-a,base-b,atual-a,atual-b)
+termina ARQ       ARQ:7:60         1   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina ARQ       ARQ:7:60         2   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina ARQ       ARQ:7:60         3   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Casper    MCO2:10:60       1   0    I           I             I            base-a=0,0s,base-b=0,0s,atual-a=0,0s,atual-b=0,0s
+termina Casper    MCO2:10:60       2   0    I           I             I            base-a=0,0s,base-b=0,0s,atual-a=0,0s,atual-b=0,0s
+termina Casper    MCO2:10:60       3   0    I           I             I            base-a=0,0s,base-b=0,0s,atual-a=0,0s,atual-b=0,0s
+termina Casper    MCO2:20:300      1   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Casper    MCO2:20:300      2   0    I           I             I            base-a=0,0s,base-b=0,0s,atual-a=0,0s,atual-b=0,0s
+termina Casper    MCO2:20:300      3   0    I           I             I            base-a=0,0s,base-b=0,0s,atual-a=0,0s,atual-b=0,0s
+termina Casper    MCO2:50:600      1   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Casper    MCO2:50:600      2   0    I           I             I            base-a=0,2s,base-b=0,2s,atual-a=0,2s,atual-b=0,2s
+termina Casper    MCO2:50:600      3   0    I           I             I            base-a=0,2s,base-b=0,2s,atual-a=0,2s,atual-b=0,2s
+termina Nakamoto  OFFSET:30:20000  1   0    I           I             I            base-a=0,3s,base-b=0,3s,atual-a=0,3s,atual-b=0,3s
+termina Nakamoto  OFFSET:30:20000  2   0    I           I             I            base-a=0,3s,base-b=0,4s,atual-a=0,3s,atual-b=0,4s
+termina Nakamoto  OFFSET:30:20000  3   0    I           I             I            base-a=0,4s,base-b=0,4s,atual-a=0,4s,atual-b=0,4s
+termina Nakamoto  OFFSET:35:20000  1   0    I           I             I            base-a=0,4s,base-b=0,4s,atual-a=0,4s,atual-b=0,4s
+termina Nakamoto  OFFSET:35:20000  2   0    I           I             I            base-a=0,4s,base-b=0,4s,atual-a=0,4s,atual-b=0,4s
+termina Nakamoto  OFFSET:35:20000  3   0    I           I             I            base-a=0,3s,base-b=0,3s,atual-a=0,3s,atual-b=0,3s
+termina Nakamoto  OFFSET:40:20000  1   0    I           I             I            base-a=0,5s,base-b=0,4s,atual-a=0,5s,atual-b=0,5s
+termina Nakamoto  OFFSET:40:20000  2   0    I           I             I            base-a=0,4s,base-b=0,5s,atual-a=0,4s,atual-b=0,5s
+termina Nakamoto  OFFSET:40:20000  3   0    I           I             I            base-a=0,5s,base-b=0,4s,atual-a=0,4s,atual-b=0,4s
+termina Parlia    AMBIFY:10:60     1   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Parlia    AMBIFY:10:60     2   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Parlia    AMBIFY:10:60     3   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Parlia    AMBIFY:12:60     1   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Parlia    AMBIFY:12:60     2   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Parlia    AMBIFY:12:60     3   0    I           I             I            base-a=0,1s,base-b=0,1s,atual-a=0,1s,atual-b=0,1s
+termina Parlia    AMBIFY:30:300    1   0    I           I             I            base-a=0,2s,base-b=0,2s,atual-a=0,2s,atual-b=0,2s
+termina Parlia    AMBIFY:30:300    2   0    I           I             I            base-a=0,2s,base-b=0,2s,atual-a=0,2s,atual-b=0,2s
+termina Parlia    AMBIFY:30:300    3   0    I           I             I            base-a=0,2s,base-b=0,2s,atual-a=0,2s,atual-b=0,2s
+trava   Casper    MCO2:4:60        1   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,0s,atual-b=0,0s
+trava   Casper    MCO2:4:60        2   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,0s,atual-b=0,0s
+trava   Casper    MCO2:4:60        3   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,0s,atual-b=0,0s
+trava   Casper    MCO2:7:60        1   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,0s,atual-b=0,0s
+trava   Casper    MCO2:7:60        2   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,0s,atual-b=0,0s
+trava   Casper    MCO2:7:60        3   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,0s,atual-b=0,0s
+trava   Nakamoto  OFFSET:10:20000  1   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Nakamoto  OFFSET:10:20000  2   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Nakamoto  OFFSET:10:20000  3   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Nakamoto  OFFSET:20:20000  1   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,2s,atual-b=0,2s
+trava   Nakamoto  OFFSET:20:20000  2   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,2s,atual-b=0,2s
+termina Nakamoto  OFFSET:20:20000  3   0    I           I             I            base-a=0,2s,base-b=0,2s,atual-a=0,2s,atual-b=0,2s
+trava   Parlia    AMBIFY:4:60      1   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Parlia    AMBIFY:4:60      2   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Parlia    AMBIFY:4:60      3   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Parlia    AMBIFY:7:60      1   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Parlia    AMBIFY:7:60      2   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+trava   Parlia    AMBIFY:7:60      3   2    -           -             -            base-a=TIMEOUT,30s,base-b=TIMEOUT,30s,atual-a=0,1s,atual-b=0,1s
+
+# termina na baseline: 31 execucoes, base x atual IDENTICO em 31
+# trava na baseline  : 17 execucoes (base TIMEOUT; so a saida nova existe)

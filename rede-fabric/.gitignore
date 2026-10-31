@@ -1,0 +1,51 @@
+# rede-fabric/.gitignore
+# Material criptografico e segredos NUNCA entram no git (AGENTS.md, regra 7).
+# Tudo isto e gerado por scripts/rede/gerar-cripto.sh / criar-canal.sh.
+
+# --- Material criptografico gerado pelo cryptogen -------------------------
+/organizations/peerOrganizations/
+/organizations/ordererOrganizations/
+/organizations/fabric-ca/
+# Nomes alternativos usados por tutoriais/ferramentas do Fabric.
+/crypto-config/
+crypto-config/
+/artefatos/
+artefatos/
+/wallet/
+wallet/
+*.id
+# Dentro de organizations/ so os templates do cryptogen sao versionados.
+/organizations/*
+!/organizations/cryptogen/
+!/organizations/cryptogen/**
+
+# --- Chaves, certificados e keystores em qualquer profundidade ------------
+*.pem
+*_sk
+priv_sk
+*.key
+*.crt
+*.cert
+*.csr
+*.p12
+*.pfx
+*.jks
+keystore/
+signcerts/
+tlscacerts/
+cacerts/
+
+# --- Blocos e artefatos de canal ------------------------------------------
+*.block
+*.tx
+channel-artifacts/*
+!channel-artifacts/.gitkeep
+
+# --- Ambiente: .env real e gerado por deploy-chaincode.sh (Package IDs) ---
+.env
+.env.*
+!.env.example
+
+# --- Pacotes de chaincode gerados ------------------------------------------
+*.tar.gz
+ccaas-pkg/

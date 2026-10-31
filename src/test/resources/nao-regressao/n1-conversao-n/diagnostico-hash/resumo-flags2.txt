@@ -1,0 +1,6 @@
+== hashCode=2  MCO2:50:600:1 (MVPComparison direto)
+   base-MCO2-50-600-s1-k-1-hc2 rc=0 3s  mco2-50v-t0.csv edce8fbd6bbe linhas=14 | mvp-results.csv 34febd697f9a linhas=1
+   atual-MCO2-50-600-s1-k-1-hc2 rc=0 2s  mco2-50v-t0.csv edce8fbd6bbe linhas=14 | mvp-results.csv 34febd697f9a linhas=1  == IDENTICO a base-MCO2-50-600-s1-k-1-hc2
+== hashCode=2  OFFSET:40:20000:1 (MVPComparison direto)
+   base-OFFSET-40-20000-s1-k-1-hc2 rc=0 51s  mvp-results.csv 413c1550ac09 linhas=1 | offset-40v-t0.csv 46738f4dbcbf linhas=25
+   atual-OFFSET-40-20000-s1-k-1-hc2 rc=0 48s  mvp-results.csv 413c1550ac09 linhas=1 | offset-40v-t0.csv 46738f4dbcbf linhas=25  == IDENTICO a base-OFFSET-40-20000-s1-k-1-hc2

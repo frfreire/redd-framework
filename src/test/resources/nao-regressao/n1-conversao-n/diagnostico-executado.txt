@@ -1,0 +1,64 @@
+caminho protocolo semantica n_pedido | nos_construidos mineradores_construidos stakeholders_construidos | efetivo_que_vota | previsto_nos | confere
+MVPComparison MCO2 legacy n=4 | nos=3 mineradores=1 stakeholders=2 | nos_casper_que_votam=3 S_denominador=2 limiar_votos=2 | previsto=3 | OK
+MVPComparison AMBIFY legacy n=4 | nos=3 mineradores=1 stakeholders=2 | validadores_parlia_que_votam=1 | previsto=3 | OK
+ByzantineSweep POS legacy n=4 | nos=5 mineradores=1 stakeholders=4 | nos_casper_que_votam=5 S_denominador=4 limiar_votos=3 | previsto=5 | OK
+ByzantineSweep POSA legacy n=4 | nos=5 mineradores=1 stakeholders=4 | validadores_parlia_que_votam=1 | previsto=5 | OK
+MVPComparison MCO2 nodes n=4 | nos=4 mineradores=1 stakeholders=3 | nos_casper_que_votam=4 S_denominador=3 limiar_votos=2 | previsto=4 | OK
+MVPComparison AMBIFY nodes n=4 | nos=4 mineradores=1 stakeholders=3 | validadores_parlia_que_votam=1 | previsto=4 | OK
+ByzantineSweep POS nodes n=4 | nos=4 mineradores=1 stakeholders=3 | nos_casper_que_votam=4 S_denominador=3 limiar_votos=2 | previsto=4 | OK
+ByzantineSweep POSA nodes n=4 | nos=4 mineradores=1 stakeholders=3 | validadores_parlia_que_votam=1 | previsto=4 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=4 | nos=4 | validadores_pbft_que_votam=4 | previsto=4 | OK
+MVPComparison MCO2 legacy n=16 | nos=15 mineradores=4 stakeholders=11 | nos_casper_que_votam=15 S_denominador=11 limiar_votos=8 | previsto=15 | OK
+MVPComparison AMBIFY legacy n=16 | nos=15 mineradores=4 stakeholders=11 | validadores_parlia_que_votam=4 | previsto=15 | OK
+ByzantineSweep POS legacy n=16 | nos=21 mineradores=5 stakeholders=16 | nos_casper_que_votam=21 S_denominador=16 limiar_votos=11 | previsto=21 | OK
+ByzantineSweep POSA legacy n=16 | nos=21 mineradores=5 stakeholders=16 | validadores_parlia_que_votam=5 | previsto=21 | OK
+MVPComparison MCO2 nodes n=16 | nos=16 mineradores=5 stakeholders=11 | nos_casper_que_votam=16 S_denominador=11 limiar_votos=8 | previsto=16 | OK
+MVPComparison AMBIFY nodes n=16 | nos=16 mineradores=5 stakeholders=11 | validadores_parlia_que_votam=5 | previsto=16 | OK
+ByzantineSweep POS nodes n=16 | nos=16 mineradores=5 stakeholders=11 | nos_casper_que_votam=16 S_denominador=11 limiar_votos=8 | previsto=16 | OK
+ByzantineSweep POSA nodes n=16 | nos=16 mineradores=5 stakeholders=11 | validadores_parlia_que_votam=5 | previsto=16 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=16 | nos=16 | validadores_pbft_que_votam=16 | previsto=16 | OK
+MVPComparison MCO2 legacy n=64 | nos=63 mineradores=19 stakeholders=44 | nos_casper_que_votam=63 S_denominador=44 limiar_votos=30 | previsto=63 | OK
+MVPComparison AMBIFY legacy n=64 | nos=63 mineradores=19 stakeholders=44 | validadores_parlia_que_votam=19 | previsto=63 | OK
+ByzantineSweep POS legacy n=64 | nos=83 mineradores=19 stakeholders=64 | nos_casper_que_votam=83 S_denominador=64 limiar_votos=43 | previsto=83 | OK
+ByzantineSweep POSA legacy n=64 | nos=83 mineradores=19 stakeholders=64 | validadores_parlia_que_votam=19 | previsto=83 | OK
+MVPComparison MCO2 nodes n=64 | nos=64 mineradores=19 stakeholders=45 | nos_casper_que_votam=64 S_denominador=45 limiar_votos=30 | previsto=64 | OK
+MVPComparison AMBIFY nodes n=64 | nos=64 mineradores=19 stakeholders=45 | validadores_parlia_que_votam=19 | previsto=64 | OK
+ByzantineSweep POS nodes n=64 | nos=64 mineradores=19 stakeholders=45 | nos_casper_que_votam=64 S_denominador=45 limiar_votos=30 | previsto=64 | OK
+ByzantineSweep POSA nodes n=64 | nos=64 mineradores=19 stakeholders=45 | validadores_parlia_que_votam=19 | previsto=64 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=64 | nos=64 | validadores_pbft_que_votam=64 | previsto=64 | OK
+MVPComparison MCO2 legacy n=128 | nos=127 mineradores=38 stakeholders=89 | nos_casper_que_votam=127 S_denominador=89 limiar_votos=60 | previsto=127 | OK
+MVPComparison AMBIFY legacy n=128 | nos=127 mineradores=38 stakeholders=89 | validadores_parlia_que_votam=38 | previsto=127 | OK
+ByzantineSweep POS legacy n=128 | nos=166 mineradores=38 stakeholders=128 | nos_casper_que_votam=166 S_denominador=128 limiar_votos=86 | previsto=166 | OK
+ByzantineSweep POSA legacy n=128 | nos=166 mineradores=38 stakeholders=128 | validadores_parlia_que_votam=38 | previsto=166 | OK
+MVPComparison MCO2 nodes n=128 | nos=128 mineradores=38 stakeholders=90 | nos_casper_que_votam=128 S_denominador=90 limiar_votos=60 | previsto=128 | OK
+MVPComparison AMBIFY nodes n=128 | nos=128 mineradores=38 stakeholders=90 | validadores_parlia_que_votam=38 | previsto=128 | OK
+ByzantineSweep POS nodes n=128 | nos=128 mineradores=38 stakeholders=90 | nos_casper_que_votam=128 S_denominador=90 limiar_votos=60 | previsto=128 | OK
+ByzantineSweep POSA nodes n=128 | nos=128 mineradores=38 stakeholders=90 | validadores_parlia_que_votam=38 | previsto=128 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=128 | nos=128 | validadores_pbft_que_votam=128 | previsto=128 | OK
+MVPComparison MCO2 legacy n=256 | nos=255 mineradores=76 stakeholders=179 | nos_casper_que_votam=255 S_denominador=179 limiar_votos=120 | previsto=255 | OK
+MVPComparison AMBIFY legacy n=256 | nos=255 mineradores=76 stakeholders=179 | validadores_parlia_que_votam=76 | previsto=255 | OK
+ByzantineSweep POS legacy n=256 | nos=333 mineradores=77 stakeholders=256 | nos_casper_que_votam=333 S_denominador=256 limiar_votos=171 | previsto=333 | OK
+ByzantineSweep POSA legacy n=256 | nos=333 mineradores=77 stakeholders=256 | validadores_parlia_que_votam=77 | previsto=333 | OK
+MVPComparison MCO2 nodes n=256 | nos=256 mineradores=77 stakeholders=179 | nos_casper_que_votam=256 S_denominador=179 limiar_votos=120 | previsto=256 | OK
+MVPComparison AMBIFY nodes n=256 | nos=256 mineradores=77 stakeholders=179 | validadores_parlia_que_votam=77 | previsto=256 | OK
+ByzantineSweep POS nodes n=256 | nos=256 mineradores=77 stakeholders=179 | nos_casper_que_votam=256 S_denominador=179 limiar_votos=120 | previsto=256 | OK
+ByzantineSweep POSA nodes n=256 | nos=256 mineradores=77 stakeholders=179 | validadores_parlia_que_votam=77 | previsto=256 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=256 | nos=256 | validadores_pbft_que_votam=256 | previsto=256 | OK
+MVPComparison MCO2 legacy n=400 | nos=400 mineradores=120 stakeholders=280 | nos_casper_que_votam=400 S_denominador=280 limiar_votos=187 | previsto=400 | OK
+MVPComparison AMBIFY legacy n=400 | nos=400 mineradores=120 stakeholders=280 | validadores_parlia_que_votam=120 | previsto=400 | OK
+ByzantineSweep POS legacy n=400 | nos=520 mineradores=120 stakeholders=400 | nos_casper_que_votam=520 S_denominador=400 limiar_votos=267 | previsto=520 | OK
+ByzantineSweep POSA legacy n=400 | nos=520 mineradores=120 stakeholders=400 | validadores_parlia_que_votam=120 | previsto=520 | OK
+MVPComparison MCO2 nodes n=400 | nos=400 mineradores=120 stakeholders=280 | nos_casper_que_votam=400 S_denominador=280 limiar_votos=187 | previsto=400 | OK
+MVPComparison AMBIFY nodes n=400 | nos=400 mineradores=120 stakeholders=280 | validadores_parlia_que_votam=120 | previsto=400 | OK
+ByzantineSweep POS nodes n=400 | nos=400 mineradores=120 stakeholders=280 | nos_casper_que_votam=400 S_denominador=280 limiar_votos=187 | previsto=400 | OK
+ByzantineSweep POSA nodes n=400 | nos=400 mineradores=120 stakeholders=280 | validadores_parlia_que_votam=120 | previsto=400 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=400 | nos=400 | validadores_pbft_que_votam=400 | previsto=400 | OK
+MVPComparison MCO2 legacy n=800 | nos=800 mineradores=240 stakeholders=560 | nos_casper_que_votam=800 S_denominador=560 limiar_votos=374 | previsto=800 | OK
+MVPComparison AMBIFY legacy n=800 | nos=800 mineradores=240 stakeholders=560 | validadores_parlia_que_votam=240 | previsto=800 | OK
+ByzantineSweep POS legacy n=800 | nos=1040 mineradores=240 stakeholders=800 | nos_casper_que_votam=1040 S_denominador=800 limiar_votos=534 | previsto=1040 | OK
+ByzantineSweep POSA legacy n=800 | nos=1040 mineradores=240 stakeholders=800 | validadores_parlia_que_votam=240 | previsto=1040 | OK
+MVPComparison MCO2 nodes n=800 | nos=800 mineradores=240 stakeholders=560 | nos_casper_que_votam=800 S_denominador=560 limiar_votos=374 | previsto=800 | OK
+MVPComparison AMBIFY nodes n=800 | nos=800 mineradores=240 stakeholders=560 | validadores_parlia_que_votam=240 | previsto=800 | OK
+ByzantineSweep POS nodes n=800 | nos=800 mineradores=240 stakeholders=560 | nos_casper_que_votam=800 S_denominador=560 limiar_votos=374 | previsto=800 | OK
+ByzantineSweep POSA nodes n=800 | nos=800 mineradores=240 stakeholders=560 | validadores_parlia_que_votam=240 | previsto=800 | OK
+MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=800 | nos=800 | validadores_pbft_que_votam=800 | previsto=800 | OK

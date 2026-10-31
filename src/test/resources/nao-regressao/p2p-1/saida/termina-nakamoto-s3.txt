@@ -1,0 +1,19 @@
+semente=3 timeout=900s por execucao; 12 execucoes em paralelo
+
+== OFFSET n=30 duracao=20000s semente=3
+   execucoes (rc, segundos): base-a=0,22s, base-b=0,26s, atual-a=0,22s, atual-b=0,26s
+   baseline a x b (pre-existente?): DIVERGENTE (18 linhas) mvp-results.csv linha 1: [('Tb_avg', '9281.158345', '9343.573517'), ('Cb_avg', '0.923917', '0.835676'), ('Tt_avg', '9144.214392', '9199.245253')]; offset-30v-t0.csv linha 7: [('Time', '12837.355786572758', '12461.247232460126'), ('NodeID', '7', '22'), ('BlockFinalizationTime', '9619.096253503767', '9242.987699391135')]
+   atual    a x b                : DIVERGENTE (19 linhas) mvp-results.csv linha 1: [('Tb_avg', '9265.669886', '9343.573517'), ('Cb_avg', '1.001458', '0.835618'), ('Tt_avg', '9051.386547', '9199.245253')]; offset-30v-t0.csv: 18 vs 17 linhas
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (18 linhas) mvp-results.csv linha 1: [('Tb_avg', '9281.158345', '9265.669886'), ('Cb_avg', '0.923917', '1.001458'), ('Tt_avg', '9144.214392', '9051.386547')]; offset-30v-t0.csv: 17 vs 18 linhas
+
+== OFFSET n=35 duracao=20000s semente=3
+   execucoes (rc, segundos): base-a=0,28s, base-b=0,28s, atual-a=0,27s, atual-b=0,29s
+   baseline a x b (pre-existente?): DIVERGENTE (21 linhas) mvp-results.csv linha 1: [('Tb_avg', '7419.850429', '6883.277106'), ('Cb_avg', '0.974338', '0.898334'), ('Tt_avg', '7317.930443', '6923.182897')]; offset-35v-t0.csv linha 7: [('Time', '12648.909578800472', '12872.559932490825'), ('NodeID', '8', '26'), ('BlockFinalizationTime', '6241.426133990546', '6465.076487680899')]
+   atual    a x b                : DIVERGENTE (21 linhas) mvp-results.csv linha 1: [('Tb_avg', '7419.850429', '7217.727515'), ('Cb_avg', '0.973591', '0.844951'), ('Tt_avg', '7317.930443', '7155.644087')]; offset-35v-t0.csv: 20 vs 19 linhas
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (21 linhas) mvp-results.csv linha 1: [('Cb_avg', '0.974338', '0.973591')]; offset-35v-t0.csv linha 15: [('BlockSize', '1799678', '1799478'), ('TrafficUntilFinalization', '1799678', '1799478'), ('Cb_AvgTraffic_MB', '0.850482432047526', '0.8504697163899739')]
+
+== OFFSET n=40 duracao=20000s semente=3
+   execucoes (rc, segundos): base-a=0,29s, base-b=0,29s, atual-a=0,30s, atual-b=0,29s
+   baseline a x b (pre-existente?): DIVERGENTE (21 linhas) mvp-results.csv linha 1: [('Cb_avg', '0.896308', '0.896200')]; offset-40v-t0.csv linha 12: [('BlockSize', '1784087', '1779640'), ('TrafficUntilFinalization', '1784087', '1779640'), ('Cb_AvgTraffic_MB', '0.6461213429768881', '0.6457679271697998')]
+   atual    a x b                : DIVERGENTE (20 linhas) mvp-results.csv linha 1: [('Tb_avg', '7686.757002', '7663.266859'), ('Cb_avg', '0.919435', '0.896159'), ('Tt_avg', '7470.740141', '7455.590256')]; offset-40v-t0.csv: 19 vs 20 linhas
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (21 linhas) mvp-results.csv linha 1: [('Tb_avg', '7663.266859', '7686.757002'), ('Cb_avg', '0.896308', '0.919435'), ('Tt_avg', '7455.590256', '7470.740141')]; offset-40v-t0.csv: 20 vs 19 linhas

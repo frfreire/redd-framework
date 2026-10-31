@@ -1,0 +1,112 @@
+AVISO      JB-003 (criterio 2) src/main/java/jabs/config/ByzantineConfig.java:118  Random derivado de variavel: reprodutivel, mas fora do RandomnessEngine. Prefira o engine.
+           > Random random = new Random(randomSeed);
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/CasperFFG.java:22  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<CasperFFGLink<B>, HashMap<Node, CasperFFGVote<B>>> votes = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/CasperFFG.java:93  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > HashMap<Node, CasperFFGVote<B>> vm = votes.get(link);
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/CasperFFG.java:179  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > for (Map.Entry<CasperFFGLink<B>, HashMap<Node, CasperFFGVote<B>>> e : votes.entrySet()) {
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/CasperFFG.java:182  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > HashMap<Node, CasperFFGVote<B>> vm = e.getValue();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/CasperFFG.java:244  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > for (Map.Entry<CasperFFGLink<B>, HashMap<Node, CasperFFGVote<B>>> e : votes.entrySet()) {
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/CasperFFG.java:247  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > HashMap<Node, CasperFFGVote<B>> vm = e.getValue();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/DAGsper.java:25  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<Integer, HashMap<Node, B>> fVotesInHeight = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/DAGsper.java:26  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<Integer, HashMap<Node, B>> jVotesInHeight = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/DAGsper.java:27  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, HashSet<Node>> fVotesForBlock = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/DAGsper.java:28  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, HashSet<Node>> jVotesForBlock = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/DAGsper.java:197  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > public void addVote(List<B> blocks, Node voter, HashMap<Integer, HashMap<Node, B>> heightVotes,
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/DAGsper.java:198  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > HashMap<B, HashSet<Node>> blockVotes, HashMap<Integer, HashSet<B>> blocksInHeight) {
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:21  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, HashMap<Node, Vote>> prepareVotes = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:22  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, HashMap<Node, Vote>> commitVotes = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:35  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, LinkedHashMap<Node, PBFTBlockVote<B>>> pendingPrepares = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:36  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, LinkedHashMap<Node, PBFTBlockVote<B>>> pendingCommits = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:143  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > LinkedHashMap<Node, PBFTBlockVote<B>> p = pendingPrepares.get(block);
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:144  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > LinkedHashMap<Node, PBFTBlockVote<B>> c = pendingCommits.get(block);
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:206  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > LinkedHashMap<Node, PBFTBlockVote<B>> early = pendingPrepares.remove(block);
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:243  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > LinkedHashMap<Node, PBFTBlockVote<B>> early = pendingCommits.remove(block);
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/PBFT.java:270  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private void checkVotes(PBFTBlockVote<B> vote, B block, HashMap<B, HashMap<Node, Vote>> votes, HashSet<B> blocks, PBFTPhase nextStep) {
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/Snow.java:55  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<B, HashMap<Node, Query>> commitQueries = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/Snow.java:56  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final static HashSet<Node> committedNodes = new HashSet<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/Snow.java:129  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private void checkQueries(SnowBlockQuery<B> query, B block, HashMap<B, HashMap<Node, Query>> queries, Snow.SnowPhase nextStep) {
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/TangleIOTA.java:16  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > protected final HashMap<TangleBlock, Double> blockAccWeights = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/TangleIOTA.java:25  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<TangleBlock, Long> blockTraffic = new HashMap<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/TangleIOTA.java:27  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashSet<TangleBlock> trafficClosed = new HashSet<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/consensus/algorithm/TangleIOTA.java:50  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > HashSet<TangleBlock> ancestors = localBlockDAG.getAllAncestors(block);
+AVISO      JB-004 (criterio 2) src/main/java/jabs/ledgerdata/DoubleSpendTracker.java:235  relogio real dentro da simulacao: nao deterministico. So aceitavel para medir tempo de parede.
+           > this.timestamp = System.currentTimeMillis();
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/AbstractCSVLogger.java:184  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+AVISO      JB-012 (criterio 2) src/main/java/jabs/log/BlockPropagationDelayLogger.java:19  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > private final HashMap<Block, HashSet<Node>> ReceivedBy = new HashMap<>();
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:226  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:250  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:274  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:275  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:289  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:292  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:304  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:305  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java:311  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+AVISO      JB-012 (criterio 2) src/main/java/jabs/network/node/nodes/PeerBlockchainNode.java:30  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > protected final HashSet<Vote> alreadySeenVotes = new HashSet<>();
+AVISO      JB-012 (criterio 2) src/main/java/jabs/network/node/nodes/PeerDLTNode.java:23  colecao hash com chave sem equals/hashCode: ordem depende do endereco do objeto. Nao itere para decidir comportamento.
+           > protected final HashSet<Vote> alreadySeenVotes = new HashSet<>();
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/scenario/AbstractScenario.java:113  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+AVISO      JB-004 (criterio 2) src/main/java/jabs/scenario/AbstractScenario.java:119  relogio real dentro da simulacao: nao deterministico. So aceitavel para medir tempo de parede.
+           > long simulationStartingTime = System.nanoTime();
+AVISO      JB-004 (criterio 2) src/main/java/jabs/scenario/AbstractScenario.java:130  relogio real dentro da simulacao: nao deterministico. So aceitavel para medir tempo de parede.
+           > if (System.nanoTime() - lastProgressMessageTime > this.progressMessageIntervals) {
+AVISO      JB-004 (criterio 2) src/main/java/jabs/scenario/AbstractScenario.java:131  relogio real dentro da simulacao: nao deterministico. So aceitavel para medir tempo de parede.
+           > double realTime = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - simulationStartingTime);
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/scenario/AbstractScenario.java:139  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+AVISO      JB-004 (criterio 2) src/main/java/jabs/scenario/AbstractScenario.java:149  relogio real dentro da simulacao: nao deterministico. So aceitavel para medir tempo de parede.
+           > lastProgressMessageTime = System.nanoTime();
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/scenario/ArqReddVotingScenario.java:102  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > try { node.crash(); } catch (Exception ignored) {}
+AVISO      JB-003 (criterio 2) src/main/java/jabs/scenario/BitcoinGlobalNetworkScenario.java:129  Random derivado de variavel: reprodutivel, mas fora do RandomnessEngine. Prefira o engine.
+           > java.util.Random rnd = new java.util.Random(this.injectedSeed);
+AVISO      JB-003 (criterio 2) src/main/java/jabs/scenario/CasperEthereumNetworkScenario.java:78  Random derivado de variavel: reprodutivel, mas fora do RandomnessEngine. Prefira o engine.
+           > java.util.Random rnd = new java.util.Random(this.injectedSeed);
+AVISO      JB-003 (criterio 2) src/main/java/jabs/scenario/HybridNetworkScenario.java:104  Random derivado de variavel: reprodutivel, mas fora do RandomnessEngine. Prefira o engine.
+           > this.privacyRandom = new Random(seed + 1000); // Different seed for privacy decisions
+AVISO      JB-003 (criterio 2) src/main/java/jabs/scenario/HybridNetworkScenario.java:133  Random derivado de variavel: reprodutivel, mas fora do RandomnessEngine. Prefira o engine.
+           > this.privacyRandom = new Random(seed + 1000);
+BLOQUEANTE JB-009 (criterio 4) src/main/java/jabs/simulator/event/CasperVoteDeliveryEvent.java:26  catch vazio de Exception: engole falha de hook bizantino ou de medicao.
+           > } catch (Exception ignored) {}
+
+225 arquivo(s); 14 bloqueante(s), 41 aviso(s)

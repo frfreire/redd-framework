@@ -1,0 +1,21 @@
+# crypto-config-marketplace.yaml
+#
+# Material criptografico (MSP + TLS) da organizacao MarketplaceMSP
+# (compradora/aposentadora de creditos de carbono), dominio
+# marketplace.redd.network, consumido por scripts/rede/gerar-cripto.sh
+# via `cryptogen generate`.
+#
+# Gera: organizations/peerOrganizations/marketplace.redd.network/
+#   - peers/peer0.marketplace.redd.network/{msp,tls}
+#   - users/Admin@marketplace.redd.network/{msp,tls}
+#   - users/User1@marketplace.redd.network/{msp,tls}
+#   - msp/ (MSP da organizacao, usado como MarketplaceOrg.MSPDir no configtx.yaml)
+
+PeerOrgs:
+  - Name: Marketplace
+    Domain: marketplace.redd.network
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

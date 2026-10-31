@@ -1,0 +1,20 @@
+# crypto-config-developer.yaml
+#
+# Material criptografico (MSP + TLS) da organizacao DeveloperMSP
+# (proponente do projeto REDD+), dominio developer.redd.network,
+# consumido por scripts/rede/gerar-cripto.sh via `cryptogen generate`.
+#
+# Gera: organizations/peerOrganizations/developer.redd.network/
+#   - peers/peer0.developer.redd.network/{msp,tls}
+#   - users/Admin@developer.redd.network/{msp,tls}
+#   - users/User1@developer.redd.network/{msp,tls}
+#   - msp/ (MSP da organizacao, usado como DeveloperOrg.MSPDir no configtx.yaml)
+
+PeerOrgs:
+  - Name: Developer
+    Domain: developer.redd.network
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

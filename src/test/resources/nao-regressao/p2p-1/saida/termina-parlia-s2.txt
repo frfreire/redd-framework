@@ -1,0 +1,19 @@
+semente=2 timeout=900s por execucao; 12 execucoes em paralelo
+
+== AMBIFY n=10 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (6 linhas) 
+   atual    a x b                : IDENTICO (6 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (6 linhas) 
+
+== AMBIFY n=12 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (10 linhas) 
+   atual    a x b                : IDENTICO (10 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (10 linhas) 
+
+== AMBIFY n=30 duracao=300s semente=2
+   execucoes (rc, segundos): base-a=0,12s, base-b=0,15s, atual-a=0,9s, atual-b=0,13s
+   baseline a x b (pre-existente?): IDENTICO (9 linhas) 
+   atual    a x b                : IDENTICO (9 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (9 linhas) 

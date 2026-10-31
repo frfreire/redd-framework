@@ -1,0 +1,216 @@
+N1-diagnostico-divergencia - O hash de identidade explica a divergencia base x atual?
+=====================================================================================
+(loop2-jabs-codigo; baseline 325f4e3db42864a2aa7e1e92e6bf22a706759436 em /tmp/opencode/base-325f4e3, sem mvn la;
+ atual = raiz do repositorio com a N1 nao commitada. Nenhum codigo de producao foi alterado neste diagnostico.)
+Todos os numeros abaixo foram lidos dos arquivos de diagnostico-hash/ (resumo-*.txt) e conferidos linha a linha
+nesta finalizacao; nada foi re-executado nos experimentos de diagnostico (so a bateria hc2 da secao 6 foi rodada
+agora, e ela esta no README.txt).
+
+CONCLUSAO: CONFIRMADA (para o EFEITO, nos casos testados; o MECANISMO - qual colecao - NAO foi localizado).
+  Enunciado do que foi confirmado: nos protocolos Casper (MCO2), Parlia (AMBIFY) e Nakamoto (OFFSET) a saida da
+  simulacao depende de quantas vezes System.identityHashCode foi chamado na thread principal antes de a simulacao
+  comecar. O codigo novo da N1 (executado antes da simulacao) desloca essa contagem; o deslocamento, sozinho,
+  basta para produzir a divergencia base x atual de 12 dos 18 casos de scripts/jabs/nao_regressao.py (modo
+  legacy). Compensado o deslocamento, ou com o hash de identidade constante, base e atual coincidem.
+  Isto e sensibilidade PRE-EXISTENTE da baseline (a propria baseline muda quando se insere codigo irrelevante
+  antes dela), nao evidencia de que a logica dos protocolos mudou. Ver secao 7 (o que NAO se prova).
+
+1. HIPOTESE
+  H: a divergencia base x atual da N1 (README.txt, "Nao regressao contra 325f4e3": 12 de 18 DIVERGENTE; ARQ e
+  MCO2:10:60 IDENTICO) nao vem de mudanca de logica, e sim de HashSet/HashMap com chaves sem equals/hashCode
+  (hash = identidade do objeto; ADR-0006 debitos 2 e 5; ver tambem o skill, "Armadilhas da base"). Se a ordem
+  de iteracao dessas colecoes entra na simulacao, a saida passa a depender de quantos hashes de identidade a
+  thread principal ja consumiu (o hash de identidade padrao do HotSpot sai de um gerador por thread, em
+  sequencia). O codigo novo da N1 antes da simulacao (CliArgs, NetworkSizing, Set.of, linhas de log) consome
+  hashes e desloca a sequencia.
+  Previsoes que H implica (P1-P6). Nota de honestidade: esta lista foi redigida na finalizacao, com os resultados
+  ja em maos; o registro da ordem em que cada passo foi decidido esta so em comandos.txt e nos nomes dos
+  resumos, nao num documento anterior. Trate P1-P6 como as consequencias testaveis de H, nao como pre-registro.
+   P1. Na PROPRIA baseline, chamar identityHashCode k vezes antes do MVPComparison muda a saida, para k diferentes.
+   P2. O mesmo no atual.
+   P3. A mesma configuracao repetida (k fixo) da saida identica (determinismo por JVM).
+   P4. Existe k tal que ATUAL(direto) == BASE(wrapper k) - o atual e a baseline "deslocada".
+   P5. Com hash de identidade constante (-XX:hashCode=2) o deslocamento nao importa: base == atual.
+   P6. ARQ (PBFT) nao e afetado (nao itera tal colecao).
+
+2. METODO
+  2.1 Wrapper jabs.example.HashPerturbado (src/test/java/jabs/example/HashPerturbado.java; NAO e teste JUnit):
+      main(K, args...) chama System.identityHashCode(new Object()) K vezes na thread principal (acumula por XOR
+      e so le o acumulador para o JIT nao descartar a chamada) e DELEGA a MVPComparison.main(args...) com os
+      argumentos restantes. A MVPComparison vem da primeira entrada do classpath que a contem
+      (RAIZ/target/classes, RAIZ = baseline ou repositorio); a classe auxiliar vem de target/test-classes do
+      repositorio e e a MESMA nos dois lados. Wrapper k=0 NAO e igual a "direto" (sem wrapper): so carregar a
+      classe auxiliar e chamar main ja desloca a sequencia (resumo-direto.txt; ver 3.0).
+  2.2 Script src/test/resources/nao-regressao/n1-conversao-n/rodar-hash.sh: UMA JVM de simulacao por execucao,
+      sequencial; argumentos LADO PROTO N DUR SEMENTE K [TIMEOUT]; JVMFLAGS opcional (ex.:
+      "-XX:+UnlockExperimentalVMOptions -XX:hashCode=2"); --trials=1, --duration, --seed, --output;
+      normaliza os CSV com jabs.network.p2p.EvidenciaHashes (= nao_regressao.ler: sem linhas '#', sem colunas
+      com 'hash'). Orquestracao em lote: src/test/java/jabs/network/p2p/HashDiagnosticoRodar.java (passos
+      base-k, atual-k, busca, flags, matriz, todos, sonda). Comandos exatos: diagnostico-hash/comandos.txt.
+  2.3 Sonda jabs.example.SondaHash (src/test/java/jabs/example/SondaHash.java; NAO e teste):
+      modo "ref N" imprime os N primeiros identityHashCode(new Object()) de uma JVM nova (sequencia
+      deterministica da thread principal, 300000 valores); modo "run K args..." chama K vezes, roda a
+      MVPComparison e imprime SONDA=<proximo valor da sequencia>. Procurar o valor na sequencia de referencia da
+      a POSICAO (0-based) = quantos hashes de identidade a thread principal consumiu ate o fim (incluindo a
+      classe auxiliar, igual nos dois lados).
+  Casos: AMBIFY:10:60 s1, MCO2:50:600 s2, OFFSET:40:20000 s1, ARQ:7:60 s1 (passos k e busca); depois todos os 6
+  casos x sementes 1,2,3 (passo "todos"). Os k testados nos passos base-k/atual-k: 0, 1, 2, 5, 10, 50, 200;
+  no passo "matriz": k = 0..200 nos dois lados (201 valores, AMBIFY/OFFSET/MCO2).
+
+3. RESULTADOS POR CASO
+ 3.0 "Direto" (sem wrapper) x wrapper k=0 (resumo-direto.txt)
+   caso             base direto x atual direto   base direto x base wrapper k=0
+   AMBIFY:10:60 s1  DIVERGENTE                   DIVERGENTE
+   MCO2:50:600 s2   DIVERGENTE                   DIVERGENTE
+   OFFSET:40:20000 s1 DIVERGENTE                 DIVERGENTE
+   ARQ:7:60 s1      IDENTICO                     IDENTICO
+   => a baseline SOZINHA muda ao se inserir o wrapper (que nao altera nada da simulacao): P1 em sua forma mais fraca.
+
+ 3.1 Tabela por caso: k variando na BASE, k variando no ATUAL, repeticao de k=0 (resumo-base-k.txt, resumo-atual-k.txt)
+   Legenda: "= k0" saida igual a do k=0 do mesmo lado; "!= k0" diferente. k testados: 1, 2, 5, 10, 50, 200.
+   caso             lado   rep. de k=0   k=1   k=2   k=5   k=10  k=50  k=200
+   AMBIFY:10:60 s1  BASE   IDENTICO      !=    !=    !=    !=    !=    !=
+   AMBIFY:10:60 s1  ATUAL  IDENTICO      !=    !=    !=    !=    !=    !=
+   MCO2:50:600 s2   BASE   IDENTICO      !=    !=    !=    !=    !=    !=   (k=50 e k=200: 0 linhas, iguais entre si)
+   MCO2:50:600 s2   ATUAL  IDENTICO      !=    !=    !=    !=    !=    !=   (k=1: 0 linhas)
+   OFFSET:40:20000 s1 BASE IDENTICO      !=    !=    !=    !=    !=    !=
+   OFFSET:40:20000 s1 ATUAL IDENTICO     !=    !=    !=    !=    !=    !=
+   ARQ:7:60 s1      BASE   IDENTICO      =     =     =     =     =     =
+   ARQ:7:60 s1      ATUAL  IDENTICO      =     =     =     =     =     =
+   Leitura: P1, P2 e P3 observadas nos tres protocolos sensiveis; P6 observada (ARQ invariante a k ate 200,
+   nos dois lados). Em MCO2:50 alguns k fazem o CSV por bloco ficar com 0 linhas (nenhum bloco finalizado em
+   600 s): a ordem oculta muda ate SE ha dado, nao so os valores.
+   Em MCO2:10:60 a saida e vazia (0 blocos) com qualquer ordem; esse caso NAO discrimina nada (vacuamente IDENTICO).
+
+ 3.2 Matriz k=0..200 nos dois lados (resumo-matriz.txt; a busca de um k no ATUAL que reproduza a BASE)
+   AMBIFY:10:60 s1:    saidas distintas BASE 201/201, ATUAL 201/201; pares iguais 189; contagem por d=kb-ka {12=189}
+                       (BASE k=12+j == ATUAL k=j, para todo j em 0..188; 189 = 201-12).
+   OFFSET:40:20000 s1: saidas distintas 201/201 nos dois lados; pares iguais 193; contagem {8=193}
+                       (BASE k=8+j == ATUAL k=j; 193 = 201-8).
+   MCO2:50:600 s2:     saidas distintas BASE 186/201, ATUAL 183/201 (colisoes entre saidas vazias); pares iguais 477;
+                       d=12 ocorre 189 vezes (o mesmo padrao) e os demais pares (d variados, 1-3 ocorrencias cada)
+                       sao colisoes entre saidas pequenas/vazias, nao um segundo deslocamento.
+   Leitura: o ATUAL e a BASE com 12 hashes a mais consumidos antes da simulacao (MCO2 e AMBIFY) ou 8 (OFFSET);
+   toda a saida do atual, em 189 de 189 e 193 de 193 valores de k comparaveis, e a da base deslocada. P4 em sua
+   forma forte: a relacao e uma translacao exata da sequencia, sem excecao em AMBIFY e OFFSET.
+   Como o ATUAL consome MAIS, nenhum k >= 0 do atual reproduz a base: resumo-busca.txt registra, para os 3 casos
+   e para os 2 alvos (BASE wrapper k=0 e BASE direto), "nenhum k em 0..200 do ATUAL (wrapper) reproduz o alvo"
+   (6 buscas, 6 vezes o mesmo resultado). Isto e esperado pela matriz (seria preciso k negativo) e NAO refuta H.
+
+ 3.3 O achado de reposicao: ATUAL direto == BASE com wrapper k=11 (MCO2, AMBIFY) / k=7 (OFFSET)
+   (resumo-todos.txt; passo "todos": ATUAL direto = o que o nao_regressao.py compara; BASE com wrapper k fixo)
+   Conferido linha a linha em resumo-todos.txt (18 linhas, rc 0/0/0 em todas):
+   caso              sem  BASE x ATUAL(direto)  ATUAL(direto) x BASE(wrapper k)
+   MCO2   n=10  d=60   s1  IDENTICO             IDENTICO (k=11)   [vazio: nao discrimina]
+   MCO2   n=10  d=60   s2  IDENTICO             IDENTICO (k=11)   [vazio: nao discrimina]
+   MCO2   n=10  d=60   s3  IDENTICO             IDENTICO (k=11)   [vazio: nao discrimina]
+   MCO2   n=50  d=600  s1  DIVERGENTE           IDENTICO (k=11)
+   MCO2   n=50  d=600  s2  DIVERGENTE           IDENTICO (k=11)
+   MCO2   n=50  d=600  s3  DIVERGENTE           IDENTICO (k=11)
+   AMBIFY n=10  d=60   s1  DIVERGENTE           IDENTICO (k=11)
+   AMBIFY n=10  d=60   s2  DIVERGENTE           IDENTICO (k=11)
+   AMBIFY n=10  d=60   s3  DIVERGENTE           IDENTICO (k=11)
+   AMBIFY n=12  d=60   s1  DIVERGENTE           IDENTICO (k=11)
+   AMBIFY n=12  d=60   s2  DIVERGENTE           IDENTICO (k=11)
+   AMBIFY n=12  d=60   s3  DIVERGENTE           IDENTICO (k=11)
+   OFFSET n=40  d=20000 s1 DIVERGENTE           IDENTICO (k=7)
+   OFFSET n=40  d=20000 s2 DIVERGENTE           IDENTICO (k=7)
+   OFFSET n=40  d=20000 s3 DIVERGENTE           IDENTICO (k=7)
+   ARQ    n=7   d=60   s1  IDENTICO             IDENTICO (k=11)   [ARQ e invariante a k: nao discrimina]
+   ARQ    n=7   d=60   s2  IDENTICO             IDENTICO (k=11)   [idem]
+   ARQ    n=7   d=60   s3  IDENTICO             IDENTICO (k=11)   [idem]
+   Resultado: nas 12 linhas em que base x atual(direto) diverge, a reposicao reproduz o atual EXATAMENTE em 12 de
+   12 (MCO2:50 x3, AMBIFY:10 x3, AMBIFY:12 x3, OFFSET:40 x3). As 6 linhas restantes (MCO2:10 e ARQ) sao IDENTICO
+   com ou sem reposicao e NAO sao evidencia a favor nem contra.
+   Por que k=11 e nao 12: a matriz e wrapper x wrapper (d=12); o "direto" nao tem a chamada ao wrapper, que
+   consome 1 hash (3.0 mostra que wrapper k=0 != direto), logo direto == wrapper em k=-1, e base k = 12-1 = 11
+   (OFFSET: 8-1 = 7). Esta aritmetica e inferencia consistente com 3.0 e 3.3; o consumo de exatamente 1 hash pelo
+   wrapper nao foi medido isoladamente.
+   Fora da amostra: o k foi determinado pela matriz em AMBIFY:10 s1, MCO2:50 s2 e OFFSET:40 s1 (3 casos).
+   As outras 9 linhas discriminantes (sementes e n diferentes: MCO2:50 s1,s3; AMBIFY:10 s2,s3; AMBIFY:12 s1-3;
+   OFFSET s2,s3) usaram o mesmo k sem reajuste e tambem deram IDENTICO: previsao confirmada fora da amostra.
+
+4. HASH FIXO (-XX:hashCode=2) E hashCode=3
+ 4.1 hashCode=2 (resumo-flags.txt, resumo-flags2.txt; MVPComparison direto, sem wrapper)
+   AMBIFY:10:60 s1:   base x base IDENTICO; atual x atual IDENTICO; BASE x ATUAL IDENTICO
+                      (ambify-10v-t0.csv cac6da299504, 9 linhas; mvp-results.csv 13620b4f8768).
+   MCO2:50:600 s1:    BASE x ATUAL IDENTICO (mco2-50v-t0.csv edce8fbd6bbe, 14 linhas; mvp-results 34febd697f9a).
+   OFFSET:40:20000 s1: BASE x ATUAL IDENTICO (offset-40v-t0.csv 46738f4dbcbf, 25 linhas; mvp-results 413c1550ac09);
+                      duracao de parede ~51 s (base) e ~48 s (atual) contra ~3 s sem a flag.
+   Os mesmos hashes aparecem de forma independente nas 18 execucoes de hashes-hc2.txt (README.txt, "Nao regressao
+   com hashCode=2"): reproducao por outro caminho (nao_regressao.py).
+ 4.2 hashCode=3 (resumo-flags.txt, resumo-hc3-desloc.txt; AMBIFY:10:60 s1) - DIVERGE, conferido:
+   base x base IDENTICO; atual x atual IDENTICO; BASE x ATUAL DIVERGENTE (ambify-10v-t0.csv linha 2, BlockSize
+   2826 vs 964). Ou seja: o modo 3 NAO remove a divergencia; cada lado e deterministico por si.
+   Varredura do deslocamento (resumo-hc3-desloc.txt): BASE com wrapper k=0..60 contra ATUAL direto (hc3):
+   EXATAMENTE um acerto, k=11 ("<== IGUAL ao ATUAL direto"), os outros 60 DIVERGENTE. O mesmo k=11 do achado 3.3,
+   agora sob outro modo de hash. Observado: o modo 3 diverge e k=11 o compensa. Isto e compativel com H (o modo 3
+   tambem depende da contagem de chamadas), mas foi OBSERVADO, nao previsto antes. (Nao verifiquei a semantica
+   interna do modo 3 desta JVM; so o efeito.) Um unico caso testado em hc3.
+ 4.3 Leitura conjunta: com hash CONSTANTE a contagem de chamadas nao carrega informacao e base == atual; com
+   hashes que dependem da contagem, base != atual e um deslocamento de 11/7 chamadas o corrige. Diferenca
+   (hc2 iguais, hc3 diferentes) e o que H prediz (P5), mas e um teste de uma so frente: ver secao 7.
+
+5. SONDA (resumo-sonda.txt): posicao na sequencia de identityHashCode da thread principal ao fim da execucao
+   (sequencia de referencia: 300000 valores; primeiros 5: 1118140819, 1975012498, 1808253012, 589431969, 1252169911)
+   caso             BASE posicao   ATUAL posicao   atual - base
+   AMBIFY:10:60     1296           1411            +115
+   MCO2:50:600      2812           2906            +94
+   OFFSET:40:20000  12371          12223           -148
+   ARQ:7:60         23124          23132           +8
+   Leitura cuidadosa:
+    * A thread principal consome de centenas a dezenas de milhares de hashes de identidade por execucao: o
+      consumo e grande o bastante para que a ordem importe, e ocorre na thread que roda a simulacao.
+    * ARQ tem saida identica nos dois lados (3.1, 3.3), logo mesma trajetoria, e o atual consome +8 ao fim.
+      Isso coincide numericamente com d=8 da matriz de OFFSET; pode ser coincidencia e NAO uso o +8 como prova.
+      Em MCO2/AMBIFY a matriz da d=12 (4 a mais; origem nao investigada: pode ser codigo de dimensionamento/log
+      que so esses protocolos executam, mas NAO foi verificado).
+    * Em AMBIFY/MCO2/OFFSET a diferenca ao FIM (+115, +94, -148) NAO e o deslocamento inicial: com ordem de iteracao
+      diferente a simulacao toma outro caminho e consome outra quantidade de hashes. Nao deve ser lida como d.
+    * A sonda mede a thread principal. Outras threads (ex.: csv-flusher) tem seus proprios geradores.
+
+6. REPRODUCAO DAS CLASSES AUXILIARES (mantidas em src/test; NAO sao testes JUnit; sem @Test)
+   src/test/java/jabs/example/HashPerturbado.java, SondaHash.java, NetworkSizingDiagnostico.java (da secao 1.3
+   do README),  src/test/java/jabs/network/p2p/HashDiagnosticoRodar.java, EvidenciaN1Rodar.java,
+   EvidenciaN1Hc2Rodar.java, EvidenciaHashes.java (utilitario de hash normalizado).
+   rodar-hash.sh, diagnostico-hash/resumo-*.txt, diagnostico-hash/comandos.txt (1,9 MB de comandos de todas as
+   execucoes). Brutos: /tmp/opencode/n1-hash/ (fora do repositorio).
+
+7. O QUE NAO SE PROVA
+   a) O mecanismo exato. Nao foi localizada a colecao (HashSet/HashMap/ConcurrentHashMap/Set.of...) cuja ordem de
+      iteracao entra na simulacao, nem em qual protocolo/classe. Provou-se o EFEITO (saida = f(deslocamento da
+      sequencia de hash)), nao o ponto do codigo. A hipotese do README ("HashMap/HashSet com chaves sem
+      equals/hashCode") e compativel com tudo, mas outras fontes de dependencia de identidade
+      (System.identityHashCode explicito, Object.hashCode padrao em chaves de Map, toString padrao em ordenacao)
+      produzem o mesmo sintoma e nao foram separadas.
+   b) Que a hipotese vale para OUTROS protocolos alem dos testados. Testados: PBFT/ARQ (imune), Casper/MCO2,
+      Parlia/AMBIFY, Nakamoto/OFFSET. NAO testados com este metodo: HotStuff, Tendermint, TREE, EARTH, DAGSPER,
+      POS/POSA/VOTING do ByzantineSweep, nem o caminho --n-semantics=nodes.
+   c) Que a baseline e "correta". A sensibilidade e da baseline e continua no atual. Resultados de MCO2/AMBIFY/
+      OFFSET dependem de uma ordem arbitraria que nenhum parametro do experimento declara (semente, versao,
+      granularidade nao a cobrem). Isto afeta a regra "medido, nao estimado" (AGENTS.md, 6) e merece ADR/decisao
+      humana; nao decidi aqui.
+   d) Que hashCode=2 e "melhor" ou "pior" para a simulacao. O modo constante muda a ORDEM de iteracao (uma ordem
+      arbitraria diferente) e a amostra produzida nao e comparavel com a do hash padrao. A duracao de OFFSET subiu de
+      ~3 s para ~50 s (1 JVM) e ~83-92 s (4 JVMs paralelas do nao_regressao.py): NAO afirmo que hashCode=2
+      "acelera" ou "desacelera" a simulacao em geral nem a causa; so registro o tempo observado em 3 execucoes
+      OFFSET por lado. Nao se sabe se a lentidao vem de colisoes em colecoes hash, de outro efeito do modo ou do
+      escalonamento.
+   e) Que base e atual sao semanticamente equivalentes para qualquer entrada. O IDENTICO com hash constante vale
+      para 6 casos x 3 sementes em modo legacy. MCO2:10:60 e vazio (0 blocos) e nao discrimina; ARQ e imune. Os
+      casos discriminantes sao 12. Nao cobre outros n, duracoes, protocolos, faltas bizantinas ou --n-semantics=nodes.
+   f) Que o deslocamento seja SO de contagem. A previsao k=11/7 acertou 12 de 12, mas o k veio de 3 casos e foi
+      reaplicado; pode haver k diferente em outros protocolos. Tambem nao se separou "numero de chamadas" de
+      "qual objeto recebe qual hash" (e a mesma coisa para a sequencia por thread, mas nao foi testado com
+      threads auxiliares).
+   g) hashCode=3: um so caso (AMBIFY:10:60 s1) e so a varredura k=0..60. O comportamento do modo 3 nesta JVM nao foi
+      lido na documentacao; a leitura dele acima e so empirica.
+   h) A causa do +4 em MCO2/AMBIFY frente a OFFSET/ARQ (12 vs 8) e a do consumo de 1 hash pelo wrapper: inferidas,
+      nao medidas.
+
+8. CONCLUSAO (rotulo): CONFIRMADA
+   Previsoes P1 a P6 observadas: P1/P2/P3 (secao 3.1), P4 (3.2 e 3.3, 12/12 e 189/189, 193/193), P5 (4.1, 3 casos hc2;
+   18/18 em hashes-hc2.txt), P6 (3.1). Nenhuma previsao falhou. A parte "CONFIRMADA" restringe-se ao efeito e aos
+   tres protocolos sensiveis testados; o mecanismo exato e a extensao a outros protocolos continuam
+   ABERTOS (secao 7). Esta conclusao e do builder; NAO e aprovacao. O criterio 7 da N1 depende do veredito do
+   critic e, pela natureza do achado, de decisao humana sobre como declarar a sensibilidade a ordem de hash.

@@ -1,0 +1,19 @@
+semente=3 timeout=900s por execucao; 12 execucoes em paralelo
+
+== AMBIFY n=10 duracao=60s semente=3
+   execucoes (rc, segundos): base-a=0,2s, base-b=0,2s, atual-a=0,2s, atual-b=0,2s
+   baseline a x b (pre-existente?): IDENTICO (10 linhas) 
+   atual    a x b                : IDENTICO (10 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (10 linhas) 
+
+== AMBIFY n=12 duracao=60s semente=3
+   execucoes (rc, segundos): base-a=0,2s, base-b=0,2s, atual-a=0,2s, atual-b=0,2s
+   baseline a x b (pre-existente?): IDENTICO (7 linhas) 
+   atual    a x b                : IDENTICO (7 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (7 linhas) 
+
+== AMBIFY n=30 duracao=300s semente=3
+   execucoes (rc, segundos): base-a=0,11s, base-b=0,17s, atual-a=0,17s, atual-b=0,14s
+   baseline a x b (pre-existente?): DIVERGENTE (4 linhas) ambify-30v-t0.csv linha 3: [('BlockSize', '4660', '5449'), ('TrafficUntilFinalization', '9320', '10898'), ('Cb_AvgTraffic_MB', '0.0037215550740559897', '0.004223187764485677')]; mvp-results.csv linha 1: [('Cb_avg', '0.003722', '0.004223'), ('Tt_avg', '160.791828', '147.707769')]
+   atual    a x b                : DIVERGENTE (4 linhas) ambify-30v-t0.csv linha 3: [('BlockSize', '6081', '4660'), ('TrafficUntilFinalization', '18243', '9320'), ('Cb_AvgTraffic_MB', '0.0065581003824869795', '0.0037215550740559897')]; mvp-results.csv linha 1: [('Cb_avg', '0.006558', '0.003722'), ('Tt_avg', '143.564567', '160.791828')]
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (4 linhas) ambify-30v-t0.csv linha 3: [('BlockSize', '4660', '6081'), ('TrafficUntilFinalization', '9320', '18243'), ('Cb_AvgTraffic_MB', '0.0037215550740559897', '0.0065581003824869795')]; mvp-results.csv linha 1: [('Cb_avg', '0.003722', '0.006558'), ('Tt_avg', '160.791828', '143.564567')]

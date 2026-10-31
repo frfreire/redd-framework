@@ -1,0 +1,21 @@
+# baseline 325f4e3db42864a2aa7e1e92e6bf22a706759436
+# BASE=/tmp/opencode/base-325f4e3
+# modo legacy (sem --n-semantics)
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos ARQ:7:60 --semente 1 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/ARQ_7_60/s1
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos MCO2:10:60 --semente 1 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/MCO2_10_60/s1
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos MCO2:50:600 --semente 1 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/MCO2_50_600/s1
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos AMBIFY:10:60 --semente 1 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/AMBIFY_10_60/s1
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos AMBIFY:12:60 --semente 1 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/AMBIFY_12_60/s1
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos OFFSET:40:20000 --semente 1 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/OFFSET_40_20000/s1
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos ARQ:7:60 --semente 2 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/ARQ_7_60/s2
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos MCO2:10:60 --semente 2 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/MCO2_10_60/s2
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos MCO2:50:600 --semente 2 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/MCO2_50_600/s2
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos AMBIFY:10:60 --semente 2 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/AMBIFY_10_60/s2
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos AMBIFY:12:60 --semente 2 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/AMBIFY_12_60/s2
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos OFFSET:40:20000 --semente 2 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/OFFSET_40_20000/s2
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos ARQ:7:60 --semente 3 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/ARQ_7_60/s3
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos MCO2:10:60 --semente 3 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/MCO2_10_60/s3
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos MCO2:50:600 --semente 3 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/MCO2_50_600/s3
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos AMBIFY:10:60 --semente 3 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/AMBIFY_10_60/s3
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos AMBIFY:12:60 --semente 3 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/AMBIFY_12_60/s3
+python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/base-325f4e3 --atual . --casos OFFSET:40:20000 --semente 3 --timeout 900 --saida /tmp/opencode/n1-nr-r2/termina/OFFSET_40_20000/s3

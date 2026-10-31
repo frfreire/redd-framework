@@ -1,0 +1,9 @@
+semente=2 timeout=900s por execucao; 4 execucoes em paralelo
+
+== OFFSET n=40 duracao=20000s semente=2
+   execucoes (rc, segundos): base-a=0,4s, base-b=0,4s, atual-a=0,4s, atual-b=0,4s
+   baseline a x b (pre-existente?): IDENTICO (16 linhas) 
+   atual    a x b                : IDENTICO (18 linhas) 
+   baseline a x atual a (REGRESSAO?): DIVERGENTE (16 linhas) mvp-results.csv linha 1: [('Tb_avg', '11841.225711', '11162.545779'), ('Cb_avg', '0.655264', '0.709611'), ('Tt_avg', '11830.587251', '11014.421208')]; offset-40v-t0.csv: 15 vs 17 linhas
+exit=1
+tempo_total_s=4

@@ -1,0 +1,9 @@
+semente=2 timeout=900s por execucao; 4 execucoes em paralelo
+
+== MCO2 n=10 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,0s, base-b=0,0s, atual-a=0,0s, atual-b=0,0s
+   baseline a x b (pre-existente?): IDENTICO (1 linhas) 
+   atual    a x b                : IDENTICO (1 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (1 linhas) 
+exit=0
+tempo_total_s=0

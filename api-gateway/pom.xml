@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.4</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>br.com.redd</groupId>
+  <artifactId>api-gateway</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+  <name>api-gateway</name>
+  <description>
+    API REST que expoe o chaincode REDD+ (contrato RedContract, canal
+    redchannel) via Hyperledger Fabric Gateway SDK (fabric-gateway, gRPC),
+    nunca o SDK legado fabric-sdk-java.
+  </description>
+
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <fabric-gateway.version>1.12.1</fabric-gateway.version>
+    <grpc.version>1.83.1</grpc.version>
+    <protobuf.version>4.36.0</protobuf.version>
+    <springdoc.version>2.6.0</springdoc.version>
+  </properties>
+
+  <!-- Alinha as versoes de grpc/protobuf as mesmas usadas pelo build oficial
+       do fabric-gateway (ver dependencyManagement do seu pom), pois os jars
+       de fabric-protos sao gerados com protoc 4.x (classe
+       com.google.protobuf.RuntimeVersion) e quebram em runtime
+       (NoClassDefFoundError) se o protobuf-java transitivo via grpc-protobuf
+       resolver para a serie 3.x. -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-bom</artifactId>
+        <version>${grpc.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-bom</artifactId>
+        <version>${protobuf.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- Hyperledger Fabric Gateway SDK (gRPC), NAO o fabric-sdk-java legado. -->
+    <dependency>
+      <groupId>org.hyperledger.fabric</groupId>
+      <artifactId>fabric-gateway</artifactId>
+      <version>${fabric-gateway.version}</version>
+    </dependency>
+
+    <!-- Implementacao de transporte gRPC (Netty) exigida em runtime pelo
+         fabric-gateway para abrir o ManagedChannel TLS com o peer. O SDK
+         fabric-gateway so depende de grpc-api/grpc-protobuf/grpc-stub
+         (sem implementacao concreta de transporte), entao esta dependencia
+         e obrigatoria para o cliente funcionar (ver erro em runtime "No
+         functional channel service provider found" sem ela). Versao
+         herdada do grpc-bom importado transitivamente pelo fabric-gateway. -->
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+    </dependency>
+
+    <!-- Swagger UI em /swagger-ui.html -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>api-gateway</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

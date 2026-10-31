@@ -1,0 +1,13 @@
+== hashCode=2  AMBIFY:10:60:1 (MVPComparison direto)
+   base-AMBIFY-10-60-s1-k-1-hc2 rc=0 0s  ambify-10v-t0.csv cac6da299504 linhas=9 | mvp-results.csv 13620b4f8768 linhas=1
+   base-AMBIFY-10-60-s1-k-1-hc2-rep rc=0 0s  ambify-10v-t0.csv cac6da299504 linhas=9 | mvp-results.csv 13620b4f8768 linhas=1  == IDENTICO a base-AMBIFY-10-60-s1-k-1-hc2   <- base x base
+   atual-AMBIFY-10-60-s1-k-1-hc2 rc=0 0s  ambify-10v-t0.csv cac6da299504 linhas=9 | mvp-results.csv 13620b4f8768 linhas=1
+   atual-AMBIFY-10-60-s1-k-1-hc2-rep rc=0 0s  ambify-10v-t0.csv cac6da299504 linhas=9 | mvp-results.csv 13620b4f8768 linhas=1  == IDENTICO a atual-AMBIFY-10-60-s1-k-1-hc2   <- atual x atual
+   BASE x ATUAL: IDENTICO
+== hashCode=3  AMBIFY:10:60:1 (MVPComparison direto)
+   base-AMBIFY-10-60-s1-k-1-hc3 rc=0 0s  ambify-10v-t0.csv ad0a79b36369 linhas=9 | mvp-results.csv 51a44f66707f linhas=1
+   base-AMBIFY-10-60-s1-k-1-hc3-rep rc=0 0s  ambify-10v-t0.csv ad0a79b36369 linhas=9 | mvp-results.csv 51a44f66707f linhas=1  == IDENTICO a base-AMBIFY-10-60-s1-k-1-hc3   <- base x base
+   atual-AMBIFY-10-60-s1-k-1-hc3 rc=0 0s  ambify-10v-t0.csv e03b09783876 linhas=9 | mvp-results.csv 4dc9cb941af8 linhas=1
+   atual-AMBIFY-10-60-s1-k-1-hc3-rep rc=0 0s  ambify-10v-t0.csv e03b09783876 linhas=9 | mvp-results.csv 4dc9cb941af8 linhas=1  == IDENTICO a atual-AMBIFY-10-60-s1-k-1-hc3   <- atual x atual
+   BASE x ATUAL: DIVERGENTE
+   ambify-10v-t0.csv linha 2 coluna BlockSize: 2826 vs 964
