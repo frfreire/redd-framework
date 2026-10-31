@@ -240,3 +240,5 @@ run-mvp-direct.ps1
 run-mvp-direct.sh 
 run-mvp.ps1 
 run-mvp.sh
+validate-metrics.ps1
+validate-metrics.sh
