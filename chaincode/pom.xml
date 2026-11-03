@@ -24,7 +24,7 @@
     <fabric-chaincode-shim.version>2.5.11</fabric-chaincode-shim.version>
     <fabric-protos.version>0.3.7</fabric-protos.version>
     <protobuf-java.version>4.36.2</protobuf-java.version>
-    <jackson.version>2.17.2</jackson.version>
+    <jackson.version>2.18.11</jackson.version>
     <junit.version>5.10.3</junit.version>
     <mockito.version>5.20.0</mockito.version>
 
