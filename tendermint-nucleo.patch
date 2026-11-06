@@ -1,0 +1,2194 @@
+From 68896d3c563e81b5b752076a54787765db71e653 Mon Sep 17 00:00:00 2001
+From: Fabricio Freire <briciofreire@gmail.com>
+Date: Fri, 6 Nov 2026 13:51:30 -0300
+Subject: [PATCH] Tendermint: nucleo puro do Algoritmo 1 e testes de
+ safety/liveness
+
+Nucleo de decisao de um validador honesto (Buchman, Kwon e Milosevic,
+arXiv:1807.04938, Algoritmo 1), sem rede nem simulador, no padrao do
+ReplicaCore do HotStuff: recebe proposta/voto/timeout e devolve acoes
+(difundir, agendar timeout, decidir). Adaptador JABS fica para a etapa
+seguinte.
+
+- Quorum de mais de 2/3 (floor(2n/3)+1); coincide com o 2f+1 de PBFT e
+  HotStuff so quando n = 3f+1 (divergencia documentada e testada).
+- Equivocacao guardada e contada por valor, como no artigo: "vale o
+  primeiro voto" quebra a liveness.
+- Contagens incrementais e regra 49 so nos rounds alterados.
+- Timeouts base + round*delta sem valores padrao (pre-registracao).
+
+Testes: 27 unitarios das armadilhas, 3 ataques roteirizados (lock,
+lockedRound <= vr, quorum) verificados por mutacao, e rede em memoria
+com bizantinos para safety (fuzzing) e liveness com/sem repasse.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016TBRd7d4oBnnphAU1sBQPb
+---
+ .../tendermint/TendermintAction.java          |  36 +
+ .../algorithm/tendermint/TendermintCore.java  | 646 ++++++++++++++++++
+ .../tendermint/TendermintDiscardReason.java   |  18 +
+ .../tendermint/TendermintProposal.java        |  26 +
+ .../tendermint/TendermintQuorum.java          |  48 ++
+ .../algorithm/tendermint/TendermintStep.java  |  13 +
+ .../tendermint/TendermintTimeouts.java        |  54 ++
+ .../algorithm/tendermint/TendermintVote.java  |  28 +
+ .../algorithm/tendermint/TimeoutKind.java     |   6 +
+ .../algorithm/tendermint/package-info.java    |   8 +
+ .../TendermintAttackScenariosTest.java        | 285 ++++++++
+ .../tendermint/TendermintCoreTest.java        | 469 +++++++++++++
+ .../TendermintQuorumAndTimeoutsTest.java      |  76 +++
+ .../tendermint/TendermintSafetyTest.java      | 338 +++++++++
+ 14 files changed, 2051 insertions(+)
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintAction.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintCore.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintDiscardReason.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintProposal.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintQuorum.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintStep.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintTimeouts.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TendermintVote.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/TimeoutKind.java
+ create mode 100644 src/main/java/jabs/consensus/algorithm/tendermint/package-info.java
+ create mode 100644 src/test/java/jabs/consensus/algorithm/tendermint/TendermintAttackScenariosTest.java
+ create mode 100644 src/test/java/jabs/consensus/algorithm/tendermint/TendermintCoreTest.java
+ create mode 100644 src/test/java/jabs/consensus/algorithm/tendermint/TendermintQuorumAndTimeoutsTest.java
+ create mode 100644 src/test/java/jabs/consensus/algorithm/tendermint/TendermintSafetyTest.java
+
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintAction.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintAction.java
+new file mode 100644
+index 0000000..656a32d
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintAction.java
+@@ -0,0 +1,36 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * Efeito que o {@link TendermintCore} pede ao dono (adaptador JABS). Apenas os campos do tipo estao preenchidos.
++ *
++ * <ul>
++ *   <li>{@link Kind#BROADCAST_PROPOSAL} / {@link Kind#BROADCAST_VOTE}: enviar a TODOS OS OUTROS validadores. O nucleo
++ *       ja registrou a propria mensagem no seu log; o adaptador NAO deve reentrega-la a este no (autoentrega nao e
++ *       trafego, convencao ADR-0006, e duplicaria o voto);</li>
++ *   <li>{@link Kind#SCHEDULE_TIMEOUT}: agendar {@code onTimeout(timeout, height, round)} para daqui a
++ *       {@link TendermintTimeouts#durationSeconds}. Timeout obsoleto e filtrado pelo nucleo; o adaptador nao precisa
++ *       cancelar eventos;</li>
++ *   <li>{@link Kind#DECIDE}: o valor {@code value} foi decidido na altura {@code height} (no round {@code round}).</li>
++ * </ul>
++ */
++public record TendermintAction<V>(Kind kind, TendermintProposal<V> proposal, TendermintVote<V> vote,
++                                  TimeoutKind timeout, long height, int round, V value) {
++
++    public enum Kind { BROADCAST_PROPOSAL, BROADCAST_VOTE, SCHEDULE_TIMEOUT, DECIDE }
++
++    static <V> TendermintAction<V> proposal(TendermintProposal<V> p) {
++        return new TendermintAction<>(Kind.BROADCAST_PROPOSAL, p, null, null, p.height(), p.round(), p.value());
++    }
++
++    static <V> TendermintAction<V> vote(TendermintVote<V> v) {
++        return new TendermintAction<>(Kind.BROADCAST_VOTE, null, v, null, v.height(), v.round(), v.value());
++    }
++
++    static <V> TendermintAction<V> timeout(TimeoutKind kind, long height, int round) {
++        return new TendermintAction<>(Kind.SCHEDULE_TIMEOUT, null, null, kind, height, round, null);
++    }
++
++    static <V> TendermintAction<V> decide(long height, int round, V value) {
++        return new TendermintAction<>(Kind.DECIDE, null, null, null, height, round, value);
++    }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintCore.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintCore.java
+new file mode 100644
+index 0000000..41812b7
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintCore.java
+@@ -0,0 +1,646 @@
++package jabs.consensus.algorithm.tendermint;
++
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.EnumMap;
++import java.util.HashMap;
++import java.util.LinkedHashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.NavigableMap;
++import java.util.NavigableSet;
++import java.util.Objects;
++import java.util.Set;
++import java.util.TreeMap;
++import java.util.TreeSet;
++import java.util.function.LongFunction;
++import java.util.function.Predicate;
++
++/**
++ * Nucleo de decisao de UM validador Tendermint honesto: Algoritmo 1 de Buchman, Kwon e Milosevic, "The latest gossip
++ * on BFT consensus" (arXiv:1807.04938, 2018). Classe pura: sem rede, sem simulador, sem relogio. Cada entrada
++ * ({@link #start}, {@link #onProposal}, {@link #onVote}, {@link #onTimeout}) devolve a lista ordenada de
++ * {@link TendermintAction} que o dono deve executar. NAO e thread-safe.
++ *
++ * <h3>Avaliacao das regras "upon"</h3>
++ * Depois de cada entrada, as regras sao reavaliadas ate nenhuma disparar ({@link #drain}), porque uma mudanca de
++ * estado pode habilitar outra regra com mensagens ja guardadas (ex.: a polka chega antes da proposta). A ordem de
++ * tentativa e fixa, para determinismo: 49 (decidir), 55 (saltar de round), 22/28 (prevote), 36 (lock/valid),
++ * 44 (precommit nil), 34 (timeout de prevote), 47 (timeout de precommit). O artigo admite qualquer ordem.
++ *
++ * <h3>"Pela primeira vez" (linhas 34, 36, 47)</h3>
++ * Essas tres regras disparam no maximo uma vez por round; as guardas ficam em {@code prevoteTimeoutArmed},
++ * {@code polkaHandled} e {@code precommitTimeoutArmed}, zeradas em {@link #startRound}. As demais regras sao
++ * auto-limitadas pela mudanca de {@code step}, de round ou de altura.
++ *
++ * <h3>Log de mensagens</h3>
++ * Por altura e por round: as propostas distintas do proponente e, por remetente, os PREVOTEs e PRECOMMITs distintos.
++ * Mensagem identica a uma ja guardada conta DUPLICATE. Mensagem que CONTRADIZ outra do mesmo remetente (equivocacao)
++ * e guardada e conta para o valor que assina, como no artigo, que conta mensagens por valor; ver {@code RoundLog} e
++ * {@link #equivocationsObserved()}. "Vale a primeira" parece mais seguro mas QUEBRA a liveness: um no que recebeu
++ * primeiro o voto w de um bizantino nunca reconhece a decisao em v que os outros tomaram contando o voto v dele.
++ * Os limiares "de qualquer valor" (linhas 34, 47, 55) contam remetentes distintos, nunca mensagens. Mensagens de
++ * alturas FUTURAS sao guardadas e usadas quando o no chega la; de alturas passadas, contadas como OLD_HEIGHT. Ao
++ * decidir, o log de alturas &lt;= h e apagado (linha 53).
++ *
++ * <h3>Custo</h3>
++ * As contagens por valor sao mantidas de forma incremental ({@code RoundLog}), e a regra 49 so reexamina os rounds
++ * que receberam proposta ou precommit desde a ultima avaliacao. Cada mensagem custa O(1) amortizado mais as
++ * propostas do round, e nao O(n) por regra; com n = 400 isso evita custo cubico por altura.
++ *
++ * <h3>Gossip (suposicao do artigo que o adaptador precisa honrar)</h3>
++ * A liveness do Algoritmo 1 supoe que toda mensagem recebida por um no correto acaba recebida por todos os corretos.
++ * Broadcast direto basta enquanto todos os remetentes sao corretos e a rede nao perde pacotes; com bizantinos que
++ * mandam mensagens diferentes a nos diferentes, sem repasse a rede pode parar ({@code TendermintSafetyTest} mostra
++ * casos). Como modelar o repasse no JABS, e o trafego que ele soma, e decisao do adaptador.
++ *
++ * <h3>Autoentrega</h3>
++ * O que o no difunde entra direto no proprio log (o artigo conta a propria mensagem nos 2f+1). O adaptador envia so
++ * aos outros e nunca reentrega a este no; uma mensagem recebida com {@code sender == self} e erro do adaptador e
++ * falha alto.
++ *
++ * <h3>Limites declarados</h3>
++ * <ul>
++ *   <li>Poder de voto igual para todos ({@link TendermintQuorum});</li>
++ *   <li>Sem {@code timeoutCommit} (espera apos decidir, propria do CometBFT): ao decidir, o no comeca a altura
++ *       seguinte imediatamente, como no artigo. Se for modelado, e no adaptador;</li>
++ *   <li>A memoria nao tem teto (como a retencao do HotStuff): um bizantino pode mandar muitas alturas futuras ou
++ *       muitos votos distintos por round. Ver {@link #peakFutureMessages()} e {@link #equivocationsObserved()}.</li>
++ * </ul>
++ *
++ * @param <V> tipo do valor proposto; {@code equals}/{@code hashCode} sao o {@code id(v)} do artigo
++ */
++public final class TendermintCore<V> {
++
++    /** Proponente de (h, r): deterministico e igual em todos os nos (linhas 14, 22, 28, 36, 49). */
++    @FunctionalInterface
++    public interface ProposerSelector {
++        int proposer(long height, int round);
++    }
++
++    /** Round-robin {@code (h + r) mod n}: o proponente muda a cada round e a cada altura. */
++    public static ProposerSelector roundRobin(int n) {
++        if (n < 1) {
++            throw new IllegalArgumentException("n deve ser >= 1: " + n);
++        }
++        return (h, r) -> (int) Math.floorMod(h + r, (long) n);
++    }
++
++    /** Votos de um tipo num (h, r): remetentes, e contagem incremental de remetentes por valor e de nil. */
++    private static final class VoteSet<V> {
++        /** Por remetente, os votos distintos (normalmente um; mais de um so se ele equivocou). */
++        final Map<Integer, List<TendermintVote<V>>> bySender = new HashMap<>();
++        /** Remetentes distintos por valor. Cada voto guardado e um par (remetente, valor) novo. */
++        final Map<V, Integer> tally = new HashMap<>();
++        int nil;
++        int messages;
++
++        /** @return false se for duplicata exata; true se guardou (contando equivocacao em {@code core}) */
++        boolean add(TendermintVote<V> v, TendermintCore<V> core) {
++            List<TendermintVote<V>> fromSender = bySender.computeIfAbsent(v.sender(), k -> new ArrayList<>(1));
++            if (fromSender.contains(v)) {
++                return false;
++            }
++            if (!fromSender.isEmpty()) {
++                core.equivocations++;
++            }
++            fromSender.add(v);
++            messages++;
++            if (v.isNil()) {
++                nil++;
++            } else {
++                tally.merge(v.value(), 1, Integer::sum);
++            }
++            return true;
++        }
++
++        int countFor(V value) {
++            return tally.getOrDefault(value, 0);
++        }
++
++        int senders() {
++            return bySender.size();
++        }
++    }
++
++    /**
++     * Log de um (altura, round). Guarda TODAS as mensagens distintas, inclusive as que equivocam: o Algoritmo 1
++     * conta mensagens por valor ("2f+1 PRECOMMIT para id(v)"), entao um bizantino que assinou v para uns e w para
++     * outros entra na contagem de v E na de w. Isso nao fere a safety (dois conjuntos de mais de 2/3 se cruzam em mais
++     * de n/3 remetentes, logo num correto, que vota uma vez so) e e necessario para a liveness.
++     */
++    private static final class RoundLog<V> {
++        /** Propostas distintas do proponente, em ordem de chegada (mais de uma so se ele for bizantino). */
++        final List<TendermintProposal<V>> proposals = new ArrayList<>(1);
++        final VoteSet<V> prevotes = new VoteSet<>();
++        final VoteSet<V> precommits = new VoteSet<>();
++        final Set<Integer> senders = new LinkedHashSet<>();
++
++        VoteSet<V> votes(TendermintVote.Type type) {
++            return type == TendermintVote.Type.PREVOTE ? prevotes : precommits;
++        }
++
++        int messageCount() {
++            return proposals.size() + prevotes.messages + precommits.messages;
++        }
++    }
++
++    private final int self;
++    private final int n;
++    private final TendermintQuorum quorum;
++    private final ProposerSelector proposerSelector;
++    private final LongFunction<V> getValue;
++    private final Predicate<V> valid;
++
++    // Estado do Algoritmo 1 (linhas 2-4).
++    private boolean started;
++    private long height;
++    private int round;
++    private TendermintStep step = TendermintStep.PROPOSE;
++    private V lockedValue;
++    private int lockedRound = -1;
++    private V validValue;
++    private int validRound = -1;
++    private final NavigableMap<Long, V> decisions = new TreeMap<>();
++
++    // Guardas de "pela primeira vez", por round.
++    private boolean prevoteTimeoutArmed;
++    private boolean polkaHandled;
++    private boolean precommitTimeoutArmed;
++
++    private final NavigableMap<Long, NavigableMap<Integer, RoundLog<V>>> logs = new TreeMap<>();
++    /** Por altura, rounds com proposta ou precommit novos ainda nao examinados pela regra 49. */
++    private final NavigableMap<Long, NavigableSet<Integer>> pendingDecisionCheck = new TreeMap<>();
++    private final EnumMap<TendermintDiscardReason, Long> discards = new EnumMap<>(TendermintDiscardReason.class);
++    private int futureMessages;
++    private int peakFutureMessages;
++    private long equivocations;
++
++    /**
++     * @param self id deste validador, em [0, n)
++     * @param n numero de validadores (&gt;= 1)
++     * @param proposerSelector proponente de (h, r)
++     * @param getValue valor a propor na altura h quando nao ha {@code validValue} (linha 16); nunca devolve nulo
++     * @param valid {@code valid(v)} do artigo; deve ser deterministico e igual em todos os nos corretos
++     */
++    public TendermintCore(int self, int n, ProposerSelector proposerSelector, LongFunction<V> getValue,
++                          Predicate<V> valid) {
++        this.quorum = new TendermintQuorum(n);
++        if (self < 0 || self >= n) {
++            throw new IllegalArgumentException("self fora de [0, n): " + self);
++        }
++        this.self = self;
++        this.n = n;
++        this.proposerSelector = Objects.requireNonNull(proposerSelector, "proposerSelector");
++        this.getValue = Objects.requireNonNull(getValue, "getValue");
++        this.valid = Objects.requireNonNull(valid, "valid");
++    }
++
++    // ------------------------------------------------------------------------------------------------------
++    // Entradas
++    // ------------------------------------------------------------------------------------------------------
++
++    /** Linha 5: {@code upon start do StartRound(0)}. Mensagens recebidas antes ficam no log e sao usadas agora. */
++    public List<TendermintAction<V>> start() {
++        if (started) {
++            throw new IllegalStateException("start chamado duas vezes");
++        }
++        started = true;
++        List<TendermintAction<V>> out = new ArrayList<>();
++        startRound(0, out);
++        drain(out);
++        return out;
++    }
++
++    public List<TendermintAction<V>> onProposal(TendermintProposal<V> p) {
++        Objects.requireNonNull(p, "proposta");
++        List<TendermintAction<V>> out = new ArrayList<>();
++        if (!acceptSender(p.sender()) || !acceptHeight(p.height())) {
++            return out;
++        }
++        if (proposerSelector.proposer(p.height(), p.round()) != p.sender()) {
++            count(TendermintDiscardReason.WRONG_PROPOSER);
++            return out;
++        }
++        RoundLog<V> rl = roundLog(p.height(), p.round());
++        if (rl.proposals.contains(p)) {
++            count(TendermintDiscardReason.DUPLICATE);
++            return out;
++        }
++        if (!rl.proposals.isEmpty()) {
++            equivocations++;
++        }
++        rl.proposals.add(p);
++        rl.senders.add(p.sender());
++        markForDecisionCheck(p.height(), p.round());
++        afterStore(p.height(), out);
++        return out;
++    }
++
++    public List<TendermintAction<V>> onVote(TendermintVote<V> v) {
++        Objects.requireNonNull(v, "voto");
++        List<TendermintAction<V>> out = new ArrayList<>();
++        if (!acceptSender(v.sender()) || !acceptHeight(v.height())) {
++            return out;
++        }
++        RoundLog<V> rl = roundLog(v.height(), v.round());
++        if (!rl.votes(v.type()).add(v, this)) {
++            count(TendermintDiscardReason.DUPLICATE);
++            return out;
++        }
++        rl.senders.add(v.sender());
++        if (v.type() == TendermintVote.Type.PRECOMMIT) {
++            markForDecisionCheck(v.height(), v.round());
++        }
++        afterStore(v.height(), out);
++        return out;
++    }
++
++    /**
++     * Funcoes OnTimeoutPropose/Prevote/Precommit (linhas 57-65). Timeout de (h, r, passo) que o no ja deixou para
++     * tras e contado como STALE_TIMEOUT e nao tem efeito: e assim que o adaptador dispensa cancelar eventos.
++     */
++    public List<TendermintAction<V>> onTimeout(TimeoutKind kind, long h, int r) {
++        Objects.requireNonNull(kind, "kind");
++        requireStarted();
++        List<TendermintAction<V>> out = new ArrayList<>();
++        boolean current = h == height && r == round;
++        switch (kind) {
++            case PROPOSE:
++                if (current && step == TendermintStep.PROPOSE) {
++                    broadcastVote(TendermintVote.Type.PREVOTE, null, out);
++                    step = TendermintStep.PREVOTE;
++                } else {
++                    count(TendermintDiscardReason.STALE_TIMEOUT);
++                }
++                break;
++            case PREVOTE:
++                if (current && step == TendermintStep.PREVOTE) {
++                    broadcastVote(TendermintVote.Type.PRECOMMIT, null, out);
++                    step = TendermintStep.PRECOMMIT;
++                } else {
++                    count(TendermintDiscardReason.STALE_TIMEOUT);
++                }
++                break;
++            case PRECOMMIT:
++                if (current) {
++                    startRound(round + 1, out);
++                } else {
++                    count(TendermintDiscardReason.STALE_TIMEOUT);
++                }
++                break;
++            default:
++                throw new IllegalStateException("tipo desconhecido: " + kind);
++        }
++        drain(out);
++        return out;
++    }
++
++    // ------------------------------------------------------------------------------------------------------
++    // Regras
++    // ------------------------------------------------------------------------------------------------------
++
++    private void drain(List<TendermintAction<V>> out) {
++        if (!started) {
++            return;
++        }
++        // Cada disparo muda estado de forma monotona (step, round, altura ou uma guarda): o laco termina.
++        while (rule49Decide(out)
++                || rule55RoundSkip(out)
++                || rule22And28Prevote(out)
++                || rule36Polka(out)
++                || rule44PrecommitNil(out)
++                || rule34PrevoteTimeout(out)
++                || rule47PrecommitTimeout(out)) {
++            // repete ate nenhuma regra disparar
++        }
++    }
++
++    /**
++     * Linhas 49-54: proposta de qualquer round r + 2f+1 PRECOMMIT em id(v) decide v. So examina os rounds marcados
++     * (proposta ou precommit novos): nos demais nada mudou desde o ultimo exame, e {@code valid} e deterministico.
++     */
++    private boolean rule49Decide(List<TendermintAction<V>> out) {
++        NavigableSet<Integer> pending = pendingDecisionCheck.get(height);
++        if (pending == null || pending.isEmpty() || decisions.containsKey(height)) {
++            return false;
++        }
++        NavigableMap<Integer, RoundLog<V>> rounds = logs.get(height);
++        while (!pending.isEmpty()) {
++            int r = pending.pollFirst(); // ordem crescente de round
++            RoundLog<V> rl = rounds.get(r);
++            for (TendermintProposal<V> p : rl.proposals) { // ordem de chegada
++                V v = p.value();
++                if (rl.precommits.countFor(v) >= quorum.strong() && valid.test(v)) {
++                    decide(r, v, out);
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++
++    /**
++     * Linhas 55-56: f+1 remetentes distintos com mensagem de um round maior: salta para ele. Havendo mais de um
++     * round qualificado, vai direto ao MAIOR, para nao difundir propostas de rounds que seriam abandonados em
++     * seguida (o artigo admite qualquer um; a escolha muda so o trafego).
++     */
++    private boolean rule55RoundSkip(List<TendermintAction<V>> out) {
++        NavigableMap<Integer, RoundLog<V>> rounds = logs.get(height);
++        if (rounds == null) {
++            return false;
++        }
++        for (Map.Entry<Integer, RoundLog<V>> e : rounds.tailMap(round, false).descendingMap().entrySet()) {
++            if (e.getValue().senders.size() >= quorum.weak()) {
++                startRound(e.getKey(), out);
++                return true;
++            }
++        }
++        return false;
++    }
++
++    /**
++     * Linhas 22-27 (vr = -1) e 28-33 (vr &gt;= 0 com polka de vr). Proposta com vr &gt;= 0 cuja polka ainda nao chegou
++     * NAO dispara: o no espera, e se nada chegar o timeoutPropose leva ao prevote nil (comportamento do artigo).
++     * Com proponente bizantino pode haver mais de uma proposta: vale a primeira, em ordem de chegada, que habilita a
++     * regra (o no vota uma vez so; o step muda).
++     */
++    private boolean rule22And28Prevote(List<TendermintAction<V>> out) {
++        if (step != TendermintStep.PROPOSE) {
++            return false;
++        }
++        RoundLog<V> rl = currentRoundLog();
++        if (rl == null) {
++            return false;
++        }
++        for (TendermintProposal<V> p : rl.proposals) {
++            V v = p.value();
++            int vr = p.validRound();
++            boolean accept;
++            if (vr == -1) {
++                accept = valid.test(v) && (lockedRound == -1 || v.equals(lockedValue));
++            } else {
++                RoundLog<V> polkaRound = roundLogOrNull(height, vr);
++                if (polkaRound == null || polkaRound.prevotes.countFor(v) < quorum.strong()) {
++                    continue;
++                }
++                accept = valid.test(v) && (lockedRound <= vr || v.equals(lockedValue));
++            }
++            broadcastVote(TendermintVote.Type.PREVOTE, accept ? v : null, out);
++            step = TendermintStep.PREVOTE;
++            return true;
++        }
++        return false;
++    }
++
++    /**
++     * Linhas 36-43: polka no round corrente, com step &gt;= prevote, pela primeira vez. Duas propostas nao podem ter
++     * polka no mesmo round (exigiria um correto votando duas vezes), entao a primeira encontrada e a unica.
++     */
++    private boolean rule36Polka(List<TendermintAction<V>> out) {
++        if (polkaHandled || !step.atLeast(TendermintStep.PREVOTE)) {
++            return false;
++        }
++        RoundLog<V> rl = currentRoundLog();
++        if (rl == null) {
++            return false;
++        }
++        V v = null;
++        for (TendermintProposal<V> p : rl.proposals) {
++            if (rl.prevotes.countFor(p.value()) >= quorum.strong() && valid.test(p.value())) {
++                v = p.value();
++                break;
++            }
++        }
++        if (v == null) {
++            return false;
++        }
++        polkaHandled = true;
++        if (step == TendermintStep.PREVOTE) {
++            lockedValue = v;
++            lockedRound = round;
++            broadcastVote(TendermintVote.Type.PRECOMMIT, v, out);
++            step = TendermintStep.PRECOMMIT;
++        }
++        validValue = v;
++        validRound = round;
++        return true;
++    }
++
++    /** Linhas 44-46: 2f+1 PREVOTE nil no round corrente. */
++    private boolean rule44PrecommitNil(List<TendermintAction<V>> out) {
++        if (step != TendermintStep.PREVOTE) {
++            return false;
++        }
++        RoundLog<V> rl = currentRoundLog();
++        if (rl == null || rl.prevotes.nil < quorum.strong()) {
++            return false;
++        }
++        broadcastVote(TendermintVote.Type.PRECOMMIT, null, out);
++        step = TendermintStep.PRECOMMIT;
++        return true;
++    }
++
++    /** Linhas 34-35: 2f+1 PREVOTE de qualquer valor (nil incluso), com step = prevote, pela primeira vez. */
++    private boolean rule34PrevoteTimeout(List<TendermintAction<V>> out) {
++        if (prevoteTimeoutArmed || step != TendermintStep.PREVOTE) {
++            return false;
++        }
++        RoundLog<V> rl = currentRoundLog();
++        if (rl == null || rl.prevotes.senders() < quorum.strong()) {
++            return false;
++        }
++        prevoteTimeoutArmed = true;
++        out.add(TendermintAction.timeout(TimeoutKind.PREVOTE, height, round));
++        return true;
++    }
++
++    /** Linhas 47-48: 2f+1 PRECOMMIT de qualquer valor no round corrente, pela primeira vez (sem condicao de step). */
++    private boolean rule47PrecommitTimeout(List<TendermintAction<V>> out) {
++        if (precommitTimeoutArmed) {
++            return false;
++        }
++        RoundLog<V> rl = currentRoundLog();
++        if (rl == null || rl.precommits.senders() < quorum.strong()) {
++            return false;
++        }
++        precommitTimeoutArmed = true;
++        out.add(TendermintAction.timeout(TimeoutKind.PRECOMMIT, height, round));
++        return true;
++    }
++
++    // ------------------------------------------------------------------------------------------------------
++    // Funcoes do artigo
++    // ------------------------------------------------------------------------------------------------------
++
++    /** Linhas 11-21. */
++    private void startRound(int r, List<TendermintAction<V>> out) {
++        round = r;
++        step = TendermintStep.PROPOSE;
++        prevoteTimeoutArmed = false;
++        polkaHandled = false;
++        precommitTimeoutArmed = false;
++        if (proposerSelector.proposer(height, round) == self) {
++            V proposal = validValue != null ? validValue : getValue.apply(height);
++            if (proposal == null) {
++                throw new IllegalStateException("getValue devolveu nulo na altura " + height);
++            }
++            TendermintProposal<V> p = new TendermintProposal<>(height, round, proposal, validRound, self);
++            RoundLog<V> rl = roundLog(height, round);
++            rl.proposals.add(p);
++            rl.senders.add(self);
++            markForDecisionCheck(height, round);
++            out.add(TendermintAction.proposal(p));
++        } else {
++            out.add(TendermintAction.timeout(TimeoutKind.PROPOSE, height, round));
++        }
++    }
++
++    /** Linhas 50-54. */
++    private void decide(int r, V v, List<TendermintAction<V>> out) {
++        decisions.put(height, v);
++        out.add(TendermintAction.decide(height, r, v));
++        height++;
++        lockedValue = null;
++        lockedRound = -1;
++        validValue = null;
++        validRound = -1;
++        // esvazia o log das alturas decididas (linha 53); o das futuras fica e deixa de ser "futuro" na nova altura
++        logs.headMap(height, false).clear();
++        pendingDecisionCheck.headMap(height, false).clear();
++        futureMessages -= heightMessageCount(height);
++        startRound(0, out);
++    }
++
++    private void broadcastVote(TendermintVote.Type type, V value, List<TendermintAction<V>> out) {
++        TendermintVote<V> v = new TendermintVote<>(type, height, round, value, self);
++        RoundLog<V> rl = roundLog(height, round);
++        VoteSet<V> set = rl.votes(type);
++        if (set.bySender.containsKey(self)) {
++            // So aconteceria por erro deste nucleo: cada (h, r, tipo) e votado uma vez pela maquina de passos.
++            throw new IllegalStateException("voto proprio repetido em " + type + " h=" + height + " r=" + round);
++        }
++        set.add(v, this);
++        rl.senders.add(self);
++        if (type == TendermintVote.Type.PRECOMMIT) {
++            markForDecisionCheck(height, round);
++        }
++        out.add(TendermintAction.vote(v));
++    }
++
++    // ------------------------------------------------------------------------------------------------------
++    // Auxiliares
++    // ------------------------------------------------------------------------------------------------------
++
++    private boolean acceptSender(int sender) {
++        if (sender < 0 || sender >= n) {
++            count(TendermintDiscardReason.SENDER_OUT_OF_RANGE);
++            return false;
++        }
++        if (sender == self) {
++            throw new IllegalStateException("mensagem do proprio no " + self
++                    + " entregue de volta: o adaptador nao deve reentregar o que o no difunde");
++        }
++        return true;
++    }
++
++    private boolean acceptHeight(long h) {
++        if (h < height) {
++            count(TendermintDiscardReason.OLD_HEIGHT);
++            return false;
++        }
++        return true;
++    }
++
++    private void afterStore(long h, List<TendermintAction<V>> out) {
++        if (h > height) {
++            futureMessages++;
++            peakFutureMessages = Math.max(peakFutureMessages, futureMessages);
++            return; // altura futura: nenhuma regra olha para ela agora
++        }
++        drain(out);
++    }
++
++    private void markForDecisionCheck(long h, int r) {
++        pendingDecisionCheck.computeIfAbsent(h, k -> new TreeSet<>()).add(r);
++    }
++
++    private int heightMessageCount(long h) {
++        NavigableMap<Integer, RoundLog<V>> rounds = logs.get(h);
++        if (rounds == null) {
++            return 0;
++        }
++        int c = 0;
++        for (RoundLog<V> rl : rounds.values()) {
++            c += rl.messageCount();
++        }
++        return c;
++    }
++
++    private RoundLog<V> roundLog(long h, int r) {
++        return logs.computeIfAbsent(h, k -> new TreeMap<>()).computeIfAbsent(r, k -> new RoundLog<>());
++    }
++
++    private RoundLog<V> roundLogOrNull(long h, int r) {
++        NavigableMap<Integer, RoundLog<V>> rounds = logs.get(h);
++        return rounds == null ? null : rounds.get(r);
++    }
++
++    private RoundLog<V> currentRoundLog() {
++        return roundLogOrNull(height, round);
++    }
++
++    private void count(TendermintDiscardReason reason) {
++        discards.merge(reason, 1L, Long::sum);
++    }
++
++    private void requireStarted() {
++        if (!started) {
++            throw new IllegalStateException("nucleo nao iniciado: chame start()");
++        }
++    }
++
++    // ------------------------------------------------------------------------------------------------------
++    // Consultas
++    // ------------------------------------------------------------------------------------------------------
++
++    public int self() { return self; }
++    public int n() { return n; }
++    public TendermintQuorum quorum() { return quorum; }
++    public boolean isStarted() { return started; }
++    public long height() { return height; }
++    public int round() { return round; }
++    public TendermintStep step() { return step; }
++    public V lockedValue() { return lockedValue; }
++    public int lockedRound() { return lockedRound; }
++    public V validValue() { return validValue; }
++    public int validRound() { return validRound; }
++
++    /** Valor decidido na altura h, ou nulo. */
++    public V decision(long h) { return decisions.get(h); }
++
++    /** Todas as decisoes, por altura (somente leitura). */
++    public NavigableMap<Long, V> decisions() { return Collections.unmodifiableNavigableMap(decisions); }
++
++    public long discardCount(TendermintDiscardReason reason) { return discards.getOrDefault(reason, 0L); }
++
++    public long totalDiscards() {
++        long t = 0;
++        for (long v : discards.values()) {
++            t += v;
++        }
++        return t;
++    }
++
++    /** Mensagens guardadas agora para alturas futuras. */
++    public int futureMessages() { return futureMessages; }
++
++    /** Pico de {@link #futureMessages()} na vida deste nucleo (para o cenario relatar). */
++    public int peakFutureMessages() { return peakFutureMessages; }
++
++    /**
++     * Mensagens recebidas que contradizem outra do mesmo remetente no mesmo (h, r, tipo). Sao GUARDADAS e contam
++     * para o valor que assinam (ver {@code RoundLog}); este contador e evidencia de comportamento bizantino.
++     */
++    public long equivocationsObserved() { return equivocations; }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintDiscardReason.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintDiscardReason.java
+new file mode 100644
+index 0000000..06ddd81
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintDiscardReason.java
+@@ -0,0 +1,18 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * Motivos pelos quais o nucleo ignora uma entrada. Nada e descartado sem contar. Equivocacao NAO e descarte: a
++ * mensagem e guardada e contada a parte ({@link TendermintCore#equivocationsObserved()}).
++ */
++public enum TendermintDiscardReason {
++    /** Mensagem de altura ja decidida. */
++    OLD_HEIGHT,
++    /** Remetente fora de [0, n). */
++    SENDER_OUT_OF_RANGE,
++    /** Proposta de quem nao e o proponente de (h, r). */
++    WRONG_PROPOSER,
++    /** Mensagem identica a uma ja registrada do mesmo remetente. */
++    DUPLICATE,
++    /** Timeout de (h, r, passo) que o no ja ultrapassou (funcoes 57-65). */
++    STALE_TIMEOUT
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintProposal.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintProposal.java
+new file mode 100644
+index 0000000..a869a19
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintProposal.java
+@@ -0,0 +1,26 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * {@code <PROPOSAL, h, r, v, vr>} (linha 17). {@code value} nunca e nulo; {@code validRound} e -1 ou um round
++ * anterior ({@code -1 <= vr < round}).
++ *
++ * @param <V> tipo do valor (no adaptador, o bloco; a igualdade do valor e o {@code id(v)} do artigo)
++ */
++public record TendermintProposal<V>(long height, int round, V value, int validRound, int sender) {
++
++    public TendermintProposal {
++        if (height < 0) {
++            throw new IllegalArgumentException("height deve ser >= 0: " + height);
++        }
++        if (round < 0) {
++            throw new IllegalArgumentException("round deve ser >= 0: " + round);
++        }
++        if (value == null) {
++            throw new IllegalArgumentException("proposta sem valor");
++        }
++        if (validRound < -1 || validRound >= round) {
++            throw new IllegalArgumentException("validRound deve estar em [-1, round): vr=" + validRound
++                    + ", round=" + round);
++        }
++    }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintQuorum.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintQuorum.java
+new file mode 100644
+index 0000000..5386f4b
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintQuorum.java
+@@ -0,0 +1,48 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * Limiares de votacao com poder de voto IGUAL para todos os validadores (suposicao declarada: o artigo admite pesos;
++ * aqui todos pesam 1, como no PBFT e no HotStuff do simulador).
++ *
++ * <ul>
++ *   <li>{@link #strong()}: "2f+1" do artigo, lido como MAIS DE 2/3 dos n: {@code floor(2n/3) + 1}. E o que garante
++ *       que dois quoruns se intersectam em pelo menos um no honesto para QUALQUER n, nao so n = 3f+1;</li>
++ *   <li>{@link #weak()}: "f+1" (linha 55), lido como MAIS DE 1/3: {@code floor(n/3) + 1}, ou seja, pelo menos um no
++ *       honesto.</li>
++ * </ul>
++ *
++ * <p><b>Divergencia com PBFT e HotStuff do simulador (a decidir com o humano):</b> ambos usam {@code 2f+1} com
++ * {@code f = floor((n-1)/3)}. Os dois criterios coincidem quando {@code n = 3f+1} (n = 4, 7, 10, ...), mas para os
++ * demais n o {@code 2f+1} fica abaixo de 2/3 (n=5: 3 de 5; n=50: 33 de 50), e dois quoruns podem se intersectar so em
++ * nos bizantinos. Ver {@link #legacyTwoFPlusOne(int)} para comparacao.
++ *
++ * @param n numero de validadores (&gt;= 1)
++ */
++public record TendermintQuorum(int n) {
++
++    public TendermintQuorum {
++        if (n < 1) {
++            throw new IllegalArgumentException("n deve ser >= 1: " + n);
++        }
++    }
++
++    /** Mais de 2/3 de n. */
++    public int strong() {
++        return (2 * n) / 3 + 1;
++    }
++
++    /** Mais de 1/3 de n. */
++    public int weak() {
++        return n / 3 + 1;
++    }
++
++    /** Maximo de bizantinos tolerados: maior f com {@code 3f < n}. */
++    public int maxFaulty() {
++        return (n - 1) / 3;
++    }
++
++    /** O {@code 2f+1} usado hoje por PBFT/HotStuff, so para comparacao e testes. */
++    public static int legacyTwoFPlusOne(int n) {
++        return 2 * ((n - 1) / 3) + 1;
++    }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintStep.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintStep.java
+new file mode 100644
+index 0000000..8bc5912
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintStep.java
+@@ -0,0 +1,13 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * Passo dentro de um round (Algoritmo 1, linha 2). A ordem das constantes e a do artigo e e usada nas comparacoes
++ * {@code step >= PREVOTE} (linha 36): nao reordenar.
++ */
++public enum TendermintStep {
++    PROPOSE, PREVOTE, PRECOMMIT;
++
++    public boolean atLeast(TendermintStep other) {
++        return compareTo(other) >= 0;
++    }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintTimeouts.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintTimeouts.java
+new file mode 100644
+index 0000000..ef06fd4
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintTimeouts.java
+@@ -0,0 +1,54 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * Duracao dos temporizadores: {@code base + round * delta}, por tipo. O artigo exige apenas que cresca com o round
++ * (para que, apos o GST, o timeout ultrapasse a latencia real); a forma linear e a do CometBFT.
++ *
++ * <p><b>Sem valores padrao de proposito:</b> os valores afetam a latencia medida e precisam ser fixados e
++ * justificados na pre-registracao (ADR-0002), nao aqui. Todos devem ser &gt; 0 (base) e &gt;= 0 (delta).
++ */
++public record TendermintTimeouts(double proposeBaseS, double proposeDeltaS,
++                                 double prevoteBaseS, double prevoteDeltaS,
++                                 double precommitBaseS, double precommitDeltaS) {
++
++    public TendermintTimeouts {
++        requireBase("proposeBaseS", proposeBaseS);
++        requireBase("prevoteBaseS", prevoteBaseS);
++        requireBase("precommitBaseS", precommitBaseS);
++        requireDelta("proposeDeltaS", proposeDeltaS);
++        requireDelta("prevoteDeltaS", prevoteDeltaS);
++        requireDelta("precommitDeltaS", precommitDeltaS);
++    }
++
++    /** Duracao em segundos do temporizador {@code kind} no round {@code round} (&gt;= 0). */
++    public double durationSeconds(TimeoutKind kind, int round) {
++        if (kind == null) {
++            throw new IllegalArgumentException("kind obrigatorio");
++        }
++        if (round < 0) {
++            throw new IllegalArgumentException("round deve ser >= 0: " + round);
++        }
++        switch (kind) {
++            case PROPOSE:
++                return proposeBaseS + round * proposeDeltaS;
++            case PREVOTE:
++                return prevoteBaseS + round * prevoteDeltaS;
++            case PRECOMMIT:
++                return precommitBaseS + round * precommitDeltaS;
++            default:
++                throw new IllegalStateException("tipo desconhecido: " + kind);
++        }
++    }
++
++    private static void requireBase(String name, double v) {
++        if (!(v > 0) || Double.isInfinite(v)) {
++            throw new IllegalArgumentException(name + " deve ser finito e > 0: " + v);
++        }
++    }
++
++    private static void requireDelta(String name, double v) {
++        if (!(v >= 0) || Double.isInfinite(v)) {
++            throw new IllegalArgumentException(name + " deve ser finito e >= 0: " + v);
++        }
++    }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TendermintVote.java b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintVote.java
+new file mode 100644
+index 0000000..11e66f1
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TendermintVote.java
+@@ -0,0 +1,28 @@
++package jabs.consensus.algorithm.tendermint;
++
++/**
++ * {@code <PREVOTE, h, r, id(v)>} ou {@code <PRECOMMIT, h, r, id(v)>}. {@code value == null} e o voto nil.
++ *
++ * <p>Armadilha: o voto nil CONTA para "2f+1 de qualquer coisa" (linhas 34 e 47, que so armam temporizador) e para
++ * "2f+1 nil" (linha 44), mas NUNCA para uma polka ou para o commit de um valor (linhas 28, 36 e 49).
++ */
++public record TendermintVote<V>(Type type, long height, int round, V value, int sender) {
++
++    public enum Type { PREVOTE, PRECOMMIT }
++
++    public TendermintVote {
++        if (type == null) {
++            throw new IllegalArgumentException("type obrigatorio");
++        }
++        if (height < 0) {
++            throw new IllegalArgumentException("height deve ser >= 0: " + height);
++        }
++        if (round < 0) {
++            throw new IllegalArgumentException("round deve ser >= 0: " + round);
++        }
++    }
++
++    public boolean isNil() {
++        return value == null;
++    }
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/TimeoutKind.java b/src/main/java/jabs/consensus/algorithm/tendermint/TimeoutKind.java
+new file mode 100644
+index 0000000..5a6cff6
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/TimeoutKind.java
+@@ -0,0 +1,6 @@
++package jabs.consensus.algorithm.tendermint;
++
++/** Os tres temporizadores do Algoritmo 1 (linhas 19, 35, 48 e funcoes 57-65). */
++public enum TimeoutKind {
++    PROPOSE, PREVOTE, PRECOMMIT
++}
+diff --git a/src/main/java/jabs/consensus/algorithm/tendermint/package-info.java b/src/main/java/jabs/consensus/algorithm/tendermint/package-info.java
+new file mode 100644
+index 0000000..d98dc90
+--- /dev/null
++++ b/src/main/java/jabs/consensus/algorithm/tendermint/package-info.java
+@@ -0,0 +1,8 @@
++/**
++ * Tendermint (Buchman, Kwon e Milosevic, "The latest gossip on BFT consensus", arXiv:1807.04938, 2018, Algoritmo 1).
++ *
++ * <p>Mesmo padrao do pacote {@code hotstuff}: o {@link jabs.consensus.algorithm.tendermint.TendermintCore} e puro
++ * (sem rede, sem simulador, sem tempo) e devolve {@link jabs.consensus.algorithm.tendermint.TendermintAction}; o
++ * adaptador JABS (etapa seguinte) executa as acoes: envia pacotes, agenda timeouts e finaliza blocos.
++ */
++package jabs.consensus.algorithm.tendermint;
+diff --git a/src/test/java/jabs/consensus/algorithm/tendermint/TendermintAttackScenariosTest.java b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintAttackScenariosTest.java
+new file mode 100644
+index 0000000..96d0b66
+--- /dev/null
++++ b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintAttackScenariosTest.java
+@@ -0,0 +1,285 @@
++package jabs.consensus.algorithm.tendermint;
++
++import jabs.consensus.algorithm.tendermint.TendermintAction.Kind;
++import jabs.consensus.algorithm.tendermint.TendermintVote.Type;
++import org.junit.jupiter.api.Test;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertNull;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/**
++ * Ataques roteirizados: a entrega de cada mensagem e escolhida a mao para montar exatamente o cenario em que um
++ * mecanismo de safety e necessario. Se o mecanismo for removido, o roteiro leva dois corretos a decidir valores
++ * diferentes. (O fuzzing aleatorio do {@link TendermintSafetyTest} quase nunca chega nesses cenarios: numa medicao
++ * com o lock removido, 2 violacoes em 3.600 execucoes.)
++ */
++class TendermintAttackScenariosTest {
++
++    /** Nos corretos alimentados a mao; o bizantino e so o que o roteiro injeta em nome dele. */
++    private static final class Script {
++        final int n;
++        final Map<Integer, TendermintCore<String>> cores = new HashMap<>();
++        final Map<Integer, List<TendermintAction<String>>> outbox = new HashMap<>();
++
++        Script(int n, int byzantine) {
++            this.n = n;
++            for (int i = 0; i < n; i++) {
++                if (i == byzantine) {
++                    continue;
++                }
++                final int id = i;
++                cores.put(i, new TendermintCore<>(i, n, TendermintCore.roundRobin(n), h -> "fresco-p" + id,
++                        v -> true));
++                outbox.put(i, new ArrayList<>());
++            }
++        }
++
++        void startAll() {
++            cores.forEach((id, c) -> outbox.get(id).addAll(c.start()));
++        }
++
++        TendermintCore<String> core(int id) {
++            return cores.get(id);
++        }
++
++        void deliver(int to, TendermintProposal<String> p) {
++            outbox.get(to).addAll(core(to).onProposal(p));
++        }
++
++        void deliver(int to, TendermintVote<String> v) {
++            outbox.get(to).addAll(core(to).onVote(v));
++        }
++
++        void timeout(int node, TimeoutKind kind, int round) {
++            outbox.get(node).addAll(core(node).onTimeout(kind, core(node).height(), round));
++        }
++
++        /** O voto que o correto {@code from} difundiu em (h=0, round, tipo): precisa existir. */
++        TendermintVote<String> sentVote(int from, Type type, int round) {
++            for (TendermintAction<String> a : outbox.get(from)) {
++                if (a.kind() == Kind.BROADCAST_VOTE && a.vote().type() == type && a.vote().round() == round
++                        && a.vote().height() == 0) {
++                    return a.vote();
++                }
++            }
++            throw new AssertionError("no " + from + " nao difundiu " + type + " no round " + round);
++        }
++
++        TendermintProposal<String> sentProposal(int from, int round) {
++            for (TendermintAction<String> a : outbox.get(from)) {
++                if (a.kind() == Kind.BROADCAST_PROPOSAL && a.proposal().round() == round) {
++                    return a.proposal();
++                }
++            }
++            throw new AssertionError("no " + from + " nao propos no round " + round);
++        }
++
++        /** Entrega a {@code to} o voto de {@code from}, se ele o difundiu (sob mutacao, votos a mais aparecem). */
++        void relayIfSent(int from, Type type, int round, int to) {
++            for (TendermintAction<String> a : new ArrayList<>(outbox.get(from))) {
++                if (a.kind() == Kind.BROADCAST_VOTE && a.vote().type() == type && a.vote().round() == round
++                        && a.vote().height() == 0) {
++                    deliver(to, a.vote());
++                    return;
++                }
++            }
++        }
++
++        /** Entrega a {@code to} o voto difundido por {@code from}. */
++        void relay(int from, Type type, int round, int to) {
++            deliver(to, sentVote(from, type, round));
++        }
++    }
++
++    private static TendermintVote<String> byz(Type t, int round, String v, int byzId) {
++        return new TendermintVote<>(t, 0, round, v, byzId);
++    }
++
++    /**
++     * Lock (linha 23): n = 4, bizantino = 1 (proponente do round 1). No round 0 os corretos 0 e 2 travam em v e o
++     * correto 3 decide v; no round 1 o bizantino propoe w. Travados em v, 0 e 2 votam nil; sem o lock, votariam w,
++     * formariam polka com o bizantino e decidiriam w.
++     */
++    @Test
++    void lockImpedeDecisaoConflitanteEmRoundSeguinte() {
++        final int b = 1;
++        Script s = new Script(4, b);
++        s.startAll();
++        TendermintProposal<String> pv = s.sentProposal(0, 0); // proponente 0 (correto) propoe v
++        String v = pv.value();
++        s.deliver(2, pv);
++        s.deliver(3, pv);
++        // prevotes do round 0: todos os corretos votaram v
++        s.relay(2, Type.PREVOTE, 0, 0);
++        s.relay(3, Type.PREVOTE, 0, 0);   // 0 ve polka (0, 2, 3): trava v, precommita v
++        s.relay(0, Type.PREVOTE, 0, 2);
++        s.relay(3, Type.PREVOTE, 0, 2);   // 2 idem
++        assertEquals(v, s.core(0).lockedValue());
++        assertEquals(v, s.core(2).lockedValue());
++        // 3 nao ve a polka: so o proprio v, o v de 2 e um nil do bizantino -> timeout -> precommit nil
++        s.relay(2, Type.PREVOTE, 0, 3);
++        s.deliver(3, byz(Type.PREVOTE, 0, null, b));
++        s.timeout(3, TimeoutKind.PREVOTE, 0);
++        assertNull(s.sentVote(3, Type.PRECOMMIT, 0).value());
++        // 3 decide v com os precommits de 0, 2 e do bizantino
++        s.relay(0, Type.PRECOMMIT, 0, 3);
++        s.relay(2, Type.PRECOMMIT, 0, 3);
++        s.deliver(3, byz(Type.PRECOMMIT, 0, v, b));
++        assertEquals(v, s.core(3).decision(0));
++        // 0 e 2 nao decidem (v, v, nil de 3, nil do bizantino) e passam ao round 1
++        for (int x : new int[]{0, 2}) {
++            int other = x == 0 ? 2 : 0;
++            s.relay(other, Type.PRECOMMIT, 0, x);
++            s.relay(3, Type.PRECOMMIT, 0, x);
++            s.deliver(x, byz(Type.PRECOMMIT, 0, null, b));
++            assertNull(s.core(x).decision(0));
++            s.timeout(x, TimeoutKind.PRECOMMIT, 0);
++            assertEquals(1, s.core(x).round());
++        }
++        // round 1: o bizantino propoe w a 0 e 2
++        String w = "w-bizantino";
++        for (int x : new int[]{0, 2}) {
++            s.deliver(x, new TendermintProposal<>(0, 1, w, -1, b));
++        }
++        assertNull(s.sentVote(0, Type.PREVOTE, 1).value(), "travado em v: prevote nil em w");
++        assertNull(s.sentVote(2, Type.PREVOTE, 1).value(), "travado em v: prevote nil em w");
++        // o bizantino empurra w em tudo; mesmo assim 0 e 2 nao podem decidir w
++        for (int x : new int[]{0, 2}) {
++            s.relay(x == 0 ? 2 : 0, Type.PREVOTE, 1, x);
++            s.deliver(x, byz(Type.PREVOTE, 1, w, b));
++            s.deliver(x, byz(Type.PRECOMMIT, 1, w, b));
++        }
++        for (int x : new int[]{0, 2}) {
++            s.relayIfSent(x == 0 ? 2 : 0, Type.PRECOMMIT, 1, x);
++        }
++        for (int x : new int[]{0, 2}) {
++            assertTrue(s.core(x).decision(0) == null || s.core(x).decision(0).equals(v),
++                    "SAFETY: no " + x + " decidiu " + s.core(x).decision(0) + ", o no 3 decidiu " + v);
++        }
++    }
++
++    /**
++     * Destravamento so com polka POSTERIOR ao lock (linha 29, {@code lockedRound <= vr}): n = 4, bizantino = 2
++     * (proponente do round 2). Existe uma polka real de w no round 0 que ninguem viu a tempo; no round 1 os corretos
++     * 0 e 1 travam em v e o correto 3 decide v; no round 2 o bizantino repropoe w com vr = 0. Como 0 &lt; lockedRound
++     * = 1, 0 e 1 votam nil; sem a comparacao, destravariam e decidiriam w.
++     */
++    @Test
++    void polkaAnteriorAoLockNaoDestrava() {
++        final int b = 2;
++        Script s = new Script(4, b);
++        s.startAll();
++        // round 0: 0 propoe w; 0 e 1 votam w, 3 vota nil por timeout; todos saem do round sem travar
++        TendermintProposal<String> pw = s.sentProposal(0, 0);
++        String w = pw.value();
++        s.deliver(1, pw);
++        s.timeout(3, TimeoutKind.PROPOSE, 0);
++        for (int x : new int[]{0, 1, 3}) {
++            for (int y : new int[]{0, 1, 3}) {
++                if (x != y && !(x != 3 && y != 3)) { // so os votos envolvendo o 3 chegam agora
++                    s.relay(y, Type.PREVOTE, 0, x);
++                }
++            }
++            s.deliver(x, byz(Type.PREVOTE, 0, null, b));
++        }
++        for (int x : new int[]{0, 1}) {
++            assertEquals(-1, s.core(x).lockedRound());
++            s.timeout(x, TimeoutKind.PREVOTE, 0);
++        }
++        s.timeout(3, TimeoutKind.PREVOTE, 0);
++        for (int x : new int[]{0, 1, 3}) {
++            assertEquals(TendermintStep.PRECOMMIT, s.core(x).step());
++            s.timeout(x, TimeoutKind.PRECOMMIT, 0);
++            assertEquals(1, s.core(x).round());
++        }
++        // round 1: 1 propoe v; 0 e 1 travam v; 3 nao ve a polka e precommita nil
++        TendermintProposal<String> pv = s.sentProposal(1, 1);
++        String v = pv.value();
++        s.deliver(0, pv);
++        s.deliver(3, pv);
++        s.relay(1, Type.PREVOTE, 1, 0);
++        s.relay(3, Type.PREVOTE, 1, 0);
++        s.relay(0, Type.PREVOTE, 1, 1);
++        s.relay(3, Type.PREVOTE, 1, 1);
++        assertEquals(1, s.core(0).lockedRound());
++        assertEquals(1, s.core(1).lockedRound());
++        s.relay(0, Type.PREVOTE, 1, 3);
++        s.deliver(3, byz(Type.PREVOTE, 1, null, b));
++        s.timeout(3, TimeoutKind.PREVOTE, 1);
++        s.relay(0, Type.PRECOMMIT, 1, 3);
++        s.relay(1, Type.PRECOMMIT, 1, 3);
++        s.deliver(3, byz(Type.PRECOMMIT, 1, v, b));
++        assertEquals(v, s.core(3).decision(0));
++        for (int x : new int[]{0, 1}) {
++            s.relay(x == 0 ? 1 : 0, Type.PRECOMMIT, 1, x);
++            s.relay(3, Type.PRECOMMIT, 1, x);
++            s.deliver(x, byz(Type.PRECOMMIT, 1, null, b));
++            assertNull(s.core(x).decision(0));
++            s.timeout(x, TimeoutKind.PRECOMMIT, 1);
++            assertEquals(2, s.core(x).round());
++        }
++        // a polka de w no round 0 se completa agora nos logs de 0 e 1 (voto atrasado + w do bizantino)
++        s.relay(1, Type.PREVOTE, 0, 0);
++        s.relay(0, Type.PREVOTE, 0, 1);
++        for (int x : new int[]{0, 1}) {
++            s.deliver(x, byz(Type.PREVOTE, 0, w, b));
++        }
++        // round 2: o bizantino repropoe w com vr = 0
++        for (int x : new int[]{0, 1}) {
++            s.deliver(x, new TendermintProposal<>(0, 2, w, 0, b));
++        }
++        assertNull(s.sentVote(0, Type.PREVOTE, 2).value(), "lockedRound 1 > vr 0: nil");
++        assertNull(s.sentVote(1, Type.PREVOTE, 2).value(), "lockedRound 1 > vr 0: nil");
++        for (int x : new int[]{0, 1}) {
++            s.relay(x == 0 ? 1 : 0, Type.PREVOTE, 2, x);
++            s.deliver(x, byz(Type.PREVOTE, 2, w, b));
++            s.deliver(x, byz(Type.PRECOMMIT, 2, w, b));
++        }
++        for (int x : new int[]{0, 1}) {
++            s.relayIfSent(x == 0 ? 1 : 0, Type.PRECOMMIT, 2, x);
++        }
++        for (int x : new int[]{0, 1}) {
++            assertTrue(s.core(x).decision(0) == null || s.core(x).decision(0).equals(v),
++                    "SAFETY: no " + x + " decidiu " + s.core(x).decision(0) + ", o no 3 decidiu " + v);
++        }
++    }
++
++    /**
++     * Quorum (mais de 2/3): n = 5, bizantino = 0 (proponente do round 0) manda v a {1, 2} e w a {3, 4} e vota nos
++     * dois. Com o 2f+1 = 3 de PBFT/HotStuff, cada metade formaria polka e decidiria, com valores diferentes. Com
++     * mais de 2/3 (= 4), ninguem forma polka.
++     */
++    @Test
++    void quorumDeMaisDeDoisTercosImpedeDecisaoDividida() {
++        final int b = 0;
++        Script s = new Script(5, b);
++        s.startAll();
++        int[][] halves = {{1, 2}, {3, 4}};
++        String[] values = {"v", "w"};
++        for (int k = 0; k < 2; k++) {
++            for (int x : halves[k]) {
++                s.deliver(x, new TendermintProposal<>(0, 0, values[k], -1, b));
++            }
++        }
++        for (int k = 0; k < 2; k++) {
++            int x = halves[k][0];
++            int y = halves[k][1];
++            s.relay(y, Type.PREVOTE, 0, x);
++            s.relay(x, Type.PREVOTE, 0, y);
++            for (int z : halves[k]) {
++                s.deliver(z, byz(Type.PREVOTE, 0, values[k], b));
++                s.deliver(z, byz(Type.PRECOMMIT, 0, values[k], b));
++            }
++        }
++        for (int x = 1; x < 5; x++) {
++            assertEquals(-1, s.core(x).lockedRound(), "3 de 5 nao e mais de 2/3: sem polka no no " + x);
++            assertNull(s.core(x).decision(0));
++        }
++    }
++}
+diff --git a/src/test/java/jabs/consensus/algorithm/tendermint/TendermintCoreTest.java b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintCoreTest.java
+new file mode 100644
+index 0000000..ccea1f9
+--- /dev/null
++++ b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintCoreTest.java
+@@ -0,0 +1,469 @@
++package jabs.consensus.algorithm.tendermint;
++
++import jabs.consensus.algorithm.tendermint.TendermintAction.Kind;
++import jabs.consensus.algorithm.tendermint.TendermintVote.Type;
++import org.junit.jupiter.api.Test;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertNull;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/**
++ * Um nucleo isolado (n = 4, self = 3), alimentado a mao. Proponente round-robin (h + r) mod 4: na altura 0 os
++ * rounds 0, 1, 2, 3 sao propostos por 0, 1, 2, 3. Cada teste cobre uma armadilha da implementacao.
++ */
++class TendermintCoreTest {
++
++    private static final int N = 4;
++    private static final int SELF = 3;
++
++    private static TendermintCore<String> core() {
++        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h, v -> true);
++    }
++
++    private static TendermintProposal<String> prop(long h, int r, String v, int vr) {
++        return new TendermintProposal<>(h, r, v, vr, (int) Math.floorMod(h + r, (long) N));
++    }
++
++    private static TendermintVote<String> prevote(long h, int r, String v, int from) {
++        return new TendermintVote<>(Type.PREVOTE, h, r, v, from);
++    }
++
++    private static TendermintVote<String> precommit(long h, int r, String v, int from) {
++        return new TendermintVote<>(Type.PRECOMMIT, h, r, v, from);
++    }
++
++    private static List<TendermintAction<String>> votes(List<TendermintAction<String>> as, Type type) {
++        List<TendermintAction<String>> out = new ArrayList<>();
++        for (TendermintAction<String> a : as) {
++            if (a.kind() == Kind.BROADCAST_VOTE && a.vote().type() == type) {
++                out.add(a);
++            }
++        }
++        return out;
++    }
++
++    private static long timeouts(List<TendermintAction<String>> as, TimeoutKind kind) {
++        return as.stream().filter(a -> a.kind() == Kind.SCHEDULE_TIMEOUT && a.timeout() == kind).count();
++    }
++
++    /**
++     * Leva o nucleo ao round r da altura 0 pela regra 55 (f+1 = 2 remetentes de round maior). Usa PRECOMMIT nil
++     * para nao mexer na contagem de prevotes do round de destino.
++     */
++    private static void skipTo(TendermintCore<String> c, int r, List<TendermintAction<String>> sink) {
++        int a = (r + 1) % N == SELF ? (r + 2) % N : (r + 1) % N;
++        int b = (a + 1) % N == SELF ? (a + 2) % N : (a + 1) % N;
++        sink.addAll(c.onVote(precommit(0, r, null, a)));
++        sink.addAll(c.onVote(precommit(0, r, null, b)));
++        assertEquals(r, c.round());
++    }
++
++    @Test
++    void naoProponenteAgendaTimeoutDeProposta() {
++        TendermintCore<String> c = core();
++        List<TendermintAction<String>> as = c.start();
++        assertEquals(1, as.size());
++        assertEquals(Kind.SCHEDULE_TIMEOUT, as.get(0).kind());
++        assertEquals(TimeoutKind.PROPOSE, as.get(0).timeout());
++        assertEquals(TendermintStep.PROPOSE, c.step());
++    }
++
++    @Test
++    void votoNilContaParaTimeoutMasNaoParaPolka() {
++        TendermintCore<String> c = core();
++        c.start();
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "A", -1));
++        assertEquals("A", votes(as, Type.PREVOTE).get(0).vote().value());
++
++        as = new ArrayList<>();
++        as.addAll(c.onVote(prevote(0, 0, null, 1)));
++        as.addAll(c.onVote(prevote(0, 0, null, 2)));
++        // 3 prevotes (A, nil, nil): "2f+1 de qualquer coisa" arma o timeout; sem polka e sem 2f+1 nil
++        assertEquals(1, timeouts(as, TimeoutKind.PREVOTE));
++        assertTrue(votes(as, Type.PRECOMMIT).isEmpty());
++        assertEquals(-1, c.lockedRound());
++        assertEquals(TendermintStep.PREVOTE, c.step());
++
++        as = c.onVote(prevote(0, 0, null, 0)); // agora 3 nil
++        assertEquals(1, votes(as, Type.PRECOMMIT).size());
++        assertNull(votes(as, Type.PRECOMMIT).get(0).vote().value());
++    }
++
++    @Test
++    void polkaTravaEPrecommita() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(prevote(0, 0, "A", 0));
++        List<TendermintAction<String>> as = c.onVote(prevote(0, 0, "A", 1));
++        assertEquals("A", votes(as, Type.PRECOMMIT).get(0).vote().value());
++        assertEquals("A", c.lockedValue());
++        assertEquals(0, c.lockedRound());
++        assertEquals("A", c.validValue());
++        assertEquals(0, c.validRound());
++        assertEquals(TendermintStep.PRECOMMIT, c.step());
++    }
++
++    @Test
++    void polkaQueChegaAntesDaPropostaEUsadaQuandoAPropostaChega() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onVote(prevote(0, 0, "A", 0));
++        c.onVote(prevote(0, 0, "A", 1));
++        c.onVote(prevote(0, 0, "A", 2));
++        // a proposta chega por ultimo: prevote A e, na mesma entrada, a polka ja guardada leva ao precommit
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "A", -1));
++        assertEquals(1, votes(as, Type.PREVOTE).size());
++        assertEquals("A", votes(as, Type.PRECOMMIT).get(0).vote().value());
++        assertEquals(0, c.lockedRound());
++    }
++
++    @Test
++    void noTravadoVotaNilEmValorNovoSemPolka() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(prevote(0, 0, "A", 0));
++        c.onVote(prevote(0, 0, "A", 1)); // travado em A no round 0
++        List<TendermintAction<String>> sink = new ArrayList<>();
++        skipTo(c, 1, sink);
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 1, "B", -1));
++        assertNull(votes(as, Type.PREVOTE).get(0).vote().value(), "travado em A: B sem polka recebe nil");
++        assertEquals("A", c.lockedValue());
++    }
++
++    @Test
++    void noTravadoAindaVotaNoValorTravado() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(prevote(0, 0, "A", 0));
++        c.onVote(prevote(0, 0, "A", 1));
++        List<TendermintAction<String>> sink = new ArrayList<>();
++        skipTo(c, 1, sink);
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 1, "A", 0));
++        assertEquals("A", votes(as, Type.PREVOTE).get(0).vote().value());
++    }
++
++    @Test
++    void destravaComPolkaDeRoundPosteriorAoLock() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(prevote(0, 0, "A", 0));
++        c.onVote(prevote(0, 0, "A", 1)); // lock A, r0
++        List<TendermintAction<String>> sink = new ArrayList<>();
++        skipTo(c, 2, sink);
++        // proposta B com vr = 1, ainda sem a polka do round 1: o no ESPERA (nao vota)
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 2, "B", 1));
++        assertTrue(votes(as, Type.PREVOTE).isEmpty());
++        // polka de B no round 1 chega: lockedRound 0 <= vr 1, entao prevote B (linha 29)
++        as = new ArrayList<>();
++        as.addAll(c.onVote(prevote(0, 1, "B", 0)));
++        as.addAll(c.onVote(prevote(0, 1, "B", 1)));
++        as.addAll(c.onVote(prevote(0, 1, "B", 2)));
++        assertEquals("B", votes(as, Type.PREVOTE).get(0).vote().value());
++        assertEquals(2, votes(as, Type.PREVOTE).get(0).vote().round());
++        // a polka de um round ANTERIOR nao trava (linha 36 so olha o round corrente)
++        assertEquals("A", c.lockedValue());
++        assertEquals(0, c.lockedRound());
++    }
++
++    @Test
++    void naoDestravaComPolkaAnteriorAoLock() {
++        TendermintCore<String> c = core();
++        c.start();
++        // round 0: este no nao viu a proposta (timeout -> nil), mas os outros tres fizeram polka em B
++        c.onTimeout(TimeoutKind.PROPOSE, 0, 0);
++        c.onVote(prevote(0, 0, "B", 0));
++        c.onVote(prevote(0, 0, "B", 1));
++        c.onVote(prevote(0, 0, "B", 2));
++        assertEquals(-1, c.lockedRound(), "sem a proposta do round 0 a polka nao trava");
++        // round 1: trava em A
++        List<TendermintAction<String>> sink = new ArrayList<>();
++        skipTo(c, 1, sink);
++        c.onProposal(prop(0, 1, "A", -1));
++        c.onVote(prevote(0, 1, "A", 0));
++        c.onVote(prevote(0, 1, "A", 1));
++        assertEquals(1, c.lockedRound());
++        assertEquals("A", c.lockedValue());
++        // round 2: proponente traz B com vr = 0 (polka real, mas ANTERIOR ao lock)
++        skipTo(c, 2, sink);
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 2, "B", 0));
++        // lockedRound 1 > vr 0 e lockedValue != B: nil (linha 30)
++        assertNull(votes(as, Type.PREVOTE).get(0).vote().value());
++        assertEquals("A", c.lockedValue());
++    }
++
++    @Test
++    void proponenteRepropoeOValidValueComSeuValidRound() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(prevote(0, 0, "A", 0));
++        c.onVote(prevote(0, 0, "A", 1)); // validValue A, validRound 0
++        c.onVote(prevote(0, 3, null, 0));
++        List<TendermintAction<String>> as = c.onVote(prevote(0, 3, null, 1)); // salta ao round 3 (proprio no)
++        TendermintAction<String> p = as.stream().filter(a -> a.kind() == Kind.BROADCAST_PROPOSAL)
++                .findFirst().orElseThrow();
++        assertEquals("A", p.proposal().value(), "deve repropor validValue, nao getValue()");
++        assertEquals(0, p.proposal().validRound());
++    }
++
++    @Test
++    void decideComPrecommitsDeRoundAnterior() {
++        TendermintCore<String> c = core();
++        c.start();
++        List<TendermintAction<String>> sink = new ArrayList<>();
++        skipTo(c, 2, sink);
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(precommit(0, 0, "A", 0));
++        c.onVote(precommit(0, 0, "A", 1));
++        List<TendermintAction<String>> as = c.onVote(precommit(0, 0, "A", 2));
++        assertEquals(Kind.DECIDE, as.get(0).kind());
++        assertEquals("A", c.decision(0));
++        assertEquals(1, c.height());
++        assertEquals(0, c.round());
++        assertEquals(-1, c.lockedRound(), "lock e zerado na nova altura");
++        assertNull(c.validValue());
++    }
++
++    @Test
++    void precommitsNilNaoDecidem() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(precommit(0, 0, null, 0));
++        c.onVote(precommit(0, 0, null, 1));
++        List<TendermintAction<String>> as = c.onVote(precommit(0, 0, null, 2));
++        assertNull(c.decision(0));
++        assertEquals(1, timeouts(as, TimeoutKind.PRECOMMIT), "2f+1 precommits quaisquer armam o timeout");
++    }
++
++    @Test
++    void mensagensDeAlturaFuturaFicamGuardadasEValem() {
++        TendermintCore<String> c = core();
++        c.start();
++        // altura 1: proponente do round 0 e o no 1
++        c.onProposal(prop(1, 0, "X", -1));
++        c.onVote(prevote(1, 0, "X", 0));
++        c.onVote(prevote(1, 0, "X", 1));
++        c.onVote(prevote(1, 0, "X", 2));
++        assertEquals(4, c.futureMessages());
++        assertEquals(0, c.height());
++
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(precommit(0, 0, "A", 0));
++        c.onVote(precommit(0, 0, "A", 1));
++        List<TendermintAction<String>> as = c.onVote(precommit(0, 0, "A", 2));
++        assertEquals(Kind.DECIDE, as.get(0).kind());
++        assertEquals("X", votes(as, Type.PREVOTE).get(0).vote().value());
++        assertEquals("X", votes(as, Type.PRECOMMIT).get(0).vote().value());
++        assertEquals(1, c.height());
++        assertEquals(0, c.lockedRound());
++        assertEquals(4, c.peakFutureMessages());
++        assertEquals(0, c.futureMessages());
++    }
++
++    @Test
++    void mensagemDeAlturaPassadaEContada() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(precommit(0, 0, "A", 0));
++        c.onVote(precommit(0, 0, "A", 1));
++        c.onVote(precommit(0, 0, "A", 2));
++        assertTrue(c.onVote(prevote(0, 0, "A", 0)).isEmpty());
++        assertEquals(1, c.discardCount(TendermintDiscardReason.OLD_HEIGHT));
++    }
++
++    @Test
++    void saltaParaOMaiorRoundComFMais1() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onVote(prevote(0, 5, null, 0));
++        assertEquals(0, c.round(), "um remetente so nao basta (f+1 = 2)");
++        c.onVote(prevote(0, 2, null, 1));
++        c.onVote(precommit(0, 5, null, 2));
++        // rounds 2 e 5: o 5 tem {0, 2}; o 2 tem so {1}
++        assertEquals(5, c.round());
++    }
++
++    @Test
++    void mensagensDoMesmoRemetenteContamUmaVezParaOSalto() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onVote(prevote(0, 4, null, 1));
++        c.onVote(precommit(0, 4, null, 1));
++        assertEquals(0, c.round());
++    }
++
++    @Test
++    void timeoutObsoletoNaoTemEfeito() {
++        TendermintCore<String> c = core();
++        c.start();
++        List<TendermintAction<String>> sink = new ArrayList<>();
++        skipTo(c, 1, sink);
++        assertTrue(c.onTimeout(TimeoutKind.PROPOSE, 0, 0).isEmpty());
++        assertTrue(c.onTimeout(TimeoutKind.PRECOMMIT, 0, 0).isEmpty());
++        assertEquals(1, c.round());
++        assertEquals(2, c.discardCount(TendermintDiscardReason.STALE_TIMEOUT));
++        // o do round corrente vale
++        List<TendermintAction<String>> as = c.onTimeout(TimeoutKind.PROPOSE, 0, 1);
++        assertNull(votes(as, Type.PREVOTE).get(0).vote().value());
++    }
++
++    @Test
++    void timeoutDePrecommitAvancaORound() {
++        TendermintCore<String> c = core();
++        c.start();
++        List<TendermintAction<String>> as = c.onTimeout(TimeoutKind.PRECOMMIT, 0, 0);
++        assertEquals(1, c.round());
++        assertEquals(TendermintStep.PROPOSE, c.step());
++        assertEquals(1, timeouts(as, TimeoutKind.PROPOSE));
++    }
++
++    @Test
++    void timeoutDePrevoteEArmadoUmaVezPorRound() {
++        TendermintCore<String> c = core();
++        c.start();
++        List<TendermintAction<String>> as = new ArrayList<>(c.onProposal(prop(0, 0, "A", -1)));
++        as.addAll(c.onVote(prevote(0, 0, null, 1)));
++        as.addAll(c.onVote(prevote(0, 0, "B", 2)));
++        as.addAll(c.onVote(prevote(0, 0, null, 0)));
++        assertEquals(1, timeouts(as, TimeoutKind.PREVOTE));
++        assertEquals(TendermintStep.PREVOTE, c.step(), "nem polka nem 2f+1 nil: espera o timeout");
++    }
++
++    @Test
++    void duplicataNaoContaDuasVezes() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onVote(prevote(0, 0, "A", 1));
++        c.onVote(prevote(0, 0, "A", 1));
++        assertEquals(1, c.discardCount(TendermintDiscardReason.DUPLICATE));
++        assertEquals(-1, c.lockedRound(), "2 votos A (o proprio e o do no 1) nao sao quorum");
++        c.onVote(prevote(0, 0, "A", 2));
++        assertEquals(0, c.lockedRound());
++    }
++
++    /** Equivocacao conta para o valor que assina, mas o remetente conta uma vez so nos limiares "de qualquer valor". */
++    @Test
++    void votoEquivocadoContaParaCadaValorQueAssina() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1)); // proprio voto: A
++        c.onVote(prevote(0, 0, "B", 0));   // bizantino 0 vota B...
++        c.onVote(prevote(0, 0, "A", 1));
++        assertEquals(-1, c.lockedRound());
++        List<TendermintAction<String>> as = c.onVote(prevote(0, 0, "A", 0)); // ...e tambem A
++        assertEquals(1, c.equivocationsObserved());
++        assertEquals(0, c.lockedRound(), "o voto A do bizantino completa a polka (3 remetentes em A)");
++        assertEquals("A", votes(as, Type.PRECOMMIT).get(0).vote().value());
++        assertEquals(0, timeouts(as, TimeoutKind.PREVOTE), "3 remetentes distintos, nao 4 mensagens");
++    }
++
++    @Test
++    void equivocacaoNaoDaPassagemDeRoundSozinha() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onVote(prevote(0, 6, null, 1));
++        c.onVote(prevote(0, 6, "X", 1));
++        c.onVote(precommit(0, 6, "Y", 1));
++        assertEquals(0, c.round(), "um remetente, varias mensagens: nao e f+1");
++    }
++
++    @Test
++    void decideNaSegundaPropostaDeUmProponenteBizantino() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1)); // vota A
++        c.onProposal(prop(0, 0, "B", -1)); // equivocacao do proponente 0: guardada
++        assertEquals(1, c.equivocationsObserved());
++        c.onVote(precommit(0, 0, "B", 0));
++        c.onVote(precommit(0, 0, "B", 1));
++        c.onVote(precommit(0, 0, "B", 2));
++        assertEquals("B", c.decision(0), "a decisao dos outros em B precisa ser reconhecida");
++    }
++
++    @Test
++    void propostaDeQuemNaoEProponenteEDescartada() {
++        TendermintCore<String> c = core();
++        c.start();
++        assertTrue(c.onProposal(new TendermintProposal<>(0, 0, "A", -1, 1)).isEmpty());
++        assertEquals(1, c.discardCount(TendermintDiscardReason.WRONG_PROPOSER));
++        assertEquals(TendermintStep.PROPOSE, c.step());
++    }
++
++    @Test
++    void segundaPropostaIgualEDuplicata() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onProposal(prop(0, 0, "A", -1));
++        c.onProposal(prop(0, 0, "A", -1));
++        assertEquals(1, c.discardCount(TendermintDiscardReason.DUPLICATE));
++        assertEquals(0, c.equivocationsObserved());
++    }
++
++    @Test
++    void valorInvalidoRecebeNil() {
++        TendermintCore<String> c = new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "ok",
++                v -> !v.startsWith("ruim"));
++        c.start();
++        List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "ruim", -1));
++        assertNull(votes(as, Type.PREVOTE).get(0).vote().value());
++        c.onVote(prevote(0, 0, "ruim", 0));
++        c.onVote(prevote(0, 0, "ruim", 1));
++        c.onVote(prevote(0, 0, "ruim", 2));
++        assertEquals(-1, c.lockedRound(), "polka de valor invalido nao trava");
++    }
++
++    @Test
++    void mensagemRecebidaDoProprioNoFalhaAlto() {
++        TendermintCore<String> c = core();
++        c.start();
++        assertThrows(IllegalStateException.class, () -> c.onVote(prevote(0, 0, "A", SELF)));
++    }
++
++    @Test
++    void remetenteForaDaFaixaEContado() {
++        TendermintCore<String> c = core();
++        c.start();
++        c.onVote(prevote(0, 0, "A", 7));
++        assertEquals(1, c.discardCount(TendermintDiscardReason.SENDER_OUT_OF_RANGE));
++    }
++
++    @Test
++    void mensagensAntesDoStartSaoUsadasNoStart() {
++        TendermintCore<String> c = core();
++        c.onProposal(prop(0, 0, "A", -1));
++        assertFalse(c.isStarted());
++        List<TendermintAction<String>> as = c.start();
++        assertEquals("A", votes(as, Type.PREVOTE).get(0).vote().value());
++    }
++
++    @Test
++    void startDuasVezesFalha() {
++        TendermintCore<String> c = core();
++        c.start();
++        assertThrows(IllegalStateException.class, c::start);
++        TendermintCore<String> d = core();
++        assertThrows(IllegalStateException.class, () -> d.onTimeout(TimeoutKind.PROPOSE, 0, 0));
++    }
++
++    @Test
++    void argumentosInvalidos() {
++        assertThrows(IllegalArgumentException.class, () -> new TendermintCore<String>(4, 4,
++                TendermintCore.roundRobin(4), h -> "v", v -> true));
++        assertThrows(IllegalArgumentException.class, () -> new TendermintProposal<>(0, 1, "A", 1, 1));
++        assertThrows(IllegalArgumentException.class, () -> new TendermintProposal<>(0, 1, null, -1, 1));
++        assertThrows(IllegalArgumentException.class, () -> new TendermintVote<>(null, 0, 0, "A", 1));
++    }
++}
+diff --git a/src/test/java/jabs/consensus/algorithm/tendermint/TendermintQuorumAndTimeoutsTest.java b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintQuorumAndTimeoutsTest.java
+new file mode 100644
+index 0000000..173700f
+--- /dev/null
++++ b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintQuorumAndTimeoutsTest.java
+@@ -0,0 +1,76 @@
++package jabs.consensus.algorithm.tendermint;
++
++import org.junit.jupiter.api.Test;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++class TendermintQuorumAndTimeoutsTest {
++
++    @Test
++    void limiaresConhecidos() {
++        assertEquals(3, new TendermintQuorum(4).strong());
++        assertEquals(2, new TendermintQuorum(4).weak());
++        assertEquals(4, new TendermintQuorum(5).strong());
++        assertEquals(5, new TendermintQuorum(6).strong());
++        assertEquals(5, new TendermintQuorum(7).strong());
++        assertEquals(7, new TendermintQuorum(10).strong());
++        assertEquals(34, new TendermintQuorum(50).strong());
++        assertEquals(17, new TendermintQuorum(50).weak());
++        assertEquals(267, new TendermintQuorum(400).strong());
++    }
++
++    @Test
++    void coincideCom2fMais1QuandoNE3fMais1() {
++        for (int f = 1; f <= 133; f++) {
++            int n = 3 * f + 1;
++            assertEquals(2 * f + 1, new TendermintQuorum(n).strong(), "n=" + n);
++            assertEquals(f + 1, new TendermintQuorum(n).weak(), "n=" + n);
++            assertEquals(TendermintQuorum.legacyTwoFPlusOne(n), new TendermintQuorum(n).strong());
++        }
++    }
++
++    /** Dois quoruns fortes sempre se cruzam em ao menos f+1 nos (logo em um correto), para todo n. */
++    @Test
++    void doisQuorunsSeCruzamEmUmCorretoParaTodoN() {
++        for (int n = 1; n <= 400; n++) {
++            TendermintQuorum q = new TendermintQuorum(n);
++            assertTrue(2 * q.strong() - n >= q.maxFaulty() + 1, "n=" + n);
++            assertTrue(q.strong() <= n - q.maxFaulty(), "quorum alcancavel sem os f bizantinos, n=" + n);
++            assertTrue(q.weak() >= q.maxFaulty() + 1, "f+1 contem um correto, n=" + n);
++        }
++    }
++
++    /** Documenta a divergencia: o 2f+1 de PBFT/HotStuff NAO garante o cruzamento quando n != 3f+1. */
++    @Test
++    void legado2fMais1FalhaOCruzamentoForaDe3fMais1() {
++        int n = 5; // f = 1, 2f+1 = 3: dois quoruns de 3 em 5 se cruzam em 1 no, que pode ser o bizantino
++        int legacy = TendermintQuorum.legacyTwoFPlusOne(n);
++        assertEquals(3, legacy);
++        assertTrue(2 * legacy - n < new TendermintQuorum(n).maxFaulty() + 1);
++        assertEquals(33, TendermintQuorum.legacyTwoFPlusOne(50));
++    }
++
++    @Test
++    void timeoutsCrescemComORound() {
++        TendermintTimeouts t = new TendermintTimeouts(3.0, 0.5, 1.0, 0.5, 1.0, 0.5);
++        assertEquals(3.0, t.durationSeconds(TimeoutKind.PROPOSE, 0), 1e-12);
++        assertEquals(4.0, t.durationSeconds(TimeoutKind.PROPOSE, 2), 1e-12);
++        assertEquals(2.5, t.durationSeconds(TimeoutKind.PREVOTE, 3), 1e-12);
++        assertEquals(1.5, t.durationSeconds(TimeoutKind.PRECOMMIT, 1), 1e-12);
++    }
++
++    @Test
++    void timeoutsInvalidos() {
++        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(0, 0, 1, 0, 1, 0));
++        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, -1, 1, 0, 1, 0));
++        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, 0, Double.NaN, 0, 1, 0));
++        assertThrows(IllegalArgumentException.class,
++                () -> new TendermintTimeouts(1, 0, 1, 0, Double.POSITIVE_INFINITY, 0));
++        TendermintTimeouts t = new TendermintTimeouts(1, 0, 1, 0, 1, 0);
++        assertThrows(IllegalArgumentException.class, () -> t.durationSeconds(TimeoutKind.PROPOSE, -1));
++        assertThrows(IllegalArgumentException.class, () -> t.durationSeconds(null, 0));
++        assertThrows(IllegalArgumentException.class, () -> new TendermintQuorum(0));
++    }
++}
+diff --git a/src/test/java/jabs/consensus/algorithm/tendermint/TendermintSafetyTest.java b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintSafetyTest.java
+new file mode 100644
+index 0000000..d5e44c2
+--- /dev/null
++++ b/src/test/java/jabs/consensus/algorithm/tendermint/TendermintSafetyTest.java
+@@ -0,0 +1,338 @@
++package jabs.consensus.algorithm.tendermint;
++
++import jabs.consensus.algorithm.tendermint.TendermintAction.Kind;
++import jabs.consensus.algorithm.tendermint.TendermintVote.Type;
++import org.junit.jupiter.api.Test;
++
++import java.util.ArrayDeque;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.LinkedHashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Random;
++import java.util.Set;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/**
++ * Varios nucleos ligados por uma rede de teste em memoria (sem JABS), com entrega em ordem aleatoria e semente fixa.
++ *
++ * <ul>
++ *   <li><b>Safety</b>: com ate f bizantinos que equivocam (propostas e votos diferentes para nos diferentes) e
++ *       timeouts disparando a qualquer momento (assincronia), dois nos corretos nunca decidem valores diferentes na
++ *       mesma altura;</li>
++ *   <li><b>Liveness</b>: com timeouts so quando a rede esta ociosa (sincronia apos o GST), os nos corretos avancam
++ *       mesmo com proponente parado ou bizantino.</li>
++ * </ul>
++ */
++class TendermintSafetyTest {
++
++    /**
++     * SILENT: parado. EQUIVOCATE: um voto por destinatario, valor sorteado. EQUIVOCATE_ALL: assina para cada
++     * destinatario TODOS os valores candidatos e nil (equivocacao maxima: conta em todo quorum).
++     */
++    enum Byzantine { SILENT, EQUIVOCATE, EQUIVOCATE_ALL }
++
++    private record Delivery(int to, Object msg) { }
++
++    private record Timer(int node, TimeoutKind kind, long height, int round) { }
++
++    /** Rede de teste. Valores sao Strings; todo valor e valido (o bizantino propoe valores validos). */
++    static final class Net {
++        final int n;
++        final Set<Integer> byz;
++        final Byzantine mode;
++        final Random rnd;
++        final boolean asyncTimers;
++        final double timerProbability;
++        /** Repasse (gossip) do que os corretos recebem de bizantinos: a suposicao de entrega do artigo. */
++        boolean gossip = true;
++        final Set<Delivery> sent = new HashSet<>();
++        final List<TendermintCore<String>> cores = new ArrayList<>();
++        final List<Delivery> queue = new ArrayList<>();
++        final ArrayDeque<Timer> timers = new ArrayDeque<>();
++        final Map<Long, Set<String>> seenValues = new HashMap<>();
++        final Set<String> byzEmitted = new HashSet<>();
++
++        Net(int n, Set<Integer> byz, Byzantine mode, long seed, boolean asyncTimers, double timerProbability) {
++            this.n = n;
++            this.byz = byz;
++            this.mode = mode;
++            this.rnd = new Random(seed);
++            this.asyncTimers = asyncTimers;
++            this.timerProbability = timerProbability;
++            for (int i = 0; i < n; i++) {
++                final int id = i;
++                cores.add(byz.contains(i) ? null : new TendermintCore<>(i, n, TendermintCore.roundRobin(n),
++                        h -> "h" + h + "-p" + id + "-" + rnd.nextInt(1_000_000), v -> true));
++            }
++        }
++
++        void start() {
++            for (int i = 0; i < n; i++) {
++                if (cores.get(i) != null) {
++                    handle(i, cores.get(i).start());
++                }
++            }
++        }
++
++        void handle(int from, List<TendermintAction<String>> actions) {
++            for (TendermintAction<String> a : actions) {
++                if (a.kind() == Kind.BROADCAST_PROPOSAL || a.kind() == Kind.BROADCAST_VOTE) {
++                    Object msg = a.kind() == Kind.BROADCAST_PROPOSAL ? a.proposal() : a.vote();
++                    if (a.value() != null) {
++                        seenValues.computeIfAbsent(a.height(), k -> new LinkedHashSet<>()).add(a.value());
++                    }
++                    for (int j = 0; j < n; j++) {
++                        if (j != from && cores.get(j) != null) {
++                            enqueue(new Delivery(j, msg));
++                        }
++                    }
++                    if (mode != Byzantine.SILENT) {
++                        reactByzantine(a.height(), a.round());
++                    }
++                } else if (a.kind() == Kind.SCHEDULE_TIMEOUT) {
++                    timers.add(new Timer(from, a.timeout(), a.height(), a.round()));
++                }
++            }
++        }
++
++        /**
++         * Para cada (h, r) que aparece na rede, cada bizantino manda UMA proposta (se for o proponente) e UM voto de
++         * cada tipo a cada no correto, escolhendo o valor ao acaso por destinatario entre os valores ja vistos na
++         * altura, dois valores proprios e nil: equivocacao maxima com um voto por destinatario.
++         */
++        void reactByzantine(long h, int r) {
++            for (int b : byz) {
++                String key = b + ":" + h + ":" + r;
++                if (!byzEmitted.add(key)) {
++                    continue;
++                }
++                List<String> candidates = new ArrayList<>(seenValues.getOrDefault(h, Set.of()));
++                String ownA = "byzA-" + b + "-" + h + "-" + r;
++                String ownB = "byzB-" + b + "-" + h + "-" + r;
++                candidates.add(ownA);
++                candidates.add(ownB);
++                boolean proposer = Math.floorMod(h + r, (long) n) == b;
++                for (int j = 0; j < n; j++) {
++                    if (cores.get(j) == null) {
++                        continue;
++                    }
++                    if (mode == Byzantine.EQUIVOCATE_ALL) {
++                        if (proposer) {
++                            // ordem sorteada por destinatario: corretos diferentes votam em propostas diferentes
++                            boolean aFirst = rnd.nextBoolean();
++                            enqueue(new Delivery(j, new TendermintProposal<>(h, r, aFirst ? ownA : ownB, -1, b)));
++                            enqueue(new Delivery(j, new TendermintProposal<>(h, r, aFirst ? ownB : ownA, -1, b)));
++                        }
++                        for (Type t : Type.values()) {
++                            enqueue(new Delivery(j, new TendermintVote<>(t, h, r, null, b)));
++                            for (String c : candidates) {
++                                enqueue(new Delivery(j, new TendermintVote<>(t, h, r, c, b)));
++                            }
++                        }
++                        continue;
++                    }
++                    if (proposer) {
++                        String pv = rnd.nextBoolean() ? ownA : ownB;
++                        enqueue(new Delivery(j, new TendermintProposal<>(h, r, pv, -1, b)));
++                    }
++                    for (Type t : Type.values()) {
++                        String v = rnd.nextInt(4) == 0 ? null : candidates.get(rnd.nextInt(candidates.size()));
++                        enqueue(new Delivery(j, new TendermintVote<>(t, h, r, v, b)));
++                    }
++                }
++                seenValues.computeIfAbsent(h, k -> new LinkedHashSet<>()).add(ownA);
++                seenValues.get(h).add(ownB);
++            }
++        }
++
++        void enqueue(Delivery d) {
++            if (sent.add(d)) {
++                queue.add(d);
++            }
++        }
++
++        private static int senderOf(Object msg) {
++            return msg instanceof TendermintProposal ? ((TendermintProposal<?>) msg).sender()
++                    : ((TendermintVote<?>) msg).sender();
++        }
++
++        @SuppressWarnings("unchecked")
++        boolean step() {
++            boolean fireTimer = !timers.isEmpty()
++                    && (queue.isEmpty() || (asyncTimers && rnd.nextDouble() < timerProbability));
++            if (fireTimer) {
++                Timer t;
++                if (asyncTimers) {
++                    List<Timer> list = new ArrayList<>(timers);
++                    t = list.get(rnd.nextInt(list.size()));
++                    timers.remove(t);
++                } else {
++                    t = timers.poll(); // ociosa: na ordem em que foram armados
++                }
++                handle(t.node(), cores.get(t.node()).onTimeout(t.kind(), t.height(), t.round()));
++                return true;
++            }
++            if (queue.isEmpty()) {
++                return false;
++            }
++            Delivery d = queue.remove(rnd.nextInt(queue.size()));
++            TendermintCore<String> c = cores.get(d.to());
++            List<TendermintAction<String>> out = d.msg() instanceof TendermintProposal
++                    ? c.onProposal((TendermintProposal<String>) d.msg())
++                    : c.onVote((TendermintVote<String>) d.msg());
++            if (gossip && byz.contains(senderOf(d.msg()))) {
++                for (int j = 0; j < n; j++) {
++                    if (cores.get(j) != null && j != d.to()) {
++                        enqueue(new Delivery(j, d.msg()));
++                    }
++                }
++            }
++            handle(d.to(), out);
++            return true;
++        }
++
++        void runUntilHeight(long target, int maxSteps) {
++            for (int s = 0; s < maxSteps && minHonestHeight() < target; s++) {
++                if (!step()) {
++                    break;
++                }
++            }
++        }
++
++        long minHonestHeight() {
++            long min = Long.MAX_VALUE;
++            for (TendermintCore<String> c : cores) {
++                if (c != null) {
++                    min = Math.min(min, c.height());
++                }
++            }
++            return min;
++        }
++
++        /** Falha se dois corretos decidiram valores diferentes na mesma altura. Devolve o numero de alturas. */
++        int assertAgreement(String context) {
++            Map<Long, String> agreed = new HashMap<>();
++            for (TendermintCore<String> c : cores) {
++                if (c == null) {
++                    continue;
++                }
++                for (Map.Entry<Long, String> e : c.decisions().entrySet()) {
++                    String prev = agreed.putIfAbsent(e.getKey(), e.getValue());
++                    if (prev != null) {
++                        assertEquals(prev, e.getValue(), "SAFETY violada na altura " + e.getKey() + " " + context);
++                    }
++                }
++            }
++            return agreed.size();
++        }
++    }
++
++    private static Set<Integer> ids(int... ids) {
++        Set<Integer> s = new LinkedHashSet<>();
++        for (int i : ids) {
++            s.add(i);
++        }
++        return s;
++    }
++
++    @Test
++    void caminhoFelizTodosDecidemNoRoundZero() {
++        for (int n : new int[]{4, 7, 10}) {
++            Net net = new Net(n, Set.of(), Byzantine.SILENT, 1L, false, 0);
++            net.start();
++            net.runUntilHeight(5, 200_000);
++            assertTrue(net.minHonestHeight() >= 5, "n=" + n);
++            net.assertAgreement("n=" + n);
++            for (TendermintCore<String> c : net.cores) {
++                assertEquals(0, c.equivocationsObserved());
++            }
++        }
++    }
++
++    @Test
++    void proponenteParadoNaoTravaARede() {
++        // no 0 parado: e proponente de (h, r) com (h + r) mod 4 == 0, inclusive (0, 0)
++        Net net = new Net(4, ids(0), Byzantine.SILENT, 7L, false, 0);
++        net.start();
++        net.runUntilHeight(8, 200_000);
++        assertTrue(net.minHonestHeight() >= 8);
++        net.assertAgreement("proponente parado");
++    }
++
++    @Test
++    void livenessComBizantinosQueEquivocamAposGst() {
++        for (long seed = 0; seed < 30; seed++) {
++            Net net = new Net(7, ids(1, 4), Byzantine.EQUIVOCATE, seed, false, 0);
++            net.start();
++            net.runUntilHeight(4, 400_000);
++            assertTrue(net.minHonestHeight() >= 4, "seed=" + seed + " altura=" + net.minHonestHeight());
++            net.assertAgreement("seed=" + seed);
++        }
++    }
++
++    /**
++     * Evidencia para o adaptador: SEM repasse, bizantinos que equivocam podem deixar corretos para tras (decidiram
++     * h contando votos que os outros nunca viram) e a rede para de decidir. Nao e defeito do nucleo; e a suposicao de
++     * gossip do artigo sendo violada.
++     */
++    @Test
++    void semRepasseBizantinosPodemPararARede() {
++        int stalled = 0;
++        for (long seed = 0; seed < 10; seed++) {
++            Net net = new Net(7, ids(1, 4), Byzantine.EQUIVOCATE, seed, false, 0);
++            net.gossip = false;
++            net.start();
++            net.runUntilHeight(12, 30_000);
++            net.assertAgreement("sem repasse, seed=" + seed); // safety vale mesmo assim
++            if (net.minHonestHeight() < 12) {
++                stalled++;
++            }
++        }
++        assertTrue(stalled > 0, "esperava ao menos uma execucao parada sem repasse");
++    }
++
++    /**
++     * Fuzzing de safety. Complementa, nao substitui, os ataques roteirizados de
++     * {@link TendermintAttackScenariosTest}: aqui a ordem e aleatoria e raramente monta o cenario que explora um
++     * lock quebrado (medido: com o lock removido, 2 violacoes em 3.600 execucoes). O que este teste pega bem sao
++     * erros de contagem (ex.: voto nil contado como polka foi pego na primeira bateria).
++     */
++    @Test
++    void safetyComBizantinosEquivocandoETimeoutsAssincronos() {
++        int[][] configs = {{4, 0}, {7, 1, 4}, {10, 2, 5, 9}};
++        double[] probabilities = {0.02, 0.1, 0.3};
++        int heightsChecked = 0;
++        int runsWithRoundChanges = 0;
++        for (Byzantine mode : new Byzantine[]{Byzantine.EQUIVOCATE, Byzantine.EQUIVOCATE_ALL}) {
++            for (int[] cfg : configs) {
++                int n = cfg[0];
++                Set<Integer> byz = new LinkedHashSet<>();
++                for (int i = 1; i < cfg.length; i++) {
++                    byz.add(cfg[i]);
++                }
++                for (double p : probabilities) {
++                    for (long seed = 0; seed < 20; seed++) {
++                        Net net = new Net(n, byz, mode, seed * 31 + n, true, p);
++                        net.start();
++                        net.runUntilHeight(6, 15_000);
++                        heightsChecked += net.assertAgreement(mode + " n=" + n + " p=" + p + " seed=" + seed);
++                        for (TendermintCore<String> c : net.cores) {
++                            if (c != null && c.discardCount(TendermintDiscardReason.STALE_TIMEOUT) > 0) {
++                                runsWithRoundChanges++;
++                                break;
++                            }
++                        }
++                    }
++                }
++            }
++        }
++        // o teste so vale se de fato exercitou decisoes e trocas de round
++        assertTrue(heightsChecked > 300, "alturas verificadas: " + heightsChecked);
++        assertTrue(runsWithRoundChanges > 100, "execucoes com timeouts obsoletos: " + runsWithRoundChanges);
++    }
++}
+-- 
+2.43.0
+
