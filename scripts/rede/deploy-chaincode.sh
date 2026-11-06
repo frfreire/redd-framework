@@ -174,6 +174,26 @@ else
 fi
 CC_LABEL="${CC_NAME}_${CC_VERSION}"
 
+# IDEMPOTENCIA: se a MESMA versao ja esta commitada, nao reinstala nem sobe a
+# sequence (o hash do pacote CCaaS muda a cada empacotamento por causa do
+# mtime do tar, entao reexecutar geraria um install/sequence novos sem mudanca
+# real). Apenas garante que os 3 containers CCaaS estao no ar com o .env atual.
+# Para forcar um upgrade: CC_FORCE_UPGRADE=1, ou aumente CC_VERSION.
+COMMITTED_VERSION="$(docker exec "${CLI_CONTAINER}" bash -c "${DEV_ENV} && peer lifecycle chaincode querycommitted --channelID ${CHANNEL_NAME} --name ${CC_NAME} 2>/dev/null" \
+  | sed -n 's/^Version: \([^,]*\), Sequence: .*/\1/p' | head -n1 || true)"
+if [ -n "${EXISTING_SEQUENCE}" ] && [ "${COMMITTED_VERSION}" = "${CC_VERSION}" ] && [ "${CC_FORCE_UPGRADE:-0}" != "1" ]; then
+  echo "==> '${CC_NAME}' v${COMMITTED_VERSION} ja commitado (sequence ${EXISTING_SEQUENCE}); nada a instalar/aprovar."
+  if [ -f "${HOST_ENV_FILE}" ] && ! grep -q '=placeholder' "${HOST_ENV_FILE}"; then
+    docker compose -f "${HOST_COMPOSE_FILE}" --env-file "${HOST_ENV_FILE}" --profile ccaas \
+      up -d chaincode-ccaas-developer chaincode-ccaas-verifier chaincode-ccaas-marketplace
+    echo "==> Containers CCaaS garantidos no ar. Use CC_FORCE_UPGRADE=1 (ou nova CC_VERSION) para forcar upgrade."
+    exit 0
+  fi
+  echo "ERRO: chaincode commitado mas ${HOST_ENV_FILE} ausente/placeholder (PACKAGE_IDs perdidos)." >&2
+  echo "      Rode com CC_FORCE_UPGRADE=1 para reinstalar com sequence+1." >&2
+  exit 1
+fi
+
 echo "==> 3/7 — Empacotando chaincode CCaaS por organização (connection.json + META-INF)..."
 cli_exec "rm -rf ${CLI_PKG_DIR} && mkdir -p ${CLI_PKG_DIR}"
 for ORG in developer verifier marketplace; do

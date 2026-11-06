@@ -46,6 +46,11 @@ public class NetworkInterface {
     public boolean networkInterfaceDown;
 
     /**
+     * Link-load counters (ADR-0012). {@code null} = recording off (default): no behavior change.
+     */
+    private LinkLoadCounters loadCounters;
+
+    /**
      * Stops the node from sending or receiving packets
      */
     public void takeDown() {
@@ -97,6 +102,10 @@ public class NetworkInterface {
      * @param packet the packet to be received
      */
     public void addToDownLinkQueue(Packet packet) {
+        if (this.loadCounters != null) {
+            // ADR-0012 RM-01/VT-02: every packet reaching the downlink entry point, up or down interface
+            this.loadCounters.packetArrived(packet.getSize(), this.networkInterfaceDown);
+        }
         if (!this.networkInterfaceDown) {
             this.addToLinkQueue(packet, this.messageReceivingProcess);
         }
@@ -108,8 +117,46 @@ public class NetworkInterface {
      */
     public void addToUpLinkQueue(Packet packet) {
         if (!this.networkInterfaceDown) {
+            if (this.loadCounters != null && this.messageSendingProcess.isQueueEmpty()) {
+                // ADR-0012 RM-03: a busy interval opens when a packet enters an EMPTY send queue
+                this.loadCounters.upLinkBecameBusy(this.simulator.getSimulationTime());
+            }
             this.addToLinkQueue(packet, this.messageSendingProcess);
+        } else if (this.loadCounters != null) {
+            this.loadCounters.senderDownDropped(packet.getSize());
         }
+    }
+
+    /**
+     * Turns on the per-node link-load counters of ADR-0012 (bytes sent/received, send-queue busy time). Off by
+     * default; with it off the interface behaves exactly as before. Call before the first packet is exchanged
+     * (a packet already waiting in the send queue opens a busy interval at the current simulation time).
+     *
+     * @return the counters of this interface (the same object if already enabled)
+     */
+    public LinkLoadCounters enableLoadRecording() {
+        if (this.loadCounters == null) {
+            this.loadCounters = new LinkLoadCounters();
+            if (this.messageSendingProcess != null && !this.messageSendingProcess.isQueueEmpty()) {
+                this.loadCounters.upLinkBecameBusy(this.simulator.getSimulationTime());
+            }
+        }
+        return this.loadCounters;
+    }
+
+    /**
+     * @return the link-load counters, or {@code null} when recording is off (default)
+     */
+    public LinkLoadCounters getLoadCounters() {
+        return this.loadCounters;
+    }
+
+    /**
+     * Bytes waiting in the receiving queue (read-only; used by the link-load recorder for the end-of-run residual).
+     * @return sum of packet sizes queued for reception, 0 if there is no receiving process
+     */
+    public long receiveQueueBytes() {
+        return (this.messageReceivingProcess == null) ? 0L : this.messageReceivingProcess.queuedBytes();
     }
 
     /**

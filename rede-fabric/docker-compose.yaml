@@ -121,7 +121,7 @@ services:
   # CouchDB — state database de cada peer (1 por organizacao).
   # ---------------------------------------------------------------------
   couchdb0.developer:
-    image: mirror.gcr.io/couchdb:3.3
+    image: mirror.gcr.io/library/couchdb:3.3
     container_name: couchdb0.developer
     hostname: couchdb0.developer
     environment:
@@ -135,7 +135,7 @@ services:
       - redd-network
 
   couchdb0.verifier:
-    image: mirror.gcr.io/couchdb:3.3
+    image: mirror.gcr.io/library/couchdb:3.3
     container_name: couchdb0.verifier
     hostname: couchdb0.verifier
     environment:
@@ -149,7 +149,7 @@ services:
       - redd-network
 
   couchdb0.marketplace:
-    image: mirror.gcr.io/couchdb:3.3
+    image: mirror.gcr.io/library/couchdb:3.3
     container_name: couchdb0.marketplace
     hostname: couchdb0.marketplace
     environment:

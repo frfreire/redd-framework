@@ -642,4 +642,47 @@ ARQUIVOS DA RODADA 3
    src/test/java/jabs/example/NetworkSizingTest.java, HashIdentidadePreSimulacaoTest.java (ajustados)
    src/test/java/jabs/network/p2p/SweepR2Rodar.java (argumento opcional arquivo=NOME; padrao inalterado)
    src/test/resources/nao-regressao/n1-conversao-n/: saida-r3/ (18), comandos-r3.txt, hashes-r3.txt, sweep-r3.txt,
-   byzantine-r3.txt, README.txt (esta secao)
+    byzantine-r3.txt, README.txt (esta secao)
+
+RODADA 4 (extra, escopo unico: criterio 7, linhas '#' no mvp-results.csv em modo legacy)
+   ACHADO: em --n-semantics=legacy o atual escrevia 2 linhas '#' no mvp-results.csv antes do cabecalho
+   (hashes-r3.txt: base comentarios=0, atual comentarios=2). A comparacao da rodada 3 ignorava linhas '#', entao o
+   "18 de 18 IDENTICO" da secao 5 NAO provava igualdade byte a byte do mvp-results.csv. Para esse arquivo, as
+   secoes 5 e 6 ficam SEM VALOR COMO PROVA ate a reexecucao (os CSV por trial nao tinham linhas '#' do N1).
+   FEITO 1 (codigo): MVPComparison.initializeCSV escreve as linhas '#' SO quando nodesMode. Em legacy o arquivo
+   comeca no cabecalho de colunas, como na baseline. O dimensionamento do legacy continua no stdout
+   ("n-semantics=legacy", "Network sizing: ..."). Conferido por execucao (ARQ n=7, 5 s, semente 1, JVM padrao):
+   legacy = 2 linhas (cabecalho + dado), 0 com '#'; nodes = 4 linhas (2 com '#').
+   FEITO 2 (comparador): nao_regressao.py desta pasta (src/test/resources/nao-regressao/) deixa de ignorar '#':
+   ler() devolve tambem as linhas '#' e comparar() as exige IGUAIS (texto bruto, mesma ordem). Normalizacoes que
+   restam, e so estas: linhas em branco; colunas cujo cabecalho contem 'hash' (identityHashCode); a coluna
+   EXTRA_ATUAL=-1 (T1/ADR-0006). Comentarios NAO sao normalizados. Nao executei esse script (ver NAO FEITO).
+   FEITO 3 (testes): NetworkSizingTest.cabecalhoDoCsvTemLinhasComentadasComADecomposicao foi substituido por
+   legacyNaoEscreveComentariosNoCsvEnodesEscreve (legacy: arquivo comeca no cabecalho, sem '#', e igual ao sem a
+   flag; nodes: com '#'); flagDesconhecidaNaoAbortaMasAvisaSoNoStderr confere o dimensionamento no stdout.
+   NAO FEITO (passo 3 da tarefa: reexecutar base x atual, 18 casos + sweep, regerar hashes-r3 e o README):
+     - o commit 325f4e3 nao existe neste repositorio (4 commits) e /tmp/opencode/base-325f4e3 nao existe aqui;
+     - nao_regressao.py e os drivers Evidencia*Rodar montam classpath com ':', usam /tmp e target/cp.txt (Linux).
+   hashes-r3.txt, saida-r3/ e as secoes 5-7 NAO foram regenerados e nao refletem esta correcao. A reexecucao
+   precisa do ambiente Linux da rodada 3 (base 325f4e3 em /tmp/opencode, mvn offline funcionando).
+   Pendencia relacionada, FORA do escopo pedido e nao alterada: ByzantineSweep.java:107-110 tambem escreve 2 linhas
+   '#' no sweep.csv em modo legacy, e a baseline nao; sweep-r3.txt tambem usou o hash que ignora '#'.
+   scripts/jabs/nao_regressao.py (o que o enxame executa) NAO foi alterado (fora do escopo src/ e pom.xml); a copia
+   desta pasta e que foi alterada. Sincronizar fica para quem tiver permissao.
+   VERIFICACOES NESTA MAQUINA (Windows, JDK 21): mvn -o test falha no surefire:test com
+   "Unable to load the mojo 'test' ... A required class is missing: org/apache/maven/plugin/surefire/
+   SurefireReportParameters" (POM do maven-surefire-plugin:3.3.1 ausente no ~/.m2). Compile e testCompile passam.
+   mvn test (com rede): 346 testes, 344 passam, 2 falham, ambos testes que sobem JVM filha:
+     HashIdentidadePreSimulacaoTest.preSimulacaoLegacyConsome...: "Could not find or load main class
+       jabs.example.SondaHash" (causa provavel: classpath montado com ':' no Windows; nao confirmei)
+     P2PSetupTest.mesmaSementeMesmosVizinhos...: texto esperado != obtido da JVM filha (causa provavel: fim de linha
+       CRLF do println no Windows contra '\n' esperado; nao confirmei)
+   Nao verifiquei se esses 2 ja falhavam antes desta mudanca (sem baseline limpa aqui); nenhum toca em
+   MVPComparison.initializeCSV. NetworkSizingTest: 11/11 passam (rodada com -Dtest=NetworkSizingTest).
+   lint-jabs.py src/main/java: 224 arquivos, 14 bloqueantes (JB-009, pre-existentes), 41 avisos; igual a rodada 3.
+
+ARQUIVOS DA RODADA 4
+   src/main/java/jabs/example/MVPComparison.java (initializeCSV)
+   src/test/java/jabs/example/NetworkSizingTest.java
+   src/test/resources/nao-regressao/nao_regressao.py
+   src/test/resources/nao-regressao/n1-conversao-n/README.txt (esta secao)

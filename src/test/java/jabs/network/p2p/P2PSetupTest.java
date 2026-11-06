@@ -295,7 +295,9 @@ class P2PSetupTest {
             if (p.exitValue() != 0) {
                 return "ERRO:" + Files.readString(erro);
             }
-            return Files.readString(saida);
+            // P2PVizinhosMain usa println: a filha termina linhas com System.lineSeparator() (CRLF no Windows).
+            // So a terminacao de linha e normalizada; o conteudo continua comparado byte a byte.
+            return Files.readString(saida).replace(System.lineSeparator(), "\n");
         } finally {
             Files.deleteIfExists(saida);
             Files.deleteIfExists(erro);

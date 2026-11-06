@@ -1,6 +1,7 @@
 package jabs.simulator;
 
 import jabs.simulator.event.Event;
+import jabs.simulator.event.PacketDeliveryEvent;
 import java.util.PriorityQueue;
 
 
@@ -96,6 +97,34 @@ public class Simulator {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Execution time of the next event, without executing it and without changing the queue
+     * (read-only; used by the link-load recorder to take its snapshot exactly at t0).
+     *
+     * @return time of the next event, or {@link Double#POSITIVE_INFINITY} if there is none
+     */
+    public double peekEventTime() {
+        ScheduledEvent next = eventQueue.peek();
+        return (next == null) ? Double.POSITIVE_INFINITY : next.time();
+    }
+
+    /**
+     * Total size of the packets that already left a send queue and whose {@link PacketDeliveryEvent} is still
+     * scheduled (in transit). Read-only scan of the event queue (array order, no hashing, no new event); used only
+     * by the link-load recorder to measure the end-of-run residual (ADR-0012, VT-02).
+     *
+     * @return sum of {@code packet.getSize()} over the scheduled packet deliveries
+     */
+    public long pendingPacketDeliveryBytes() {
+        long total = 0;
+        for (ScheduledEvent se : eventQueue) {
+            if (se.event() instanceof PacketDeliveryEvent) {
+                total += ((PacketDeliveryEvent) se.event()).packet.getSize();
+            }
+        }
+        return total;
     }
 
     /**

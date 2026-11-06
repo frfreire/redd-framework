@@ -104,10 +104,14 @@ public class ByzantineSweep {
         Files.createDirectories(outDir);
 
         try (BufferedWriter bw = Files.newBufferedWriter(outPath)) {
-            // Linhas '#' (ignoradas por scripts/jabs/*.py): a coluna n e o PEDIDO; nos construidos aqui.
-            bw.write(new StringBuilder("# n_semantics=").append(nodesMode ? "nodes" : "legacy")
-                    .append(" (coluna n = valor pedido na linha de comando)\n").toString());
-            bw.write(new StringBuilder("# ").append(sizingLine).append('\n').toString());
+            // Modo legacy: o CSV e BYTE A BYTE o da baseline 325f4e3 (comeca direto no cabecalho de colunas, sem
+            // linhas '#'); o dimensionamento legacy ja sai no stdout ("Network sizing:").
+            // Modo nodes: linhas '#' (ignoradas por scripts/jabs/*.py): a coluna n e o PEDIDO; nos construidos aqui.
+            if (nodesMode) {
+                bw.write(new StringBuilder("# n_semantics=nodes")
+                        .append(" (coluna n = valor pedido na linha de comando)\n").toString());
+                bw.write(new StringBuilder("# ").append(sizingLine).append('\n').toString());
+            }
             bw.write(
                     "protocol,n,f,trials,avgPdv,stdPdv,avgFinalizationTime,stdFinalizationTime,avgConfirmationLatency,stdConfirmationLatency,avgBlockCount,stdBlockCount,avgTraffic,stdTraffic,avgEmpiricalBFT_pct,stdEmpiricalBFT_pct,secureCount\n");
 

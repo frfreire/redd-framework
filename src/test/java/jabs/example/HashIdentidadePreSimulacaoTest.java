@@ -4,7 +4,6 @@ import jabs.config.NetworkSizing;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,19 +41,18 @@ class HashIdentidadePreSimulacaoTest {
     @TempDir
     Path tmp;
 
-    private static String classpath() throws IOException {
-        Path base = Path.of("").toAbsolutePath();
-        StringBuilder cp = new StringBuilder();
-        cp.append(base.resolve("target/test-classes")).append(':').append(base.resolve("target/classes"));
-        Path deps = base.resolve("target/cp.txt");
-        if (Files.exists(deps)) {
-            cp.append(':').append(Files.readString(deps).trim());
-        }
-        return cp.toString();
+    /**
+     * Classpath das JVMs filhas: o do proprio teste (surefire expoe o real em {@code surefire.test.class.path}; fora do
+     * surefire, {@code java.class.path}). Independe de plataforma (separador e caminhos vem da JVM atual) e inclui as
+     * dependencias, sem exigir {@code target/cp.txt}.
+     */
+    private static String classpath() {
+        return System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
     }
 
     private static String rodar(String cp, Path saida, String... args) throws Exception {
-        List<String> cmd = new ArrayList<>(List.of("java", "-cp", cp));
+        String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
+        List<String> cmd = new ArrayList<>(List.of(java, "-cp", cp));
         cmd.addAll(List.of(args));
         Process p = new ProcessBuilder(cmd).redirectErrorStream(true).redirectOutput(saida.toFile()).start();
         if (!p.waitFor(120, TimeUnit.SECONDS)) {

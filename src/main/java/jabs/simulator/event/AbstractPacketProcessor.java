@@ -49,8 +49,35 @@ public abstract class AbstractPacketProcessor implements Event {
             if (!this.packetsQueue.isEmpty()) {
                 simulator.putEvent(this, processingTime(timedPacket.packet));
             }
+            // ADR-0012 RM-01/RM-03: single instrumentation point; no-op unless link-load recording is enabled
+            this.packetLeftQueue(timedPacket.packet, this.packetsQueue.isEmpty());
             this.sendPacketToNextProcess(timedPacket.packet);
         }
+    }
+
+    /**
+     * Hook called when a packet leaves this processor's queue (before it is handed to the next stage). Default:
+     * nothing. Overridden by the sending and receiving processes to feed the link-load counters (ADR-0012). Must
+     * not schedule events, draw random numbers or call hashCode/identityHashCode (RM-08).
+     *
+     * @param packet       the packet that left the queue
+     * @param queueEmptied true if the queue is empty after removing the packet
+     */
+    protected void packetLeftQueue(Packet packet, boolean queueEmptied) {
+    }
+
+    /**
+     * Total size, in bytes, of the packets currently waiting in this processor's queue (read-only; used only by the
+     * link-load recorder to measure the residual of the run, ADR-0012 VT-02).
+     *
+     * @return sum of {@code packet.getSize()} over the queue
+     */
+    public long queuedBytes() {
+        long total = 0;
+        for (TimedPacket tp : packetsQueue) {
+            total += tp.packet().getSize();
+        }
+        return total;
     }
 
     public abstract double processingTime(Packet packet);

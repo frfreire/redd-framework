@@ -245,7 +245,10 @@ class NetworkSizingTest {
         assertFalse(saida.contains("AVISO") || saida.contains("n-semantic="), "aviso fora do stdout");
         assertTrue(saida.contains("n-semantics=legacy"), "modo legacy");
         String csv = Files.readString(out.resolve("mvp-results.csv"));
-        assertTrue(csv.contains("n_semantics=legacy") && csv.contains("nodes=15 miners=4 stakeholders=11"), csv);
+        // legacy: CSV byte a byte como o da baseline 325f4e3 (sem linhas '#'); o dimensionamento sai no stdout
+        assertFalse(csv.contains("#"), "legacy nao escreve comentarios no CSV: " + csv);
+        assertTrue(saida.contains("Network sizing: protocol=MCO2 n_semantics=legacy")
+                && saida.contains("nodes=15 miners=4 stakeholders=11"), saida);
         assertFalse(csv.contains("AVISO"), "aviso fora do CSV");
     }
 
@@ -297,27 +300,71 @@ class NetworkSizingTest {
         }
     }
 
+    /**
+     * Rodada 4: o modo legacy NAO escreve linhas '#' no mvp-results.csv (byte a byte como a baseline 325f4e3: o CSV
+     * comeca no cabecalho de colunas). So o modo nodes escreve a decomposicao em linhas '#'.
+     */
     @Test
-    void cabecalhoDoCsvTemLinhasComentadasComADecomposicao() throws IOException {
-        for (String sem : new String[]{"legacy", "nodes"}) {
-            Path out = tmp.resolve("mvp-" + sem);
-            MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
-                    "--duration=10", "--seed=1", "--n-semantics=" + sem, "--output=" + out});
-            List<String> linhas = Files.readAllLines(out.resolve("mvp-results.csv"));
-            List<String> comentarios = linhas.stream().filter(l -> l.startsWith("#")).toList();
-            List<String> dados = linhas.stream().filter(l -> !l.startsWith("#")).toList();
-            assertEquals("project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std", dados.get(0),
-                    "cabecalho de colunas inalterado, so precedido por '#'");
-            assertTrue(comentarios.get(0).contains("n_semantics=" + sem), comentarios.toString());
-            assertTrue(comentarios.stream().anyMatch(l -> l.contains("protocol=MCO2") && l.contains("nodes=")
-                    && l.contains("miners=") && l.contains("stakeholders=") && l.contains("casper_S=")), comentarios.toString());
-            assertTrue(comentarios.stream().anyMatch(l -> l.contains("protocol=AMBIFY")
-                    && l.contains("parlia_validators=")), comentarios.toString());
-        }
-        // valores concretos de n=10: legacy 3+7 = 10; nodes 3+7 = 10 (coincidem); o caso que diverge e n=16
-        Path out = tmp.resolve("mvp-16");
-        MVPComparison.main(new String[]{"--protocols=MCO2", "--validators=16", "--trials=0", "--n-semantics=legacy",
-                "--output=" + out});
-        assertTrue(Files.readString(out.resolve("mvp-results.csv")).contains("nodes=15 miners=4 stakeholders=11"));
+    void legacyNaoEscreveComentariosNoCsvEnodesEscreve() throws IOException {
+        final String cabecalho = "project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std";
+        Path outL = tmp.resolve("mvp-legacy");
+        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
+                "--duration=10", "--seed=1", "--n-semantics=legacy", "--output=" + outL});
+        String bruto = Files.readString(outL.resolve("mvp-results.csv"));
+        assertTrue(bruto.startsWith(cabecalho + "\n"), "legacy: o arquivo comeca no cabecalho de colunas: " + bruto);
+        assertFalse(bruto.contains("#"), "legacy: nenhuma linha '#': " + bruto);
+        // padrao (sem a flag) = legacy: mesmo conteudo
+        Path outP = tmp.resolve("mvp-padrao");
+        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
+                "--duration=10", "--seed=1", "--output=" + outP});
+        assertEquals(bruto, Files.readString(outP.resolve("mvp-results.csv")), "sem a flag = legacy, byte a byte");
+
+        Path outN = tmp.resolve("mvp-nodes");
+        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
+                "--duration=10", "--seed=1", "--n-semantics=nodes", "--output=" + outN});
+        List<String> linhas = Files.readAllLines(outN.resolve("mvp-results.csv"));
+        List<String> comentarios = linhas.stream().filter(l -> l.startsWith("#")).toList();
+        List<String> dados = linhas.stream().filter(l -> !l.startsWith("#")).toList();
+        assertEquals(cabecalho, dados.get(0), "cabecalho de colunas inalterado, so precedido por '#'");
+        assertTrue(comentarios.get(0).contains("n_semantics=nodes"), comentarios.toString());
+        assertTrue(comentarios.stream().anyMatch(l -> l.contains("protocol=MCO2") && l.contains("nodes=")
+                && l.contains("miners=") && l.contains("stakeholders=") && l.contains("casper_S=")), comentarios.toString());
+        assertTrue(comentarios.stream().anyMatch(l -> l.contains("protocol=AMBIFY")
+                && l.contains("parlia_validators=")), comentarios.toString());
+    }
+
+    /** Roda o sweep com 0 trials (sem simular): grava o cabecalho e falha alto em NAO_MEDIDO; devolve o CSV bruto. */
+    private String sweepSoCabecalho(String nome, String... extra) throws IOException {
+        Path csv = tmp.resolve(nome).resolve("sweep.csv");
+        List<String> args = new ArrayList<>(List.of("--type=POS", "--validators=10", "--max-byz=0", "--trials=0",
+                "--duration=10", "--seed=1", "--attack=SILENT", "--out=" + csv));
+        args.addAll(List.of(extra));
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(args.toArray(new String[0])));
+        return Files.readString(csv);
+    }
+
+    /**
+     * N1b: o modo legacy do ByzantineSweep NAO escreve linhas '#' no sweep.csv (byte a byte como a baseline 325f4e3:
+     * o arquivo comeca no cabecalho de colunas). So o modo nodes escreve a decomposicao em linhas '#'.
+     */
+    @Test
+    void sweepLegacyNaoEscreveComentariosNoCsvEnodesEscreve() throws IOException {
+        final String cabecalho = "protocol,n,f,trials,avgPdv,stdPdv,avgFinalizationTime,stdFinalizationTime,"
+                + "avgConfirmationLatency,stdConfirmationLatency,avgBlockCount,stdBlockCount,avgTraffic,stdTraffic,"
+                + "avgEmpiricalBFT_pct,stdEmpiricalBFT_pct,secureCount\n";
+        String legacy = sweepSoCabecalho("legacy", "--n-semantics=legacy");
+        assertEquals(cabecalho, legacy, "legacy: so o cabecalho de colunas, nenhuma linha '#'");
+        assertEquals(legacy, sweepSoCabecalho("padrao"), "sem a flag = legacy, byte a byte");
+
+        String nodes = sweepSoCabecalho("nodes", "--n-semantics=nodes");
+        List<String> linhas = nodes.lines().toList();
+        List<String> comentarios = linhas.stream().filter(l -> l.startsWith("#")).toList();
+        assertEquals(2, comentarios.size(), comentarios.toString());
+        assertTrue(comentarios.get(0).contains("n_semantics=nodes"), comentarios.toString());
+        assertTrue(comentarios.get(1).contains("type=POS") && comentarios.get(1).contains("nodes=10")
+                && comentarios.get(1).contains("miners=") && comentarios.get(1).contains("stakeholders="),
+                comentarios.toString());
+        assertEquals(cabecalho, nodes.substring(nodes.indexOf("protocol,")),
+                "cabecalho de colunas inalterado, so precedido por '#'");
     }
 }

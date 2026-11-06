@@ -242,3 +242,11 @@ run-mvp.ps1
 run-mvp.sh
 validate-metrics.ps1
 validate-metrics.sh
+
+# Ruflo local secrets and runtime data
+.env.local
+.env.*.local
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+.mcp.json

@@ -8,7 +8,8 @@ Para cada caso PROTOCOLO:N:DURACAO roda 4 execucoes independentes (processos JVM
 cada uma com timeout proprio e saida isolada):
     base-a, base-b  (codigo original, mesma semente)
     atual-a, atual-b (codigo atual,   mesma semente)
-e compara os CSV (colunas com 'hash' e linhas '#' ignoradas, como em checar-determinismo.py):
+e compara os CSV INTEIROS (so as colunas com 'hash' e as linhas em branco sao normalizadas; as linhas '#'
+sao comparadas e DEVEM ser iguais, ver `ler`):
     base-a  x base-b   -> a baseline e deterministica? (se nao, divergencia e PRE-EXISTENTE)
     atual-a x atual-b  -> o atual e deterministico?
     base-a  x atual-a  -> regressao introduzida pela T1?
@@ -67,14 +68,20 @@ def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax):
 
 
 def ler(path: Path):
-    linhas = [l for l in path.read_text(encoding="utf-8", errors="replace").splitlines()
-              if l.strip() and not l.startswith("#")]
+    """Retorna (cabecalho, linhas, comentarios). As linhas '#' NAO sao descartadas: voltam em `comentarios`
+    (texto bruto, na ordem) e `comparar` as exige IGUAIS entre os dois lados (rodada 4 da N1: antes elas eram
+    ignoradas, o que escondeu que o atual escrevia 2 linhas '#' a mais no mvp-results.csv).
+    Normalizacoes que RESTAM, e so estas: (1) linhas em branco sao puladas; (2) colunas cujo cabecalho contem
+    'hash' sao removidas (identityHashCode do bloco, varia entre JVMs); (3) EXTRA_ATUAL, ver comparar."""
+    todas = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    comentarios = [l for l in todas if l.strip() and l.startswith("#")]
+    linhas = [l for l in todas if l.strip() and not l.startswith("#")]
     if not linhas:
-        return [], []
+        return [], [], comentarios
     delim = ";" if linhas[0].count(";") > linhas[0].count(",") else ","
     rows = list(csv.reader(linhas, delimiter=delim))
     manter = [i for i, c in enumerate(rows[0]) if "hash" not in c.lower()]
-    return [rows[0][i] for i in manter], [[r[i] for i in manter if i < len(r)] for r in rows[1:]]
+    return [rows[0][i] for i in manter], [[r[i] for i in manter if i < len(r)] for r in rows[1:]], comentarios
 
 
 EXTRA_ATUAL = "TrafficConsensusUntilFinalization"  # coluna nova da T1 (ADR-0006); -1 = nao medido
@@ -92,8 +99,10 @@ def comparar(a: Path, b: Path, extra_ok=False):
         return "DIVERGENTE", f"arquivos diferem {fa} vs {fb}", 0
     total, notas, extras = 0, [], 0
     for rel in fa:
-        ca, ra = ler(a / rel)
-        cb, rb = ler(b / rel)
+        ca, ra, coma = ler(a / rel)
+        cb, rb, comb = ler(b / rel)
+        if coma != comb:
+            notas.append(f"{rel}: linhas '#' diferem ({len(coma)} vs {len(comb)}): {coma[:2]} vs {comb[:2]}")
         if extra_ok and EXTRA_ATUAL in cb and EXTRA_ATUAL not in ca:
             k = cb.index(EXTRA_ATUAL)
             if any(len(r) > k and r[k] != "-1" for r in rb):

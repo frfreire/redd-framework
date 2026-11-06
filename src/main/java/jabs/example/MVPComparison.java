@@ -44,6 +44,9 @@ public class MVPComparison {
         // N1: semantica do n. Ausente = legacy (comportamento anterior); valor invalido falha alto (a unica validacao nova de flag).
         // Booleano, nao enum: ver "Rodada 2" no README da N1 (o modo legacy nao pode carregar classes novas).
         boolean nodesMode = isNodesMode(cli.get(NetworkSizing.FLAG));
+        // ADR-0012 (M1a-1): registro de carga do enlace. DESLIGADO por padrao; ligado sem t0 explicito FALHA ALTO aqui,
+        // antes de qualquer simulacao. Caminho desligado: so duas leituras de mapa, sem carregar classe nova.
+        configureLoadRecord(cli.get("load-record"), cli.get("load-record-t0"));
         java.util.List<Integer> validatorsList = parseIntList(cli.getOrDefault("validators", "200"));
         java.util.List<String> protocolList = parseStringList(cli.getOrDefault("protocols", "EARTH"));
         int trials = Integer.parseInt(cli.getOrDefault("trials", "5"));
@@ -57,6 +60,14 @@ public class MVPComparison {
         // Parse per-protocol durations: EARTH:600,MCO2:300,TREE:450
         java.util.Map<String, Double> protocolDurations = parseProtocolDurations(
             cli.getOrDefault("durations", ""), protocolList, defaultDuration);
+        if (loadRecordOn) {
+            for (String protocol : protocolList) {
+                if (!(loadRecordT0 < protocolDurations.get(protocol))) {
+                    throw new IllegalArgumentException("--load-record-t0=" + loadRecordT0 + " is not inside the run of "
+                            + protocol + " (duration " + protocolDurations.get(protocol) + " s): empty window");
+                }
+            }
+        }
         
         // Decomposicao de cada (protocolo, n) calculada ANTES de simular: n invalido (nodes, n < 2) falha aqui.
         // So StringBuilder e classes ja carregadas pela baseline (sem record/enum/indy novos): zero hash de
@@ -136,7 +147,37 @@ public class MVPComparison {
 
     /** Flags que o programa le (as demais sao ignoradas com aviso no stderr). Array: sem colecao hash nem classe nova. */
     private static final String[] KNOWN = {"validators", "protocols", "trials", "duration", "durations", "seed",
-            "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG};
+            "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0"};
+
+    /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
+    private static boolean loadRecordOn = false;
+    private static double loadRecordT0 = 0.0;
+
+    /**
+     * Interpreta {@code --load-record} e {@code --load-record-t0}. Ambos ausentes = desligado (nada carregado).
+     * Qualquer um presente delega a {@code LinkLoadRecorder.parseWindowStart}, que FALHA ALTO se o registro for
+     * ligado sem t0, se t0 vier sem o registro ligado ou se algum valor for invalido.
+     */
+    static void configureLoadRecord(String recordFlag, String t0Flag) {
+        loadRecordOn = false;
+        if (recordFlag == null && t0Flag == null) {
+            return;
+        }
+        Double t0 = jabs.log.LinkLoadRecorder.parseWindowStart(recordFlag, t0Flag);
+        if (t0 != null) {
+            loadRecordOn = true;
+            loadRecordT0 = t0;
+        }
+    }
+
+    /** Liga o registro de carga neste cenario, se ligado por linha de comando. Desligado: retorna sem fazer nada. */
+    private static void attachLoadRecorder(AbstractScenario scenario, String protocol, long seed, String outputPath) {
+        if (!loadRecordOn) {
+            return;
+        }
+        String prefix = outputPath.endsWith(".csv") ? outputPath.substring(0, outputPath.length() - 4) : outputPath;
+        scenario.AddNewLogger(new jabs.log.LinkLoadRecorder(prefix, protocol, seed, loadRecordT0));
+    }
 
     /** Flags aceitas, como conjunto (so para testes; o fluxo principal usa {@link #KNOWN}). */
     static java.util.Set<String> knownFlags() {
@@ -316,12 +357,16 @@ public class MVPComparison {
     private static void initializeCSV(String csvPath, boolean nodesMode,
             java.util.List<String> sizingLines) throws IOException {
         try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(csvPath))) {
-            // Linhas '#' (ignoradas por scripts/jabs/*.py e nao_regressao.py): o n da coluna 'n' e o PEDIDO; os nos
-            // construidos e a decomposicao estao aqui. Leitores externos precisam pular linhas '#'.
-            bw.write(new StringBuilder("# n_semantics=").append(rotulo(nodesMode))
-                    .append(" (coluna n = valor pedido na linha de comando)\n").toString());
-            for (String line : sizingLines) {
-                bw.write(new StringBuilder("# ").append(line).append('\n').toString());
+            // Modo legacy: o CSV e BYTE A BYTE o da baseline 325f4e3 (so o cabecalho, sem linhas '#'); o
+            // dimensionamento do modo legacy ja sai no stdout ("n-semantics=", "Network sizing:").
+            // Modo nodes: linhas '#' antes do cabecalho (o n da coluna 'n' e o PEDIDO; os nos construidos e a
+            // decomposicao estao aqui). Leitores externos do modo nodes precisam pular linhas '#'.
+            if (nodesMode) {
+                bw.write(new StringBuilder("# n_semantics=").append(rotulo(nodesMode))
+                        .append(" (coluna n = valor pedido na linha de comando)\n").toString());
+                for (String line : sizingLines) {
+                    bw.write(new StringBuilder("# ").append(line).append('\n').toString());
+                }
             }
             bw.write("project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std\n");
         }
@@ -433,6 +478,7 @@ public class MVPComparison {
                     0.0,
                     ByzantineConfig.AttackType.NONE);
             scenario.addMetricsLogger(outputPath);
+            attachLoadRecorder(scenario, "ARQ", seed, outputPath);
             System.out.println(
                     "Running Arq-REDD+ HYBRID (" + totalValidators + " honest nodes) ...");
             scenario.run();
@@ -471,6 +517,7 @@ public class MVPComparison {
                 enableTx,
                 txInterval);
         scenario.addMetricsLogger(outputPath, metrics);
+        attachLoadRecorder(scenario, "DAGSPER", seed, outputPath);
         System.out.println("Running DAGsper scenario (" + numNodes + " nodes, " + miners + " miners, seed=" + seed + ") ...");
         scenario.run();
         metrics = scenario.getMetrics();
@@ -493,6 +540,7 @@ public class MVPComparison {
                     sizing[0],
                     sizing[1]);
             scenario.addMetricsLogger(outputPath, metrics);
+            attachLoadRecorder(scenario, "MCO2", seed, outputPath);
             System.out.println("Running MCO2 scenario (" + numStakeholders + " nodes) ...");
             scenario.run();
             printBuiltNetwork(scenario, sizing, nodesMode, numStakeholders);
@@ -521,6 +569,7 @@ public class MVPComparison {
                     sizing[1]);
             scenario.addMetricsLogger(outputPath, metrics);
             scenario.AddNewLogger(new BlockFinalizationLogger(Paths.get(outputPath.replace(".csv", "-basic-log.csv"))));
+            attachLoadRecorder(scenario, "TREE", seed, outputPath);
             System.out.println("Running TreeCycle scenario (" + numStakeholders + " nodes) ...");
             scenario.run();
             printBuiltNetwork(scenario, sizing, nodesMode, numStakeholders);
@@ -549,6 +598,7 @@ public class MVPComparison {
                     sizing[0],
                     sizing[1]);
             scenario.addMetricsLogger(outputPath, metrics);
+            attachLoadRecorder(scenario, "AMBIFY", seed, outputPath);
             System.out.println("Running Ambify (Parlia) scenario (" + numStakeholders + " nodes) ...");
             scenario.run();
             printBuiltNetwork(scenario, sizing, nodesMode, numStakeholders);
@@ -578,6 +628,7 @@ public class MVPComparison {
                     enableTx,          // enable transaction generation
                     txInterval);       // average interval between txs
             scenario.addMetricsLogger(outputPath, metrics);
+            attachLoadRecorder(scenario, "OFFSET", seed, outputPath);
             System.out.println("Running Offset Bitcoin scenario (" + numStakeholders + " nodes) ...");
             scenario.run();
             metrics = scenario.getMetrics();
@@ -606,6 +657,7 @@ public class MVPComparison {
                     enableTx,
                     txInterval);
             scenario.addMetricsLogger(outputPath, metrics);
+            attachLoadRecorder(scenario, "EARTH", seed, outputPath);
             System.out.println("Running Earth Dollar scenario (" + numStakeholders + " nodes) ...");
             scenario.run();
             metrics = scenario.getMetrics();
