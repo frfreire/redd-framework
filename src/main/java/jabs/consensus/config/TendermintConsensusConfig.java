@@ -7,7 +7,7 @@ import jabs.consensus.algorithm.tendermint.TendermintTimeouts;
  * ({@link jabs.consensus.algorithm.tendermint.TendermintCore}) nao conhece simulador, rede nem config.
  *
  * <p><b>Sem padroes para parametros de pesquisa.</b> {@code timeouts}, {@code batchSize}, {@code txSizeBytes},
- * {@code messageOverheadBytes} e {@code signatureSizeBytes} precisam ser escritos por quem constroi (ADR-0002: valores
+ * {@code messageOverheadBytes}, {@code signatureSizeBytes} e {@code proposerSignatureSizeBytes} precisam ser escritos por quem constroi (ADR-0002: valores
  * de latencia vem da pre-registracao). Nenhum valor numerico de pesquisa e embutido nesta classe.
  *
  * <p><b>Overhead de mensagem.</b> {@code messageOverheadBytes} compoe o tamanho das mensagens de consenso (s_v) e e
@@ -21,8 +21,15 @@ import jabs.consensus.algorithm.tendermint.TendermintTimeouts;
  * ("voto sem assinatura") NAO e admitido: um voto Tendermint real e assinado e aceitar 0 reintroduziria um padrao
  * silencioso. O tamanho da assinatura e o esquema que o define sao <b>a definir com o humano</b> (ADR-0010 PI-08 e
  * PI-16); nenhum valor numerico e embutido aqui. O tamanho entra no voto (ver
- * {@link jabs.network.message.TendermintVoteMessage}); a proposta continua sem campo de assinatura do proponente,
- * como ja era antes desta alteracao.
+ * {@link jabs.network.message.TendermintVoteMessage}).
+ *
+ * <p><b>Assinatura do proponente.</b> No Tendermint a proposta tambem e assinada (pelo proponente da rodada).
+ * {@code proposerSignatureSizeBytes} e parametro de pesquisa OBRIGATORIO, sem valor padrao, <b>SEPARADO</b> de
+ * {@code signatureSizeBytes}: um esquema de assinatura pode diferir entre proposta e voto, e reutilizar o valor do
+ * voto na proposta seria um padrao implicito. {@code build()} falha com {@link IllegalStateException} se faltar e com
+ * {@link IllegalArgumentException} se {@code <= 0}. O valor e <b>a definir com o humano</b> (ADR-0010 PI-08/PI-16).
+ * O tamanho entra na proposta (ver {@link jabs.network.message.TendermintProposalMessage}) e no contador de
+ * consenso (nao na carga do bloco).
  *
  * <p><b>Tamanho do bloco.</b> O adaptador amostra um lote cheio: {@code batchSize} transacoes de
  * {@code txSizeBytes}. {@link #batchSizeFor(int, int)} deriva o lote de um tamanho de bloco em KB, como no
@@ -38,6 +45,7 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
     private final int txSizeBytes;
     private final int messageOverheadBytes;
     private final int signatureSizeBytes;
+    private final int proposerSignatureSizeBytes;
 
     private TendermintConsensusConfig(Builder b) {
         if (b.timeouts == null) {
@@ -58,6 +66,14 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
             throw new IllegalArgumentException("signatureSizeBytes deve ser > 0 (0 nao e admitido): "
                     + b.signatureSizeBytes);
         }
+        if (b.proposerSignatureSizeBytes == null) {
+            throw new IllegalStateException("proposerSignatureSizeBytes e obrigatorio e nao tem padrao"
+                    + " (a definir com o humano; ADR-0010 PI-08/PI-16)");
+        }
+        if (b.proposerSignatureSizeBytes <= 0) {
+            throw new IllegalArgumentException("proposerSignatureSizeBytes deve ser > 0 (0 nao e admitido): "
+                    + b.proposerSignatureSizeBytes);
+        }
         if (b.batchSize <= 0) {
             throw new IllegalArgumentException("batchSize deve ser > 0: " + b.batchSize);
         }
@@ -77,6 +93,7 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
         this.txSizeBytes = b.txSizeBytes;
         this.messageOverheadBytes = b.messageOverheadBytes;
         this.signatureSizeBytes = b.signatureSizeBytes;
+        this.proposerSignatureSizeBytes = b.proposerSignatureSizeBytes;
     }
 
     public static Builder builder() {
@@ -127,6 +144,8 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
     public int getMessageOverheadBytes() { return messageOverheadBytes; }
     /** Bytes de assinatura por voto; parametro de pesquisa sem padrao (ADR-0010 PI-08/PI-16). */
     public int getSignatureSizeBytes() { return signatureSizeBytes; }
+    /** Bytes de assinatura do proponente por proposta; separado do voto; sem padrao (ADR-0010 PI-08/PI-16). */
+    public int getProposerSignatureSizeBytes() { return proposerSignatureSizeBytes; }
 
     public static final class Builder {
         private TendermintTimeouts timeouts;
@@ -134,6 +153,7 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
         private Integer txSizeBytes;
         private Integer messageOverheadBytes;
         private Integer signatureSizeBytes;
+        private Integer proposerSignatureSizeBytes;
 
         private Builder() { }
 
@@ -144,9 +164,11 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
         public Builder messageOverheadBytes(int v) { this.messageOverheadBytes = v; return this; }
         /** Tamanho da assinatura do voto em bytes (&gt; 0). Obrigatorio, sem padrao. */
         public Builder signatureSizeBytes(int v) { this.signatureSizeBytes = v; return this; }
+        /** Tamanho da assinatura do proponente na proposta em bytes (&gt; 0), separado do voto. Obrigatorio, sem padrao. */
+        public Builder proposerSignatureSizeBytes(int v) { this.proposerSignatureSizeBytes = v; return this; }
 
         /**
-         * @throws IllegalStateException se timeouts, batchSize, txSizeBytes, messageOverheadBytes ou signatureSizeBytes nao foram informados
+         * @throws IllegalStateException se timeouts, batchSize, txSizeBytes, messageOverheadBytes, signatureSizeBytes ou proposerSignatureSizeBytes nao foram informados
          * @throws IllegalArgumentException se algum valor for invalido
          */
         public TendermintConsensusConfig build() {

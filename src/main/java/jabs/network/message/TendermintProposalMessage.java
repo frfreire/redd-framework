@@ -7,8 +7,14 @@ import jabs.network.node.nodes.Node;
 
 /**
  * {@code <PROPOSAL, h, r, v, vr>} no fio. A proposta leva o bloco inteiro (nao ha DataMessage separado no
- * protocolo), por isso o tamanho total inclui {@code block.getSize()}; a parte de consenso e so o cabecalho
- * (hash do bloco + overhead do config), como no PBFT/HotStuff.
+ * protocolo), por isso o tamanho total inclui {@code block.getSize()}. A proposta e assinada pelo proponente:
+ * <pre>
+ *   total     = hash + messageOverheadBytes + proposerSignatureSizeBytes + block.getSize()
+ *   consenso  = hash + messageOverheadBytes + proposerSignatureSizeBytes   (a carga do bloco NAO e consenso)
+ * </pre>
+ * {@code proposerSignatureSizeBytes} e parametro de pesquisa obrigatorio, sem padrao e separado do tamanho de
+ * assinatura do voto (ADR-0010 PI-08/PI-16, valor a definir com o humano). Esta mensagem nao modela QC/justificacao
+ * do {@code validRound} (POL): so carrega o inteiro {@code vr}, sem bytes proprios.
  */
 public final class TendermintProposalMessage extends Message {
     private final Node sender;
@@ -55,7 +61,7 @@ public final class TendermintProposalMessage extends Message {
         if (block == null || config == null) {
             throw new IllegalArgumentException("block e config obrigatorios");
         }
-        return block.getHash().getSize() + config.getMessageOverheadBytes();
+        return block.getHash().getSize() + config.getMessageOverheadBytes() + config.getProposerSignatureSizeBytes();
     }
 
     private static int totalSize(int consensusSize, TendermintBlock block) {
@@ -74,7 +80,7 @@ public final class TendermintProposalMessage extends Message {
     public int getRound() { return round; }
     public int getValidRound() { return validRound; }
     public TendermintBlock getBlock() { return block; }
-    /** Bytes de protocolo: hash do bloco + overhead; NAO inclui a carga do bloco. */
+    /** Bytes de protocolo: hash + overhead + assinatura do proponente; NAO inclui a carga do bloco. */
     public int getConsensusSize() { return consensusSize; }
     /** Bytes que vao ao fio (== {@link #getSize()}). */
     public int getTotalSize() { return getSize(); }

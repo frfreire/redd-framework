@@ -61,6 +61,26 @@ class TendermintTrafficTest {
     }
 
     @Test
+    void propostaMedidaNaRedeRefleteAssinaturaDoProponenteNosContadoresDeTotalEConsenso() {
+        TendermintProposalMessage m = new TendermintProposalMessage(emissor, 0, 0, bloco, -1,
+                TendermintTestConfig.config());
+        int consenso = TendermintBlock.TENDERMINT_BLOCK_HASH_SIZE
+                + TendermintTestConfig.config().getMessageOverheadBytes()
+                + TendermintTestConfig.TEST_FIXTURE_PROPOSER_SIGNATURE_SIZE_BYTES;
+        long total = consenso + bloco.getSize();
+        // detecta reuso da assinatura do voto na proposta
+        assertTrue(TendermintTestConfig.TEST_FIXTURE_PROPOSER_SIGNATURE_SIZE_BYTES
+                != TendermintTestConfig.TEST_FIXTURE_SIGNATURE_SIZE_BYTES);
+        assertEquals(total, m.getSize());
+        Packet p = new Packet(emissor, receptor, m);
+        assertEquals(total, p.getSize());
+        receptor.processIncomingPacket(p);
+        assertEquals(total, alg.getBlockTraffic(bloco), "C_B_total = hash + overhead + assinatura do proponente + payload");
+        assertEquals(consenso, alg.getConsensusMessageTraffic(bloco),
+                "C_B_consenso = hash + overhead + assinatura do proponente (sem payload do bloco)");
+    }
+
+    @Test
     void duplicataTambemConsomeBanda() {
         TendermintProposalMessage m = new TendermintProposalMessage(emissor, 0, 0, bloco, -1,
                 TendermintTestConfig.config());

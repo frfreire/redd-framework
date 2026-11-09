@@ -35,7 +35,7 @@ class TendermintAttackScenariosTest {
                 }
                 final int id = i;
                 cores.put(i, new TendermintCore<>(i, n, TendermintCore.roundRobin(n), h -> "fresco-p" + id,
-                        v -> true));
+                        (h, v) -> true));
                 outbox.put(i, new ArrayList<>());
             }
         }

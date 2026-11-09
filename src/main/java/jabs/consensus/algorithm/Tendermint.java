@@ -34,7 +34,9 @@ import java.util.List;
  *
  * <p><b>Admissao de blocos.</b> O bloco viaja dentro da proposta (nao ha DataMessage). Ao receber uma proposta, o
  * adaptador o admite na {@link LocalBlockTree} antes de chamar o nucleo, para que {@code valid(v)} do artigo
- * (aqui: bloco presente e conectado ao genesis) tenha a mesma resposta em todos os nos corretos. Bloco proposto
+ * (aqui: bloco presente, conectado ao genesis, com altura {@code h + 1} e pai igual a decisao da altura anterior,
+ * ver {@link #isValidValue}) tenha a mesma resposta em todos os nos corretos. Proposta invalida e entregue ao
+ * nucleo, que prevota nil e a conta em {@code INVALID_VALUE}. Bloco proposto
  * pelo proprio no tambem e admitido no {@code getValue}.
  *
  * <p><b>Altura seguinte.</b> O nucleo decide e ja inicia a proxima altura dentro de {@code decide()}, antes de o
@@ -139,7 +141,24 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
         return block;
     }
 
-    private boolean isValidValue(TendermintBlock block) {
+    /**
+     * {@code valid(h, v)} do Algoritmo 1 para a altura de consenso {@code height} (a do nucleo, nunca a da
+     * mensagem). Convencao de alturas: a altura 0 do nucleo propoe o primeiro bloco, filho do genesis, com
+     * {@code block.getHeight() == 1} (genesis tem altura 0; {@code BlockFactory} usa {@code parent.getHeight() + 1}).
+     * Logo, na altura {@code h} do nucleo:
+     * <ol>
+     *   <li>bloco nao nulo, presente na arvore local e conectado ao genesis;</li>
+     *   <li>{@code block.getHeight() == h + 1};</li>
+     *   <li>pai (campo imutavel {@link TendermintBlock#getFixedParent()}, nao a lista mutavel
+     *       {@code getParents()}) e a mesma referencia do genesis se {@code h == 0}, ou da decisao
+     *       {@code core.decision(h - 1)} se {@code h > 0}.</li>
+     * </ol>
+     * Sem decisao local em {@code h - 1} o valor e invalido (nao ocorre: o nucleo so chega a {@code h} depois de
+     * decidir {@code h - 1}). Valor invalido recebe prevote nil no nucleo e e contado como
+     * {@code INVALID_VALUE}; nao lanca excecao. Funcao pura sobre o estado local: igual em todos os nos corretos
+     * que decidiram a mesma cadeia.
+     */
+    private boolean isValidValue(long height, TendermintBlock block) {
         if (block == null) {
             return false;
         }
@@ -148,7 +167,16 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
             return false;
         }
         LocalBlock<B> localBlock = localBlockTree.getLocalBlock(local);
-        return localBlock != null && localBlock.isConnectedToGenesis;
+        if (localBlock == null || !localBlock.isConnectedToGenesis) {
+            return false;
+        }
+        if ((long) block.getHeight() != height + 1) {
+            return false;
+        }
+        TendermintBlock expectedParent = height == 0
+                ? (TendermintBlock) localBlockTree.getGenesisBlock()
+                : core.decision(height - 1);
+        return expectedParent != null && block.getFixedParent() == expectedParent;
     }
 
     // ------------------------------------------------------------------------------------------------------

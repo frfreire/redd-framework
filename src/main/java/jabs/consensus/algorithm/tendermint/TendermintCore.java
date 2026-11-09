@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.LongFunction;
-import java.util.function.Predicate;
 
 /**
  * Nucleo de decisao de UM validador Tendermint honesto: Algoritmo 1 de Buchman, Kwon e Milosevic, "The latest gossip
@@ -76,6 +75,16 @@ public final class TendermintCore<V> {
     @FunctionalInterface
     public interface ProposerSelector {
         int proposer(long height, int round);
+    }
+
+    /**
+     * {@code valid(v)} do artigo (Algoritmo 1), com a altura de consenso explicita: um valor e valido PARA uma altura
+     * (ex.: bloco que estende a decisao da altura anterior). O nucleo sempre a chama com a altura que esta sendo
+     * avaliada (a corrente), nunca com a do remetente; deve ser deterministica e igual em todos os nos corretos.
+     */
+    @FunctionalInterface
+    public interface ValidityPredicate<V> {
+        boolean valid(long height, V value);
     }
 
     /** Round-robin {@code (h + r) mod n}: o proponente muda a cada round e a cada altura. */
@@ -150,7 +159,7 @@ public final class TendermintCore<V> {
     private final TendermintQuorum quorum;
     private final ProposerSelector proposerSelector;
     private final LongFunction<V> getValue;
-    private final Predicate<V> valid;
+    private final ValidityPredicate<V> valid;
 
     // Estado do Algoritmo 1 (linhas 2-4).
     private boolean started;
@@ -181,10 +190,11 @@ public final class TendermintCore<V> {
      * @param n numero de validadores (&gt;= 1)
      * @param proposerSelector proponente de (h, r)
      * @param getValue valor a propor na altura h quando nao ha {@code validValue} (linha 16); nunca devolve nulo
-     * @param valid {@code valid(v)} do artigo; deve ser deterministico e igual em todos os nos corretos
+     * @param valid {@code valid(h, v)}: o {@code valid(v)} do artigo para a altura h; deterministico e igual em todos
+     *              os nos corretos. Valor invalido recebe prevote nil (linhas 22-27 e 28-33) e nunca e decidido
      */
     public TendermintCore(int self, int n, ProposerSelector proposerSelector, LongFunction<V> getValue,
-                          Predicate<V> valid) {
+                          ValidityPredicate<V> valid) {
         this.quorum = new TendermintQuorum(n);
         if (self < 0 || self >= n) {
             throw new IllegalArgumentException("self fora de [0, n): " + self);
@@ -331,7 +341,7 @@ public final class TendermintCore<V> {
             RoundLog<V> rl = rounds.get(r);
             for (TendermintProposal<V> p : rl.proposals) { // ordem de chegada
                 V v = p.value();
-                if (rl.precommits.countFor(v) >= quorum.strong() && valid.test(v)) {
+                if (rl.precommits.countFor(v) >= quorum.strong() && valid.valid(height, v)) {
                     decide(r, v, out);
                     return true;
                 }
@@ -378,13 +388,13 @@ public final class TendermintCore<V> {
             int vr = p.validRound();
             boolean accept;
             if (vr == -1) {
-                accept = valid.test(v) && (lockedRound == -1 || v.equals(lockedValue));
+                accept = isValidOrCount(v) && (lockedRound == -1 || v.equals(lockedValue));
             } else {
                 RoundLog<V> polkaRound = roundLogOrNull(height, vr);
                 if (polkaRound == null || polkaRound.prevotes.countFor(v) < quorum.strong()) {
                     continue;
                 }
-                accept = valid.test(v) && (lockedRound <= vr || v.equals(lockedValue));
+                accept = isValidOrCount(v) && (lockedRound <= vr || v.equals(lockedValue));
             }
             broadcastVote(TendermintVote.Type.PREVOTE, accept ? v : null, out);
             step = TendermintStep.PREVOTE;
@@ -407,7 +417,7 @@ public final class TendermintCore<V> {
         }
         V v = null;
         for (TendermintProposal<V> p : rl.proposals) {
-            if (rl.prevotes.countFor(p.value()) >= quorum.strong() && valid.test(p.value())) {
+            if (rl.prevotes.countFor(p.value()) >= quorum.strong() && valid.valid(height, p.value())) {
                 v = p.value();
                 break;
             }
@@ -425,6 +435,18 @@ public final class TendermintCore<V> {
         validValue = v;
         validRound = round;
         return true;
+    }
+
+    /**
+     * {@code valid(height, v)} na hora de prevotar. Valor invalido nao e descartado em silencio: conta
+     * {@link TendermintDiscardReason#INVALID_VALUE} e o chamador prevota nil.
+     */
+    private boolean isValidOrCount(V v) {
+        if (valid.valid(height, v)) {
+            return true;
+        }
+        count(TendermintDiscardReason.INVALID_VALUE);
+        return false;
     }
 
     /** Linhas 44-46: 2f+1 PREVOTE nil no round corrente. */
@@ -630,6 +652,19 @@ public final class TendermintCore<V> {
             t += v;
         }
         return t;
+    }
+
+    /**
+     * Votos do tipo {@code type} registrados de {@code sender} em (h, r), em ordem de chegada (somente leitura;
+     * vazio se nenhum). Serve para auditar o que um no votou (inclusive o proprio, que entra no log ao difundir).
+     */
+    public List<TendermintVote<V>> loggedVotes(long h, int r, TendermintVote.Type type, int sender) {
+        RoundLog<V> rl = roundLogOrNull(h, r);
+        if (rl == null) {
+            return List.of();
+        }
+        List<TendermintVote<V>> votes = rl.votes(type).bySender.get(sender);
+        return votes == null ? List.of() : List.copyOf(votes);
     }
 
     /** Mensagens guardadas agora para alturas futuras. */

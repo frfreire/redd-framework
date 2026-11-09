@@ -23,9 +23,20 @@ class MVPComparisonTendermintTest {
             "--tm-batch-size=20", "--tm-tx-size=512",
             // FIXTURE somente de teste, nao e valor de pesquisa (ADR-0010 PI-16: a definir com o humano)
             "--tm-signature-size=64",
+            // FIXTURE somente de teste, nao e valor de pesquisa (ADR-0010 PI-16: a definir com o humano)
+            "--tm-proposer-signature-size=80",
             // FIXTURE somente de teste, nao e valor de pesquisa (ADR-0010 PI-08: a definir com o humano)
             "--tm-message-overhead=10"
     };
+
+    /** Mapa mutavel a partir de pares chave, valor (Map.of so aceita ate 10 pares). */
+    private static Map<String, String> mapa(String... pares) {
+        Map<String, String> m = new java.util.HashMap<>();
+        for (int i = 0; i < pares.length; i += 2) {
+            m.put(pares[i], pares[i + 1]);
+        }
+        return m;
+    }
 
     @Test
     void configSoEExigidaQuandoTendermintEstaNaLista() {
@@ -36,30 +47,32 @@ class MVPComparisonTendermintTest {
 
     @Test
     void flagsPreenchemAConfiguracao() {
-        Map<String, String> cli = Map.of(
+        Map<String, String> cli = mapa(
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "2.0", "tm-prevote-delta", "0.25",
                 "tm-precommit-timeout", "3.0", "tm-precommit-delta", "0.1",
                 "tm-batch-size", "40", "tm-tx-size", "256", "tm-message-overhead", "12",
                 // FIXTURE somente de teste, nao e valor de pesquisa
-                "tm-signature-size", "48");
+                "tm-signature-size", "48", "tm-proposer-signature-size", "52");
         TendermintConsensusConfig config =
                 MVPComparison.parseTendermintConfigIfRequested(List.of("tendermint"), cli);
         assertEquals(40, config.getBatchSize());
         assertEquals(256, config.getTxSizeBytes());
         assertEquals(12, config.getMessageOverheadBytes());
         assertEquals(48, config.getSignatureSizeBytes());
+        assertEquals(52, config.getProposerSignatureSizeBytes());
         assertEquals(2.25, config.getTimeouts().durationSeconds(
                 jabs.consensus.algorithm.tendermint.TimeoutKind.PREVOTE, 1));
     }
 
     @Test
     void semSignatureSizeFalhaAltoAntesDeQualquerSimulacao(@TempDir Path tmp) {
-        Map<String, String> cli = new java.util.HashMap<>(Map.of(
+        Map<String, String> cli = mapa(
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                 "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10"));
+                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10",
+                "tm-proposer-signature-size", "80");
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli));
         assertTrue(e.getMessage().contains("tm-signature-size"), e.getMessage());
@@ -69,7 +82,8 @@ class MVPComparisonTendermintTest {
                 "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5",
                 "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
                 "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
-                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10"};
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10",
+                "--tm-proposer-signature-size=80"};
         IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.main(args));
         assertTrue(main.getMessage().contains("tm-signature-size"), main.getMessage());
@@ -78,11 +92,12 @@ class MVPComparisonTendermintTest {
 
     @Test
     void semMessageOverheadFalhaAltoAntesDeQualquerSimulacao(@TempDir Path tmp) {
-        Map<String, String> cli = new java.util.HashMap<>(Map.of(
+        Map<String, String> cli = mapa(
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                 "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                "tm-batch-size", "20", "tm-tx-size", "512", "tm-signature-size", "64"));
+                "tm-batch-size", "20", "tm-tx-size", "512", "tm-signature-size", "64",
+                "tm-proposer-signature-size", "80");
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli));
         assertTrue(e.getMessage().contains("tm-message-overhead"), e.getMessage());
@@ -92,7 +107,8 @@ class MVPComparisonTendermintTest {
                 "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5",
                 "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
                 "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
-                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64"};
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64",
+                "--tm-proposer-signature-size=80"};
         IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.main(args));
         assertTrue(main.getMessage().contains("tm-message-overhead"), main.getMessage());
@@ -101,11 +117,12 @@ class MVPComparisonTendermintTest {
 
     @Test
     void messageOverheadNegativoOuInvalidoNoCliFalhaAlto() {
-        Map<String, String> base = Map.of(
+        Map<String, String> base = mapa(
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                 "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                "tm-batch-size", "20", "tm-tx-size", "512", "tm-signature-size", "64");
+                "tm-batch-size", "20", "tm-tx-size", "512", "tm-signature-size", "64",
+                "tm-proposer-signature-size", "80");
         for (String ruim : new String[] {"-1", "abc"}) {
             Map<String, String> cli = new java.util.HashMap<>(base);
             cli.put("tm-message-overhead", ruim);
@@ -118,12 +135,13 @@ class MVPComparisonTendermintTest {
     void deltaZeroOuNegativoNoCliFalhaAltoAntesDeQualquerSimulacao(@TempDir Path tmp) {
         for (String flag : new String[] {"tm-propose-delta", "tm-prevote-delta", "tm-precommit-delta"}) {
             for (String ruim : new String[] {"0", "-0.5"}) {
-                Map<String, String> cli = new java.util.HashMap<>(Map.of(
+                Map<String, String> cli = mapa(
                         "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                         "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                         "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                        "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10"));
+                        "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10");
                 cli.put("tm-signature-size", "64");
+                cli.put("tm-proposer-signature-size", "80");
                 cli.put(flag, ruim);
                 assertThrows(IllegalArgumentException.class,
                         () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli),
@@ -136,7 +154,8 @@ class MVPComparisonTendermintTest {
                 "--tm-propose-timeout=1.0", "--tm-propose-delta=0",
                 "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
                 "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
-                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64", "--tm-message-overhead=10"};
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64", "--tm-message-overhead=10",
+                "--tm-proposer-signature-size=80"};
         IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.main(args));
         assertTrue(main.getMessage().contains("proposeDeltaS"), main.getMessage());
@@ -146,6 +165,37 @@ class MVPComparisonTendermintTest {
     @Test
     void signatureSizeConhecidaPeloCli() {
         assertTrue(MVPComparison.knownFlags().contains("tm-signature-size"));
+        assertTrue(MVPComparison.knownFlags().contains("tm-proposer-signature-size"));
+    }
+
+    @Test
+    void semProposerSignatureSizeFalhaAltoAntesDeQualquerSimulacao(@TempDir Path tmp) {
+        Map<String, String> cli = mapa(
+                "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
+                "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
+                "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
+                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10",
+                "tm-signature-size", "64");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli));
+        assertTrue(e.getMessage().contains("tm-proposer-signature-size"), e.getMessage());
+        for (String ruim : new String[] {"0", "-1", "abc"}) {
+            cli.put("tm-proposer-signature-size", ruim);
+            assertThrows(IllegalArgumentException.class,
+                    () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli), ruim);
+        }
+
+        Path out = tmp.resolve("sem-assinatura-proponente");
+        String[] args = {"--protocols=TENDERMINT", "--validators=4", "--trials=1", "--output=" + out,
+                "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5",
+                "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
+                "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10",
+                "--tm-signature-size=64"};
+        IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
+                () -> MVPComparison.main(args));
+        assertTrue(main.getMessage().contains("tm-proposer-signature-size"), main.getMessage());
+        assertTrue(Files.notExists(out), "falha deve ocorrer antes de criar saida");
     }
 
     @Test

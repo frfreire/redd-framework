@@ -46,7 +46,7 @@ seed, output); PROTO precisa aparecer em --casos (senao a flag seria ignorada em
 
 TENDERMINT e RECUSADO aqui (saida 2, antes de iniciar qualquer JVM), com ou sem flags: a baseline
 (commit 5102fe2) nao tem Tendermint, entao nao existe comparacao base x atual para ele. Para exercitar o
-Tendermint use `checar-determinismo.py` (atual x atual, mesma semente), que exige e valida as 10 flags
+Tendermint use `checar-determinismo.py` (atual x atual, mesma semente), que exige e valida as 11 flags
 --tm-* (sem valor padrao; ADR-0010 PI-08/PI-16: a definir com o humano).
 Exemplo (valor SOMENTE DE EXEMPLO, NAO e valor de pesquisa; --foo-exemplo nao existe, so ilustra a forma):
   nao_regressao.py --base B --atual A --casos MCO2:10:60,AMBIFY:10:60 \
@@ -111,7 +111,7 @@ def parse_extras_protocolo(itens, protos_dos_casos):
 def recusa_tendermint():
     return ("TENDERMINT nao e suportado em nao_regressao.py: a baseline (commit 5102fe2) nao tem Tendermint, "
             "entao nao existe comparacao base x atual. Use scripts/jabs/checar-determinismo.py "
-            "(atual x atual, mesma semente) com as 10 flags --tm-* via --extra-flag.")
+            "(atual x atual, mesma semente) com as 11 flags --tm-* via --extra-flag.")
 
 
 def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax, extras=()):

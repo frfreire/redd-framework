@@ -159,7 +159,7 @@ public class MVPComparison {
             "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0",
             "tm-propose-timeout", "tm-propose-delta", "tm-prevote-timeout", "tm-prevote-delta",
             "tm-precommit-timeout", "tm-precommit-delta", "tm-batch-size", "tm-tx-size", "tm-message-overhead",
-            "tm-signature-size"};
+            "tm-signature-size", "tm-proposer-signature-size"};
 
     /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
     private static boolean loadRecordOn = false;
@@ -185,7 +185,7 @@ public class MVPComparison {
     /**
      * Config do Tendermint so e exigida quando {@code TENDERMINT} aparece em {@code --protocols}. Sem valores de
      * pesquisa padrao: timeouts, lote, tamanho de transacao, overhead de mensagem e tamanho da
-     * assinatura do voto (ADR-0010 PI-08/PI-16: a definir com o humano) precisam vir das flags {@code --tm-*}.
+     * assinatura do voto e da proposta (ADR-0010 PI-08/PI-16: a definir com o humano) precisam vir das flags {@code --tm-*}.
      */
     static TendermintConsensusConfig parseTendermintConfigIfRequested(java.util.List<String> protocols,
             java.util.Map<String, String> cli) {
@@ -211,7 +211,8 @@ public class MVPComparison {
                 .batchSize(requiredInt(cli, "tm-batch-size"))
                 .txSizeBytes(requiredInt(cli, "tm-tx-size"))
                 .messageOverheadBytes(requiredInt(cli, "tm-message-overhead"))
-                .signatureSizeBytes(requiredInt(cli, "tm-signature-size"));
+                .signatureSizeBytes(requiredInt(cli, "tm-signature-size"))
+                .proposerSignatureSizeBytes(requiredInt(cli, "tm-proposer-signature-size"));
         return builder.build();
     }
 

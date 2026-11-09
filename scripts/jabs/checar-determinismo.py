@@ -15,7 +15,7 @@ Cada item deve comecar com `--` e ter a forma `--chave=valor` (MVPComparison ign
 repetir chave nem redefinir as flags que este script ja monta (protocols, validators, trials, duration,
 seed, output). Sem `--extra-flag` o comando gerado e identico ao das versoes anteriores.
 
-TENDERMINT exige 10 flags --tm-* sem valor padrao (MVPComparison.parseTendermintConfigIfRequested;
+TENDERMINT exige 11 flags --tm-* sem valor padrao (MVPComparison.parseTendermintConfigIfRequested;
 ADR-0010 PI-08/PI-16: valores de pesquisa a definir com o humano). Este script NAO embute valor nenhum:
 vem sempre do chamador, e se faltar alguma o script falha ANTES de iniciar a JVM listando as faltantes.
 Exemplo de uso (valores SOMENTE DE EXEMPLO, NAO sao valor de pesquisa):
@@ -24,11 +24,13 @@ Exemplo de uso (valores SOMENTE DE EXEMPLO, NAO sao valor de pesquisa):
       --extra-flag=--tm-prevote-timeout=1.0 --extra-flag=--tm-prevote-delta=0.5 \
       --extra-flag=--tm-precommit-timeout=1.0 --extra-flag=--tm-precommit-delta=0.5 \
       --extra-flag=--tm-batch-size=10 --extra-flag=--tm-tx-size=512 \
-      --extra-flag=--tm-signature-size=64 --extra-flag=--tm-message-overhead=10
+      --extra-flag=--tm-signature-size=64 --extra-flag=--tm-proposer-signature-size=80 \
+      --extra-flag=--tm-message-overhead=10
 Autoteste sem JVM: `checar-determinismo.py --selftest`.
 """
 import argparse
 import csv
+import re
 import subprocess
 import sys
 import tempfile
@@ -54,8 +56,33 @@ TM_FLAGS_OBRIGATORIAS = (
     "--tm-propose-timeout", "--tm-propose-delta",
     "--tm-prevote-timeout", "--tm-prevote-delta",
     "--tm-precommit-timeout", "--tm-precommit-delta",
-    "--tm-batch-size", "--tm-tx-size", "--tm-signature-size", "--tm-message-overhead",
+    "--tm-batch-size", "--tm-tx-size", "--tm-signature-size", "--tm-proposer-signature-size",
+    "--tm-message-overhead",
 )
+
+MVP_COMPARISON = Path("src/main/java/jabs/example/MVPComparison.java")
+
+
+def flags_tm_do_java(jabs: Path):
+    """Flags --tm-* lidas por parseTendermintConfigIfRequested (requiredDouble/requiredInt(cli, "tm-...")), na
+    ordem em que aparecem no codigo-fonte. Fonte da verdade: o Java; a constante acima precisa bater EXATAMENTE
+    (mesmo conjunto). Levanta ValueError se o metodo nao for encontrado."""
+    src = (jabs / MVP_COMPARISON).read_text(encoding="utf-8")
+    ini = src.find("parseTendermintConfigIfRequested(java.util.List<String> protocols")
+    if ini < 0:
+        raise ValueError(f"parseTendermintConfigIfRequested nao encontrado em {jabs / MVP_COMPARISON}")
+    corpo = src[ini:src.find("private static String requiredCliValue", ini)]
+    return ["--" + m for m in re.findall(r'required(?:Double|Int)\(cli,\s*"(tm-[a-z-]+)"\)', corpo)]
+
+
+def conferir_com_java(jabs: Path):
+    """Levanta ValueError se TM_FLAGS_OBRIGATORIAS divergir (conjunto) das flags requeridas no Java."""
+    java = flags_tm_do_java(jabs)
+    if sorted(java) != sorted(TM_FLAGS_OBRIGATORIAS) or len(set(java)) != len(java):
+        raise ValueError("TM_FLAGS_OBRIGATORIAS diverge do Java: so no Java="
+                         f"{sorted(set(java) - set(TM_FLAGS_OBRIGATORIAS))}, so no script="
+                         f"{sorted(set(TM_FLAGS_OBRIGATORIAS) - set(java))}")
+
 
 # Flags que montar_cmd ja define: o chamador nao pode redefini-las por --extra-flag.
 FLAGS_RESERVADAS = ("--protocols", "--validators", "--trials", "--duration", "--seed", "--output")
@@ -124,7 +151,7 @@ def selftest():
     # 2) nao TENDERMINT: nada exigido, mesmo com extras
     assert tm_faltantes("ARQ", []) == []
     assert tm_faltantes("ARQ", ["--outra=1"]) == []
-    # 3) TENDERMINT sem flags: lista as 10; com 9: lista a que falta; com as 10: vazio
+    # 3) TENDERMINT sem flags: lista as 11; com 10: lista a que falta; com as 11: vazio
     assert tm_faltantes("TENDERMINT", []) == list(TM_FLAGS_OBRIGATORIAS)
     assert tm_faltantes("tendermint", []) == list(TM_FLAGS_OBRIGATORIAS)
     assert tm_faltantes("ARQ,TENDERMINT", []) == list(TM_FLAGS_OBRIGATORIAS)
@@ -133,7 +160,27 @@ def selftest():
     assert tm_faltantes("TENDERMINT", exemplo[:-1] + [TM_FLAGS_OBRIGATORIAS[-1] + "="]) == [TM_FLAGS_OBRIGATORIAS[-1]]
     assert tm_faltantes("TENDERMINT", exemplo) == []
     # 4) extras entram ao fim do comando, na ordem dada
-    assert montar_cmd("CP", "TENDERMINT", 4, 5, 7, 1, Path("/o"), exemplo)[-10:] == exemplo
+    assert montar_cmd("CP", "TENDERMINT", 4, 5, 7, 1, Path("/o"), exemplo)[-11:] == exemplo
+    # 4b) contagem e fonte da verdade: 11 flags, batendo EXATAMENTE com o Java
+    assert len(TM_FLAGS_OBRIGATORIAS) == 11 and "--tm-proposer-signature-size" in TM_FLAGS_OBRIGATORIAS
+    raiz = Path(__file__).resolve().parents[2]
+    conferir_com_java(raiz)
+    assert sorted(flags_tm_do_java(raiz)) == sorted(TM_FLAGS_OBRIGATORIAS)
+    # o conferidor falha de fato quando diverge (Java simulado com uma flag a menos / a mais)
+    with tempfile.TemporaryDirectory() as t:
+        alvo = Path(t) / MVP_COMPARISON
+        alvo.parent.mkdir(parents=True)
+        original = (raiz / MVP_COMPARISON).read_text(encoding="utf-8")
+        for rotulo, mutado in (("a menos", original.replace('requiredInt(cli, "tm-proposer-signature-size")', '0')),
+                               ("a mais", original.replace('requiredInt(cli, "tm-tx-size")',
+                                                           'requiredInt(cli, "tm-tx-size") + requiredInt(cli, "tm-extra")'))):
+            assert mutado != original, rotulo
+            alvo.write_text(mutado, encoding="utf-8")
+            try:
+                conferir_com_java(Path(t))
+            except ValueError:
+                continue
+            raise AssertionError(f"conferir_com_java deveria falhar com flag {rotulo}")
     # 5) validacao
     for ruim in ("tm-batch-size=1", "--sem-valor", "--seed=2", "--tm-batch-size=1,--tm-batch-size=2"):
         try:
@@ -157,7 +204,7 @@ def main():
     ap.add_argument("--trials", type=int, default=1)
     ap.add_argument("--extra-flag", dest="extra_flag", action="append", default=[], metavar="--CHAVE=VALOR",
                     help="flag repassada ao MVPComparison nas DUAS execucoes (repetivel; use a forma "
-                         "--extra-flag=--chave=valor). Obrigatorio para as 10 flags --tm-* do TENDERMINT.")
+                         "--extra-flag=--chave=valor). Obrigatorio para as 11 flags --tm-* do TENDERMINT.")
     ap.add_argument("--selftest", action="store_true", help="autoteste sem JVM e sai")
     a = ap.parse_args()
     try:
@@ -172,6 +219,12 @@ def main():
               f"Faltam: {', '.join(faltam)}. Passe cada uma como --extra-flag=--tm-...=valor. A JVM nao foi iniciada.")
         return 2
     jabs = Path(a.jabs).resolve()
+    if tm_faltantes(a.protocolo, []):  # protocolo inclui TENDERMINT: a lista do script tem de bater com o Java
+        try:
+            conferir_com_java(jabs)
+        except (ValueError, OSError) as e:
+            print(f"ERRO: {e}. A JVM nao foi iniciada.")
+            return 2
     if not (jabs / "target" / "classes").exists():
         print(f"ERRO: {jabs}/target/classes ausente. Rode: (cd {jabs} && mvn -q clean compile)")
         return 2

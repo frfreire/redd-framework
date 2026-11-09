@@ -13,7 +13,19 @@ import jabs.network.node.nodes.Node;
 public sealed class TendermintBlock extends SingleParentBlock<TendermintBlock> permits TendermintBlockWithTx {
     public static final int TENDERMINT_BLOCK_HASH_SIZE = 32;
 
+    /**
+     * Pai fixado na construcao. {@code Block#getParents()} e uma lista mutavel (divida da base); a validade
+     * {@code valid(h, v)} do Tendermint usa ESTE campo, que nada altera depois. Nulo so no genesis.
+     */
+    private final TendermintBlock fixedParent;
+
     public TendermintBlock(int size, int height, double creationTime, Node creator, TendermintBlock parent) {
         super(size, height, creationTime, creator, parent, TENDERMINT_BLOCK_HASH_SIZE);
+        this.fixedParent = parent;
+    }
+
+    /** Pai imutavel (identidade da referencia recebida no construtor); nulo no genesis. */
+    public TendermintBlock getFixedParent() {
+        return fixedParent;
     }
 }

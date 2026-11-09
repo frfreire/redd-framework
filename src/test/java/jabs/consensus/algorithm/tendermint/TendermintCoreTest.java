@@ -23,7 +23,7 @@ class TendermintCoreTest {
     private static final int SELF = 3;
 
     private static TendermintCore<String> core() {
-        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h, v -> true);
+        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h, (h, v) -> true);
     }
 
     private static TendermintProposal<String> prop(long h, int r, String v, int vr) {
@@ -415,7 +415,7 @@ class TendermintCoreTest {
     @Test
     void valorInvalidoRecebeNil() {
         TendermintCore<String> c = new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "ok",
-                v -> !v.startsWith("ruim"));
+                (h, v) -> !v.startsWith("ruim"));
         c.start();
         List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "ruim", -1));
         assertNull(votes(as, Type.PREVOTE).get(0).vote().value());
@@ -458,10 +458,67 @@ class TendermintCoreTest {
         assertThrows(IllegalStateException.class, () -> d.onTimeout(TimeoutKind.PROPOSE, 0, 0));
     }
 
+    /** valid(h, v) so aceita valores "h<altura>:..." da PROPRIA altura; registra as alturas com que foi chamado. */
+    private static TendermintCore<String> coreComValidadeDeAltura(List<Long> alturasVistas) {
+        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "h" + h + ":fresco",
+                (h, v) -> {
+                    alturasVistas.add(h);
+                    return v.startsWith("h" + h + ":");
+                });
+    }
+
+    @Test
+    void valorInvalidoParaAAlturaRecebePrevoteNilEEContado() {
+        List<Long> vistas = new ArrayList<>();
+        TendermintCore<String> c = coreComValidadeDeAltura(vistas);
+        c.start();
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "h7:errado", -1));
+        List<TendermintAction<String>> pv = votes(as, Type.PREVOTE);
+        assertEquals(1, pv.size(), "o validador correto prevota uma vez");
+        assertNull(pv.get(0).vote().value(), "valor invalido para a altura recebe prevote nil");
+        assertEquals(TendermintStep.PREVOTE, c.step());
+        assertEquals(1, c.discardCount(TendermintDiscardReason.INVALID_VALUE), "nao e descarte silencioso");
+        assertTrue(vistas.stream().allMatch(h -> h == 0L), "o predicado recebe a altura do nucleo");
+    }
+
+    @Test
+    void valorInvalidoNuncaViraPolkaNemLockNemDecisaoMesmoComVotosDeOutros() {
+        TendermintCore<String> c = coreComValidadeDeAltura(new ArrayList<>());
+        c.start();
+        c.onProposal(prop(0, 0, "h7:errado", -1));
+        c.onVote(prevote(0, 0, "h7:errado", 0));
+        c.onVote(prevote(0, 0, "h7:errado", 1));
+        c.onVote(prevote(0, 0, "h7:errado", 2));
+        assertEquals(-1, c.lockedRound(), "polka sobre valor invalido nao trava");
+        assertNull(c.lockedValue());
+        c.onVote(precommit(0, 0, "h7:errado", 0));
+        c.onVote(precommit(0, 0, "h7:errado", 1));
+        c.onVote(precommit(0, 0, "h7:errado", 2));
+        assertNull(c.decision(0), "valor invalido nunca e decidido (linha 49 exige valid)");
+        assertEquals(0, c.height());
+    }
+
+    @Test
+    void valorValidoParaAAlturaContinuaPrevotadoEDecidido() {
+        TendermintCore<String> c = coreComValidadeDeAltura(new ArrayList<>());
+        c.start();
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "h0:bom", -1));
+        assertEquals("h0:bom", votes(as, Type.PREVOTE).get(0).vote().value());
+        assertEquals(0, c.discardCount(TendermintDiscardReason.INVALID_VALUE));
+        c.onVote(precommit(0, 0, "h0:bom", 0));
+        c.onVote(precommit(0, 0, "h0:bom", 1));
+        c.onVote(precommit(0, 0, "h0:bom", 2));
+        assertEquals("h0:bom", c.decision(0));
+        // altura 1: o mesmo valor ja nao serve (o predicado depende da altura)
+        List<TendermintAction<String>> as1 = c.onProposal(prop(1, 0, "h0:bom", -1));
+        assertNull(votes(as1, Type.PREVOTE).get(0).vote().value());
+        assertEquals(1, c.discardCount(TendermintDiscardReason.INVALID_VALUE));
+    }
+
     @Test
     void argumentosInvalidos() {
         assertThrows(IllegalArgumentException.class, () -> new TendermintCore<String>(4, 4,
-                TendermintCore.roundRobin(4), h -> "v", v -> true));
+                TendermintCore.roundRobin(4), h -> "v", (h, v) -> true));
         assertThrows(IllegalArgumentException.class, () -> new TendermintProposal<>(0, 1, "A", 1, 1));
         assertThrows(IllegalArgumentException.class, () -> new TendermintProposal<>(0, 1, null, -1, 1));
         assertThrows(IllegalArgumentException.class, () -> new TendermintVote<>(null, 0, 0, "A", 1));

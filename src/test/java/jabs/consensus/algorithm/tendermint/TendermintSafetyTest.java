@@ -67,7 +67,7 @@ class TendermintSafetyTest {
             for (int i = 0; i < n; i++) {
                 final int id = i;
                 cores.add(byz.contains(i) ? null : new TendermintCore<>(i, n, TendermintCore.roundRobin(n),
-                        h -> "h" + h + "-p" + id + "-" + rnd.nextInt(1_000_000), v -> true));
+                        h -> "h" + h + "-p" + id + "-" + rnd.nextInt(1_000_000), (h, v) -> true));
             }
         }
 

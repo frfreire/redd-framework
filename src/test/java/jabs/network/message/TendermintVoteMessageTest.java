@@ -21,6 +21,7 @@ class TendermintVoteMessageTest {
                 .txSizeBytes(512)
                 .messageOverheadBytes(overhead)
                 .signatureSizeBytes(signature)
+                .proposerSignatureSizeBytes(77) // FIXTURE somente de teste, nao e valor de pesquisa; nao afeta o voto
                 .build();
     }
 
