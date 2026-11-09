@@ -27,6 +27,11 @@ server:
 spring:
   application:
     name: redd-api-gateway
+  jackson:
+    deserialization:
+      # ADR-0002 / INV-11: tonelada e inteiro em kgCO2e. Sem isso o Jackson
+      # trunca 1.5 para 1 em campo Long em silencio.
+      accept-float-as-int: false
 
 springdoc:
   swagger-ui:

@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>404 -- mensagem do chaincode contem "nao encontrado"/"não encontrado"</li>
  *   <li>403 -- mensagem contem "Apenas"+"pode" ou "Conflito de interesse"</li>
+ *   <li>422 -- entrada recusada pelo contrato (formato, limite, campo obrigatorio)</li>
  *   <li>409 -- qualquer outra falha de regra de negocio/transicao de estado</li>
  *   <li>400 -- erro de validacao de payload (Bean Validation)</li>
  *   <li>502/503 -- erro de conectividade com peer/orderer</li>
@@ -92,6 +96,37 @@ public class GlobalExceptionHandler {
         return corpo(HttpStatus.BAD_REQUEST, "Payload invalido", detalhe);
     }
 
+    /** Parametro de query/path invalido (paginacao, id) detectado antes de chamar o peer. */
+    @ExceptionHandler(RequisicaoInvalidaException.class)
+    public ResponseEntity<ErroResponse> handleRequisicaoInvalida(RequisicaoInvalidaException e) {
+        return corpo(HttpStatus.BAD_REQUEST, "Requisicao invalida", e.getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErroResponse> handleParametroAusente(MissingServletRequestParameterException e) {
+        return corpo(HttpStatus.BAD_REQUEST, "Requisicao invalida",
+                "parametro obrigatorio ausente: " + e.getParameterName());
+    }
+
+    /** Ex.: pageSize=abc ou pageSize=1.5. Nao repete o valor recebido. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErroResponse> handleTipoParametro(MethodArgumentTypeMismatchException e) {
+        return corpo(HttpStatus.BAD_REQUEST, "Requisicao invalida",
+                "parametro '" + e.getName() + "' com tipo invalido (esperado inteiro)");
+    }
+
+    /**
+     * Corpo ilegivel: JSON malformado ou valor de tipo errado, p.ex. tonelada
+     * fracionaria (1.5) ou texto no lugar de inteiro. Mensagem fixa: a do
+     * Jackson cita o valor e a classe interna.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErroResponse> handleCorpoIlegivel(HttpMessageNotReadableException e) {
+        return corpo(HttpStatus.BAD_REQUEST, "Payload invalido",
+                "corpo JSON ausente, malformado ou com tipo invalido "
+                        + "(toneladas devem ser inteiros em kgCO2e, sem fracao nem notacao cientifica)");
+    }
+
     @ExceptionHandler(OrgInvalidaException.class)
     public ResponseEntity<ErroResponse> handleOrgInvalida(OrgInvalidaException e) {
         return corpo(HttpStatus.BAD_REQUEST, "Header X-Org invalido", e.getMessage());
@@ -99,7 +134,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErroResponse> handleIllegalArgument(IllegalArgumentException e) {
-        return corpo(HttpStatus.BAD_REQUEST, "Requisicao invalida", e.getMessage());
+        log.warn("IllegalArgumentException em handler de requisicao");
+        return corpo(HttpStatus.BAD_REQUEST, "Requisicao invalida", "argumento invalido");
     }
 
     // ------------------------------------------------------------------
@@ -109,7 +145,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> handleGenerico(Exception e) {
         log.error("Erro nao mapeado ao processar requisicao", e);
-        return corpo(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado", e.getMessage());
+        // Mensagem fixa: a de uma excecao nao mapeada pode expor detalhe interno.
+        return corpo(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado",
+                "Falha inesperada ao processar a requisicao.");
     }
 
     // ------------------------------------------------------------------
@@ -157,6 +195,19 @@ public class GlobalExceptionHandler {
         }
         if ((msgLower.contains("apenas") && msgLower.contains("pode")) || msgLower.contains("conflito de interesse")) {
             return corpo(HttpStatus.FORBIDDEN, "Operacao nao autorizada para esta identidade", mensagem);
+        }
+        // Entrada recusada pelo contrato (formato, limite, campo obrigatorio):
+        // 422, distinto de conflito de estado. Exemplos vindos de RedContract:
+        // beneficiario fora do formato de digest, pageSize fora do limite,
+        // identificador pessoal no motivo, toneladas nao positivas.
+        if (msgLower.contains("fora do formato") || msgLower.contains("padrao de identificador")
+                || msgLower.contains("deve estar entre") || msgLower.contains("excede o tamanho")
+                || (msgLower.contains("excede ") && msgLower.contains("caracteres"))
+                || msgLower.contains("deve ser inteiro positivo") || msgLower.contains("deve ser maior")
+                || msgLower.contains("deve ser 0") || msgLower.contains("e obrigatorio")
+                || msgLower.contains("sao obrigatorios") || msgLower.contains("e obrigatoria")
+                || msgLower.contains("invalido, esperado") || msgLower.contains("nao pode ser anterior")) {
+            return corpo(HttpStatus.UNPROCESSABLE_ENTITY, "Entrada recusada pelo contrato", mensagem);
         }
         if (code == Status.Code.INVALID_ARGUMENT || code == Status.Code.FAILED_PRECONDITION
                 || code == Status.Code.ABORTED || code == Status.Code.ALREADY_EXISTS
