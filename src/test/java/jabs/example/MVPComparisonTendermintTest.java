@@ -115,6 +115,35 @@ class MVPComparisonTendermintTest {
     }
 
     @Test
+    void deltaZeroOuNegativoNoCliFalhaAltoAntesDeQualquerSimulacao(@TempDir Path tmp) {
+        for (String flag : new String[] {"tm-propose-delta", "tm-prevote-delta", "tm-precommit-delta"}) {
+            for (String ruim : new String[] {"0", "-0.5"}) {
+                Map<String, String> cli = new java.util.HashMap<>(Map.of(
+                        "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
+                        "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
+                        "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
+                        "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10"));
+                cli.put("tm-signature-size", "64");
+                cli.put(flag, ruim);
+                assertThrows(IllegalArgumentException.class,
+                        () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli),
+                        flag + "=" + ruim);
+            }
+        }
+
+        Path out = tmp.resolve("delta-zero");
+        String[] args = {"--protocols=TENDERMINT", "--validators=4", "--trials=1", "--output=" + out,
+                "--tm-propose-timeout=1.0", "--tm-propose-delta=0",
+                "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
+                "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64", "--tm-message-overhead=10"};
+        IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
+                () -> MVPComparison.main(args));
+        assertTrue(main.getMessage().contains("proposeDeltaS"), main.getMessage());
+        assertTrue(Files.notExists(out), "falha deve ocorrer antes de criar saida");
+    }
+
+    @Test
     void signatureSizeConhecidaPeloCli() {
         assertTrue(MVPComparison.knownFlags().contains("tm-signature-size"));
     }

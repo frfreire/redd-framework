@@ -1,11 +1,14 @@
 package jabs.consensus.algorithm.tendermint;
 
 /**
- * Duracao dos temporizadores: {@code base + round * delta}, por tipo. O artigo exige apenas que cresca com o round
- * (para que, apos o GST, o timeout ultrapasse a latencia real); a forma linear e a do CometBFT.
+ * Duracao dos temporizadores: {@code base + round * delta}, por tipo. O artigo (Buchman et al., arXiv:1807.04938)
+ * exige que o timeout CRESCA com o round: apos o GST, o timeout precisa ultrapassar a latencia real da rede para
+ * que haja liveness. Por isso todo delta deve ser finito e ESTRITAMENTE &gt; 0 (delta 0 daria timeouts constantes,
+ * sem a garantia de liveness). A forma linear e a do CometBFT.
  *
  * <p><b>Sem valores padrao de proposito:</b> os valores afetam a latencia medida e precisam ser fixados e
- * justificados na pre-registracao (ADR-0002), nao aqui. Todos devem ser &gt; 0 (base) e &gt;= 0 (delta).
+ * justificados na pre-registracao (ADR-0002); valores reais: a definir com o humano (ADR-0010). Base e deltas
+ * devem ser finitos e &gt; 0.
  */
 public record TendermintTimeouts(double proposeBaseS, double proposeDeltaS,
                                  double prevoteBaseS, double prevoteDeltaS,
@@ -47,8 +50,9 @@ public record TendermintTimeouts(double proposeBaseS, double proposeDeltaS,
     }
 
     private static void requireDelta(String name, double v) {
-        if (!(v >= 0) || Double.isInfinite(v)) {
-            throw new IllegalArgumentException(name + " deve ser finito e >= 0: " + v);
+        if (!(v > 0) || Double.isInfinite(v)) {
+            throw new IllegalArgumentException(name + " deve ser finito e > 0 (o timeout deve crescer com o round,"
+                    + " condicao de liveness do Tendermint): " + v);
         }
     }
 }

@@ -63,14 +63,32 @@ class TendermintQuorumAndTimeoutsTest {
 
     @Test
     void timeoutsInvalidos() {
-        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(0, 0, 1, 0, 1, 0));
-        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, -1, 1, 0, 1, 0));
-        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, 0, Double.NaN, 0, 1, 0));
+        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(0, 0.5, 1, 0.5, 1, 0.5));
+        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, -1, 1, 0.5, 1, 0.5));
+        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, 0.5, Double.NaN, 0.5, 1, 0.5));
         assertThrows(IllegalArgumentException.class,
-                () -> new TendermintTimeouts(1, 0, 1, 0, Double.POSITIVE_INFINITY, 0));
-        TendermintTimeouts t = new TendermintTimeouts(1, 0, 1, 0, 1, 0);
+                () -> new TendermintTimeouts(1, 0.5, 1, 0.5, Double.POSITIVE_INFINITY, 0.5));
+        TendermintTimeouts t = new TendermintTimeouts(1, 0.5, 1, 0.5, 1, 0.5);
         assertThrows(IllegalArgumentException.class, () -> t.durationSeconds(TimeoutKind.PROPOSE, -1));
         assertThrows(IllegalArgumentException.class, () -> t.durationSeconds(null, 0));
         assertThrows(IllegalArgumentException.class, () -> new TendermintQuorum(0));
+    }
+
+    @Test
+    void deltaZeroNegativoOuNaoFinitoERejeitadoEmCadaTipo() {
+        // cada delta zerado em turno (os demais > 0): o timeout precisa crescer com o round (liveness)
+        IllegalArgumentException p = assertThrows(IllegalArgumentException.class,
+                () -> new TendermintTimeouts(1, 0, 1, 0.5, 1, 0.5));
+        assertTrue(p.getMessage().contains("proposeDeltaS"), p.getMessage());
+        IllegalArgumentException v = assertThrows(IllegalArgumentException.class,
+                () -> new TendermintTimeouts(1, 0.5, 1, 0, 1, 0.5));
+        assertTrue(v.getMessage().contains("prevoteDeltaS"), v.getMessage());
+        IllegalArgumentException c = assertThrows(IllegalArgumentException.class,
+                () -> new TendermintTimeouts(1, 0.5, 1, 0.5, 1, 0));
+        assertTrue(c.getMessage().contains("precommitDeltaS"), c.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, 0.5, 1, -0.5, 1, 0.5));
+        assertThrows(IllegalArgumentException.class, () -> new TendermintTimeouts(1, 0.5, 1, 0.5, 1, Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> new TendermintTimeouts(1, Double.POSITIVE_INFINITY, 1, 0.5, 1, 0.5));
     }
 }
