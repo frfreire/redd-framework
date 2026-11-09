@@ -5,10 +5,15 @@ import jabs.ledgerdata.ethereum.EthereumBlock;
 import jabs.ledgerdata.ethereum.EthereumBlockWithTx;
 import jabs.ledgerdata.ethereum.EthereumTx;
 import jabs.consensus.config.HotStuffConsensusConfig;
+import jabs.consensus.config.TendermintConsensusConfig;
 import jabs.ledgerdata.hotstuff.HotStuffBlock;
 import jabs.ledgerdata.hotstuff.HotStuffBlockWithTx;
 import jabs.ledgerdata.hotstuff.HotStuffTx;
+import jabs.ledgerdata.tendermint.TendermintBlock;
+import jabs.ledgerdata.tendermint.TendermintBlockWithTx;
+import jabs.ledgerdata.tendermint.TendermintTx;
 import jabs.network.node.nodes.hotstuff.HotStuffNode;
+import jabs.network.node.nodes.tendermint.TendermintNode;
 import jabs.ledgerdata.pbft.PBFTBlock;
 import jabs.ledgerdata.pbft.PBFTBlockWithTx;
 import jabs.ledgerdata.pbft.PBFTTx;
@@ -156,6 +161,46 @@ public final class BlockFactory {
         if (txSizeBytes <= 0) {
             throw new IllegalArgumentException("txSizeBytes deve ser > 0: " + txSizeBytes);
         }
+    }
+
+    /**
+     * Bloco Tendermint COM transacoes, lote cheio ({@code config.batchSize} transacoes de {@code txSizeBytes}).
+     * Tamanho do bloco = soma dos tamanhos das transacoes. Nao consome aleatoriedade.
+     */
+    public static TendermintBlockWithTx sampleTendermintBlockWithTx(Simulator simulator, TendermintNode creator,
+                                                                    TendermintBlock parent,
+                                                                    TendermintConsensusConfig config) {
+        return sampleTendermintBlockWithTx(simulator, creator, parent, config, config.getBatchSize());
+    }
+
+    /**
+     * Bloco Tendermint com {@code txCount} transacoes, 1 &lt;= txCount &lt;= {@code config.batchSize}.
+     * Tamanho = {@code txCount * txSizeBytes}.
+     */
+    public static TendermintBlockWithTx sampleTendermintBlockWithTx(Simulator simulator, TendermintNode creator,
+                                                                    TendermintBlock parent,
+                                                                    TendermintConsensusConfig config,
+                                                                    int txCount) {
+        if (simulator == null || creator == null || parent == null || config == null) {
+            throw new IllegalArgumentException("simulator, creator, parent e config obrigatorios");
+        }
+        if (txCount < 1 || txCount > config.getBatchSize()) {
+            throw new IllegalArgumentException("txCount deve estar em [1, " + config.getBatchSize() + "]: " + txCount);
+        }
+        Set<TendermintTx> txs = new HashSet<>();
+        for (int i = 0; i < txCount; i++) {
+            txs.add(TransactionFactory.sampleTendermintTransaction(config.getTxSizeBytes()));
+        }
+        return new TendermintBlockWithTx(tendermintBlockSize(txCount, config.getTxSizeBytes()),
+                parent.getHeight() + 1, simulator.getSimulationTime(), creator, parent, txs);
+    }
+
+    private static int tendermintBlockSize(int txCount, int txSizeBytes) {
+        long size = (long) txCount * txSizeBytes;
+        if (size > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("tamanho do bloco excede int: " + size);
+        }
+        return (int) size;
     }
 
     public static SnowBlock sampleSnowBlock(Simulator simulator, RandomnessEngine randomnessEngine, SnowNode creator, SnowBlock parent) {

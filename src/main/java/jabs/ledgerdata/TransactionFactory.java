@@ -5,6 +5,7 @@ import jabs.ledgerdata.ethereum.EthereumTx;
 import jabs.ledgerdata.hotstuff.HotStuffBlock;
 import jabs.ledgerdata.hotstuff.HotStuffTx;
 import jabs.ledgerdata.pbft.PBFTTx;
+import jabs.ledgerdata.tendermint.TendermintTx;
 import jabs.simulator.randengine.RandomnessEngine;
 
 public final class TransactionFactory {
@@ -79,6 +80,17 @@ public final class TransactionFactory {
             throw new IllegalArgumentException("txSizeBytes deve ser > 0: " + txSizeBytes);
         }
         return new HotStuffTx(txSizeBytes, HotStuffBlock.HOTSTUFF_BLOCK_HASH_SIZE);
+    }
+
+    /**
+     * Transacao Tendermint de tamanho FIXO ({@code txSizeBytes}), como no HotStuff: nao consome aleatoriedade.
+     * Hash de 32 B (SHA-256), o mesmo do bloco Tendermint.
+     */
+    public static TendermintTx sampleTendermintTransaction(int txSizeBytes) {
+        if (txSizeBytes <= 0) {
+            throw new IllegalArgumentException("txSizeBytes deve ser > 0: " + txSizeBytes);
+        }
+        return new TendermintTx(txSizeBytes, jabs.ledgerdata.tendermint.TendermintBlock.TENDERMINT_BLOCK_HASH_SIZE);
     }
 
 }

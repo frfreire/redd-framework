@@ -2,6 +2,8 @@ package jabs.example;
 
 import jabs.config.ByzantineConfig;
 import jabs.config.NetworkSizing;
+import jabs.consensus.algorithm.tendermint.TendermintTimeouts;
+import jabs.consensus.config.TendermintConsensusConfig;
 import jabs.ledgerdata.DoubleSpendTracker;
 import jabs.metrics.SimulationMetrics;
 import jabs.scenario.AbstractScenario;
@@ -9,6 +11,7 @@ import jabs.scenario.DAGsperNetworkScenario;
 import jabs.scenario.ArqReddVotingScenario;
 import jabs.scenario.HybridNetworkScenario;
 import jabs.scenario.PBFTLANScenario;
+import jabs.scenario.TendermintLANScenario;
 import jabs.log.BlockFinalizationLogger;
 import jabs.log.EnhancedBlockFinalizationLogger;
 
@@ -49,6 +52,12 @@ public class MVPComparison {
         configureLoadRecord(cli.get("load-record"), cli.get("load-record-t0"));
         java.util.List<Integer> validatorsList = parseIntList(cli.getOrDefault("validators", "200"));
         java.util.List<String> protocolList = parseStringList(cli.getOrDefault("protocols", "EARTH"));
+        TendermintConsensusConfig tendermintConfig = parseTendermintConfigIfRequested(protocolList, cli);
+        if (tendermintConfig != null) {
+            for (int validators : validatorsList) {
+                tendermintConfig.validateFor(validators);
+            }
+        }
         int trials = Integer.parseInt(cli.getOrDefault("trials", "5"));
         double defaultDuration = Double.parseDouble(cli.getOrDefault("duration", "600"));
         long baseSeed = Long.parseLong(cli.getOrDefault("seed", "12345"));
@@ -114,9 +123,9 @@ public class MVPComparison {
                     System.out.println("    Trial " + (trial + 1) + "/" + trials + " (seed=" + runSeed + ")");
 
                     try {
-                        SimulationMetrics metrics = runProtocol(protocol, validators, runSeed, protocolDuration, 
+                        SimulationMetrics metrics = runProtocol(protocol, validators, runSeed, protocolDuration,
                             outputRoot + "/" + protocol.toLowerCase() + "-" + validators + "v-t" + trial + ".csv",
-                            enableTransactions, txInterval, nodesMode);
+                            enableTransactions, txInterval, nodesMode, tendermintConfig);
                         
                         // Accumulate metrics
                         acc.addTrial(
@@ -147,7 +156,10 @@ public class MVPComparison {
 
     /** Flags que o programa le (as demais sao ignoradas com aviso no stderr). Array: sem colecao hash nem classe nova. */
     private static final String[] KNOWN = {"validators", "protocols", "trials", "duration", "durations", "seed",
-            "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0"};
+            "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0",
+            "tm-propose-timeout", "tm-propose-delta", "tm-prevote-timeout", "tm-prevote-delta",
+            "tm-precommit-timeout", "tm-precommit-delta", "tm-batch-size", "tm-tx-size", "tm-message-overhead",
+            "tm-signature-size"};
 
     /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
     private static boolean loadRecordOn = false;
@@ -167,6 +179,63 @@ public class MVPComparison {
         if (t0 != null) {
             loadRecordOn = true;
             loadRecordT0 = t0;
+        }
+    }
+
+    /**
+     * Config do Tendermint so e exigida quando {@code TENDERMINT} aparece em {@code --protocols}. Sem valores de
+     * pesquisa padrao: timeouts, lote, tamanho de transacao, overhead de mensagem e tamanho da
+     * assinatura do voto (ADR-0010 PI-08/PI-16: a definir com o humano) precisam vir das flags {@code --tm-*}.
+     */
+    static TendermintConsensusConfig parseTendermintConfigIfRequested(java.util.List<String> protocols,
+            java.util.Map<String, String> cli) {
+        boolean requested = false;
+        for (String protocol : protocols) {
+            if ("TENDERMINT".equalsIgnoreCase(protocol)) {
+                requested = true;
+                break;
+            }
+        }
+        if (!requested) {
+            return null;
+        }
+        TendermintTimeouts timeouts = new TendermintTimeouts(
+                requiredDouble(cli, "tm-propose-timeout"),
+                requiredDouble(cli, "tm-propose-delta"),
+                requiredDouble(cli, "tm-prevote-timeout"),
+                requiredDouble(cli, "tm-prevote-delta"),
+                requiredDouble(cli, "tm-precommit-timeout"),
+                requiredDouble(cli, "tm-precommit-delta"));
+        TendermintConsensusConfig.Builder builder = TendermintConsensusConfig.builder()
+                .timeouts(timeouts)
+                .batchSize(requiredInt(cli, "tm-batch-size"))
+                .txSizeBytes(requiredInt(cli, "tm-tx-size"))
+                .messageOverheadBytes(requiredInt(cli, "tm-message-overhead"))
+                .signatureSizeBytes(requiredInt(cli, "tm-signature-size"));
+        return builder.build();
+    }
+
+    private static String requiredCliValue(java.util.Map<String, String> cli, String flag) {
+        String value = cli.get(flag);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("protocolo TENDERMINT exige --" + flag + "=valor");
+        }
+        return value;
+    }
+
+    private static double requiredDouble(java.util.Map<String, String> cli, String flag) {
+        try {
+            return Double.parseDouble(requiredCliValue(cli, flag));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--" + flag + " invalido: " + cli.get(flag), e);
+        }
+    }
+
+    private static int requiredInt(java.util.Map<String, String> cli, String flag) {
+        try {
+            return Integer.parseInt(requiredCliValue(cli, flag));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--" + flag + " invalido: " + cli.get(flag), e);
         }
     }
 
@@ -306,6 +375,9 @@ public class MVPComparison {
                         .append(n).append(" miners=").append(miners).append(" stakeholders=").append(n - miners)
                         .append(" voters=all").toString();
             }
+            case "TENDERMINT":
+                return sb.append(" n_semantics=").append(rot).append(" n_requested=").append(n).append(" nodes=")
+                        .append(n).append(" validators=").append(n).toString();
             default:
                 // protocolo desconhecido: runProtocol o recusa por trial, como antes (nao muda o fluxo legado)
                 return sb.append(" sizing=desconhecido (protocolo nao reconhecido)").toString();
@@ -394,9 +466,9 @@ public class MVPComparison {
     /**
      * Run a single protocol simulation
      */
-    private static SimulationMetrics runProtocol(String protocol, int validators, long seed, 
+    private static SimulationMetrics runProtocol(String protocol, int validators, long seed,
             double duration, String outputPath, boolean enableTx, double txInterval,
-            boolean nodesMode) throws Exception {
+            boolean nodesMode, TendermintConsensusConfig tendermintConfig) throws Exception {
         
         switch (protocol.toUpperCase()) {
             case "EARTH":
@@ -413,6 +485,8 @@ public class MVPComparison {
                 return runArqREDDScenario(validators, duration, seed, outputPath);
             case "DAGSPER":
                 return runDAGsperScenario(validators, seed, duration, outputPath, enableTx, txInterval);
+            case "TENDERMINT":
+                return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig);
             default:
                 throw new IllegalArgumentException("Unknown protocol: " + protocol);
         }
@@ -521,6 +595,26 @@ public class MVPComparison {
         System.out.println("Running DAGsper scenario (" + numNodes + " nodes, " + miners + " miners, seed=" + seed + ") ...");
         scenario.run();
         metrics = scenario.getMetrics();
+        printScenarioFinilizedMetrics(metrics);
+        return metrics;
+    }
+
+    /**
+     * Tendermint honesto (ADR-0006): {@code numNodes} e o numero de validadores (n >= 4). A config vem das flags
+     * {@code --tm-*}; sem configuracao o protocolo falha alto antes da simulacao deixar rastros.
+     */
+    private static SimulationMetrics runTendermintScenario(int numNodes, long seed, double duration,
+            String outputPath, TendermintConsensusConfig config) throws IOException {
+        if (config == null) {
+            throw new IllegalArgumentException("protocolo TENDERMINT exige flags --tm-* (timeouts, lote e tx)");
+        }
+        TendermintLANScenario scenario = new TendermintLANScenario(
+                "Tendermint - " + numNodes + " validators", seed, numNodes, duration, config);
+        scenario.addMetricsLogger(outputPath);
+        attachLoadRecorder(scenario, "TENDERMINT", seed, outputPath);
+        System.out.println("Running Tendermint scenario (" + numNodes + " validators, seed=" + seed + ") ...");
+        scenario.run();
+        SimulationMetrics metrics = scenario.getMetrics();
         printScenarioFinilizedMetrics(metrics);
         return metrics;
     }

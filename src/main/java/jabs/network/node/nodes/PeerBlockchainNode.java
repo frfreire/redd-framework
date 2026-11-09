@@ -7,6 +7,7 @@ import jabs.consensus.algorithm.Parlia;
 import jabs.consensus.algorithm.CasperFFG;
 import jabs.consensus.algorithm.NakamotoConsensus;
 import jabs.consensus.algorithm.PBFT;
+import jabs.consensus.algorithm.Tendermint;
 import jabs.consensus.blockchain.LocalBlockTree;
 import jabs.ledgerdata.*;
 import jabs.ledgerdata.dagsper.DAGsperVote;
@@ -225,6 +226,25 @@ public abstract class PeerBlockchainNode<B extends SingleParentBlock<B>, T exten
                 hotStuff.recordQcMessageTraffic(qcMessage, packet.getSize());
             }
             hotStuff.onQcMessage(qcMessage); // D3a-2a-2c; hoje UnsupportedOperationException (nunca descarta)
+        } else if (message instanceof TendermintProposalMessage) {
+            // Tendermint: proposta leva o bloco inteiro. Bloco = o da proposta (referencia final); C_B_total =
+            // packet.getSize(); C_B_consenso = pacote menos a carga do bloco. Conta ANTES do despacho, e a
+            // duplicata tambem consome banda. Autoentrega local nao conta (o P2P nao liga o no a si mesmo).
+            TendermintProposalMessage proposal = (TendermintProposalMessage) message;
+            Tendermint<B, T> tendermint = requireTendermint(message);
+            if (!isLocalSelfDelivery(packet)) {
+                tendermint.recordProposalTraffic(proposal, packet.getSize());
+            }
+            tendermint.onProposal(proposal);
+        } else if (message instanceof TendermintVoteMessage) {
+            // Tendermint: voto leva so o id do bloco. Soma inteiro em C_B_total e C_B_consenso; nil nao nomeia
+            // bloco e vai ao contador a parte. Duplicata tambem consome banda.
+            TendermintVoteMessage vote = (TendermintVoteMessage) message;
+            Tendermint<B, T> tendermint = requireTendermint(message);
+            if (!isLocalSelfDelivery(packet)) {
+                tendermint.recordVoteTraffic(vote, packet.getSize());
+            }
+            tendermint.onVote(vote);
         } else if (message instanceof QueryMessage) {
             // System.out.println("[PeerBlockchainNode] Received QueryMessage: " + message);
             Query query = ((QueryMessage) message).getQuery();
@@ -258,6 +278,17 @@ public abstract class PeerBlockchainNode<B extends SingleParentBlock<B>, T exten
                     + " entregue a um no cujo consenso nao e HotStuff: " + this.consensusAlgorithm.getClass().getSimpleName());
         }
         return (HotStuff<B, T>) this.consensusAlgorithm;
+    }
+
+    /** Mensagem de rede do Tendermint em no que nao roda Tendermint e erro de montagem: falha alto. */
+    @SuppressWarnings("unchecked")
+    private Tendermint<B, T> requireTendermint(Message message) {
+        if (!(this.consensusAlgorithm instanceof Tendermint)) {
+            throw new IllegalStateException(message.getClass().getSimpleName()
+                    + " entregue a um no cujo consenso nao e Tendermint: "
+                    + this.consensusAlgorithm.getClass().getSimpleName());
+        }
+        return (Tendermint<B, T>) this.consensusAlgorithm;
     }
 
     protected abstract void processNewBlock(B block);
