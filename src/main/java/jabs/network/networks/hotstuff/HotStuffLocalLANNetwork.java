@@ -13,10 +13,7 @@ import jabs.simulator.randengine.RandomnessEngine;
 /**
  * Rede LAN do HotStuff (molde: PBFTLocalLANNetwork). D3a-2a-1: monta os nos e a malha completa.
  *
- * <p><b>O que fica para D3a-2a-2:</b> o agendador de propostas (equivalente a
- * {@code PBFTLocalLANNetwork#startConsensusRound}). Aqui so existe o ponto de extensao
- * {@link #startConsensusRound}, que FALHA ALTO: nao e no-op, para que nenhuma simulacao rode "sem erro" sem
- * produzir bloco algum (ver criterio 4 do bar). No HotStuff o lider e quem propoe (ROTATING muda a cada visao,
+ * <p>{@link #startConsensusRound} (D3a-2a-2c-2b-2) inicia o protocolo em todos os nos (molde: Tendermint). No HotStuff o lider e quem propoe (ROTATING muda a cada visao,
  * STABLE e sempre o no 0: {@link HotStuffConsensusConfig#leaderFor}); por isso, ao contrario do PBFT, nao ha
  * "no do meio" escolhido aqui para fugir de bizantinos: quem e bizantino e a politica de lider sao do algoritmo
  * e do cenario.
@@ -79,13 +76,14 @@ public class HotStuffLocalLANNetwork extends Network<HotStuffNode, SingleNodeTyp
     }
 
     /**
-     * PONTO DE EXTENSAO de D3a-2a-2: inicia as visoes (o lider da visao 0 propoe o primeiro bloco e o
-     * agendamento segue por visao). Ainda nao implementado.
-     *
-     * @throws UnsupportedOperationException sempre, em D3a-2a-1
+     * Inicia o HotStuff em todos os nos (cada um emite o NEW_VIEW inicial ao lider da visao inicial). Deve ser
+     * chamado depois de {@link #populateNetwork} e antes de rodar a simulacao; a partir dai o caminho honesto se
+     * autossustenta (cada DECIDE leva ao NEW_VIEW da visao seguinte). Nao ha agendador externo nem timeout
+     * (troca de visao por timeout: 2c-3). Chamar duas vezes falha alto.
      */
     public void startConsensusRound(Simulator simulator, double simulationStopTime) {
-        throw new UnsupportedOperationException(
-                "HotStuff: agendador de propostas e algoritmo vem em D3a-2a-2 (esqueleto D3a-2a-1)");
+        for (HotStuffNode node : this.getAllNodes()) {
+            node.startConsensus();
+        }
     }
 }

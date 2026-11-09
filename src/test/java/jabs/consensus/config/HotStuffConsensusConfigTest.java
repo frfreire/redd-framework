@@ -74,7 +74,7 @@ class HotStuffConsensusConfigTest {
         return HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0)
-                .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512))
+                .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
                 .individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96)
                 .aggregatedShareSizeBytes(96);
@@ -107,7 +107,7 @@ class HotStuffConsensusConfigTest {
     void builderSemTimeoutFalha() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
-                .batchSize(2048).individualSignatureSizeBytes(64)
+                .batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
         IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
         assertTrue(e.getMessage().contains("viewTimeoutSeconds"));
@@ -124,9 +124,23 @@ class HotStuffConsensusConfigTest {
     }
 
     @Test
+    void builderSemTamanhoDeTransacaoFalhaSemPadrao() {
+        HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .voterEncoding(VoterEncoding.BITMAP)
+                .viewTimeoutSeconds(10.0).batchSize(2048).individualSignatureSizeBytes(64)
+                .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
+        IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
+        assertTrue(e.getMessage().contains("txSizeBytes"));
+        assertTrue(e.getMessage().contains("a definir com o humano"));
+        assertThrows(IllegalArgumentException.class, () -> completo().txSizeBytes(0).build());
+        assertThrows(IllegalArgumentException.class, () -> completo().batchSize(Integer.MAX_VALUE).txSizeBytes(2).build());
+        assertEquals(512, padrao().getTxSizeBytes());
+    }
+
+    @Test
     void builderSemCodificacaoDeVotantesFalhaSemPadraoSilencioso() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
-                .viewTimeoutSeconds(10.0).batchSize(2048).individualSignatureSizeBytes(64)
+                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
         IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
         assertTrue(e.getMessage().contains("voterEncoding"));
@@ -153,10 +167,10 @@ class HotStuffConsensusConfigTest {
         assertThrows(IllegalStateException.class,
                 () -> HotStuffConsensusConfig.builder().viewTimeoutSeconds(10.0).build());
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder()
-                .voterEncoding(VoterEncoding.BITMAP).viewTimeoutSeconds(10.0).batchSize(2048).build());
+                .voterEncoding(VoterEncoding.BITMAP).viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).build());
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(2048).individualSignatureSizeBytes(64)
+                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).build());
     }
 
@@ -165,7 +179,7 @@ class HotStuffConsensusConfigTest {
         HotStuffConsensusConfig c = HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
                 .leaderPolicy(LeaderPolicy.STABLE).signatureMode(SignatureMode.AGGREGATED)
-                .viewTimeoutSeconds(2.5).batchSize(50)
+                .viewTimeoutSeconds(2.5).batchSize(50).txSizeBytes(512)
                 .individualSignatureSizeBytes(71).aggregatedSignatureSizeBytes(48)
                 .aggregatedShareSizeBytes(48).messageOverheadBytes(0).build();
         assertEquals(LeaderPolicy.STABLE, c.getLeaderPolicy());

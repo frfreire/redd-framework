@@ -34,7 +34,7 @@ final class Fixtures {
     static HotStuffConsensusConfig cfg() {
         return HotStuffConsensusConfig.builder()
                 .voterEncoding(HotStuffConsensusConfig.VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512))
+                .viewTimeoutSeconds(10.0).batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
                 .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96)
                 .aggregatedShareSizeBytes(96).build();
     }

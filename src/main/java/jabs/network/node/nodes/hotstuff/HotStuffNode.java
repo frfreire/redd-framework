@@ -15,10 +15,11 @@ import jabs.network.p2p.HotStuffP2P;
 import jabs.simulator.Simulator;
 
 /**
- * No HotStuff (molde: PBFTNode). D3a-2a-2c-2a: lado da REPLICA do caminho honesto. Propostas e mensagens de QC sao
- * despachadas por {@code PeerBlockchainNode} direto a {@link HotStuff#onProposal}/{@link HotStuff#onQcMessage};
- * {@link #processNewVote} entrega o voto recebido (este no como lider) ao agregador do {@link HotStuff}, SO
- * armazenando (o lider age na 2c-2b). Nao ha DataMessage de bloco no protocolo: o bloco viaja dentro da proposta
+ * No HotStuff (molde: PBFTNode). D3a-2a-2c-2a: lado da REPLICA do caminho honesto; D3a-2a-2c-2b-2: lado do LIDER.
+ * Propostas e mensagens de QC sao despachadas por {@code PeerBlockchainNode} direto a
+ * {@link HotStuff#onProposal}/{@link HotStuff#onQcMessage}; {@link #processNewVote} entrega o voto recebido (este
+ * no como lider) ao {@link HotStuff#onVote}, que o passa ao {@code LeaderCore}. {@link #startConsensus()} inicia o
+ * protocolo (NEW_VIEW iniciais). Nao ha DataMessage de bloco no protocolo: o bloco viaja dentro da proposta
  * PREPARE e entra na arvore local quando a proposta e aceita (ver {@link HotStuff#onProposal}).
  *
  * <p>O genesis nao e compartilhado entre nos de redes diferentes por acidente: e uma constante imutavel
@@ -38,7 +39,7 @@ public class HotStuffNode extends PeerBlockchainNode<HotStuffBlock, HotStuffTx> 
                         long uploadBandwidth, int numAllParticipants, HotStuffConsensusConfig config) {
         super(simulator, network, nodeID, downloadBandwidth, uploadBandwidth,
                 new HotStuffP2P(),
-                new HotStuff<>(new LocalBlockTree<>(HOTSTUFF_GENESIS_BLOCK), config, numAllParticipants)
+                new HotStuff<>(new LocalBlockTree<>(HOTSTUFF_GENESIS_BLOCK), config, numAllParticipants, nodeID)
         );
         this.config = config;
         this.numAllParticipants = numAllParticipants;
@@ -51,6 +52,12 @@ public class HotStuffNode extends PeerBlockchainNode<HotStuffBlock, HotStuffTx> 
 
     public int getNumAllParticipants() {
         return numAllParticipants;
+    }
+
+    /** Inicia o HotStuff neste no (NEW_VIEW inicial ao lider da visao inicial). Chamado uma vez pela rede. */
+    @SuppressWarnings("unchecked")
+    public void startConsensus() {
+        ((HotStuff<HotStuffBlock, HotStuffTx>) this.consensusAlgorithm).start();
     }
 
     @Override
@@ -71,7 +78,7 @@ public class HotStuffNode extends PeerBlockchainNode<HotStuffBlock, HotStuffTx> 
             throw new IllegalArgumentException("HotStuffNode so recebe HotStuffVote, recebido: "
                     + (vote == null ? "null" : vote.getClass().getName()));
         }
-        // So armazena no agregador do lider (2c-2b forma o QC). Tráfego do voto ja foi contado em PeerBlockchainNode.
+        // O LeaderCore agrega e forma o QC. Tráfego do voto ja foi contado em PeerBlockchainNode.
         ((HotStuff<HotStuffBlock, HotStuffTx>) this.consensusAlgorithm).onVote((HotStuffVote) vote);
     }
 

@@ -17,7 +17,7 @@ class ViewLeadersTest {
     private static HotStuffConsensusConfig cfg(LeaderPolicy p) {
         return HotStuffConsensusConfig.builder().leaderPolicy(p)
                 .voterEncoding(HotStuffConsensusConfig.VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(2048)
+                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512)
                 .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96)
                 .aggregatedShareSizeBytes(96).build();
     }

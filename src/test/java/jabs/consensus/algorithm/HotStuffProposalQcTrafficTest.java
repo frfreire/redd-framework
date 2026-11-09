@@ -211,8 +211,15 @@ class HotStuffProposalQcTrafficTest {
     void pontosDeEntradaRejeitamNuloEDespachamPropostaValida() {
         assertThrows(IllegalArgumentException.class, () -> hs(receptor).onProposal(null));
         assertThrows(IllegalArgumentException.class, () -> hs(receptor).onQcMessage(null));
-        hs(receptor).onProposal(proposta(HotStuffProposalMessage.Phase.PREPARE));
-        assertEquals(0, hs(receptor).getTotalDiscards(), "proposta valida nao e descartada");
+        // ADAPTADO (2b-2): a visao inicial e HotStuff.INITIAL_VIEW = 1 (era 0), cujo lider e o no 1; uma proposta de
+        // visao 0 passou a ser OLD_VIEW (descarte correto). Proposta valida = PREPARE da visao inicial, vinda do lider
+        // dela, a uma replica que nao e o lider.
+        HotStuffNode liderInicial = net.getAllNodes().get((int) (HotStuff.INITIAL_VIEW % N));
+        HotStuffNode replica = net.getAllNodes().get(2);
+        hs(replica).onProposal(HotStuffProposalMessage.prepareWithoutHighQc(
+                HotStuff.INITIAL_VIEW, liderInicial, bloco, cfg, N));
+        assertEquals(0, hs(replica).getTotalDiscards(), "proposta valida nao e descartada");
+        assertTrue(hs(replica).getLocalBlockTree().contains(bloco), "foi despachada ao nucleo e o bloco admitido");
     }
 
     // ---------- corte e take ----------

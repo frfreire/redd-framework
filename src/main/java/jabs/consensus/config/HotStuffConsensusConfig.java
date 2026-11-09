@@ -13,6 +13,10 @@ package jabs.consensus.config;
  *   <li>{@code batchSize}: derivavel do spec oficial por {@link #batchSizeFor(int, int)}
  *       (.experimento/bateria1.yaml: tamanho_bloco_kb=1024, tamanho_tx_bytes=512 -&gt; 2048);
  *       o valor final continua sendo escolha explicita de quem constroi.</li>
+ *   <li>{@code txSizeBytes}: tamanho de cada transacao do lote, usado pelo lider ao propor o bloco
+ *       ({@code BlockFactory.sampleHotStuffBlockWithTx}). Sem padrao: a decisao e do chamador (a fonte do spec e
+ *       .experimento/bateria1.yaml: tamanho_tx_bytes=512, mas o valor continua escolha explicita; a definir com o
+ *       humano para o estudo). Mesmo desenho do {@code TendermintConsensusConfig}.</li>
  *   <li>{@code individualSignatureSizeBytes}, {@code aggregatedSignatureSizeBytes},
  *       {@code aggregatedShareSizeBytes}: suposicoes (ex.: 64 B ECDSA/Ed25519, 96 B BLS12-381 G2),
  *       a definir com o humano para o esquema efetivo do Fabric; nao derivam do spec.
@@ -59,6 +63,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
     private final VoterEncoding voterEncoding;
     private final double viewTimeoutSeconds;
     private final int batchSize;
+    private final int txSizeBytes;
     private final int individualSignatureSizeBytes;
     private final int aggregatedSignatureSizeBytes;
     private final int aggregatedShareSizeBytes;
@@ -71,6 +76,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         requireSet(b.voterEncoding, "voterEncoding (a definir com o humano: codificacao dos votantes)");
         requireSet(b.viewTimeoutSeconds, "viewTimeoutSeconds");
         requireSet(b.batchSize, "batchSize (use batchSizeFor(blockSizeKb, txSizeBytes))");
+        requireSet(b.txSizeBytes, "txSizeBytes (tamanho de cada transacao do lote; a definir com o humano)");
         requireSet(b.individualSignatureSizeBytes, "individualSignatureSizeBytes");
         requireSet(b.aggregatedSignatureSizeBytes, "aggregatedSignatureSizeBytes");
         requireSet(b.aggregatedShareSizeBytes, "aggregatedShareSizeBytes");
@@ -79,6 +85,12 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         }
         if (b.batchSize <= 0) {
             throw new IllegalArgumentException("batchSize deve ser > 0: " + b.batchSize);
+        }
+        if (b.txSizeBytes <= 0) {
+            throw new IllegalArgumentException("txSizeBytes deve ser > 0: " + b.txSizeBytes);
+        }
+        if ((long) b.batchSize * b.txSizeBytes > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("batchSize * txSizeBytes excede int: " + b.batchSize + " * " + b.txSizeBytes);
         }
         if (b.individualSignatureSizeBytes <= 0 || b.aggregatedSignatureSizeBytes <= 0
                 || b.aggregatedShareSizeBytes <= 0) {
@@ -92,6 +104,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         this.voterEncoding = b.voterEncoding;
         this.viewTimeoutSeconds = b.viewTimeoutSeconds;
         this.batchSize = b.batchSize;
+        this.txSizeBytes = b.txSizeBytes;
         this.individualSignatureSizeBytes = b.individualSignatureSizeBytes;
         this.aggregatedSignatureSizeBytes = b.aggregatedSignatureSizeBytes;
         this.aggregatedShareSizeBytes = b.aggregatedShareSizeBytes;
@@ -217,6 +230,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
     public VoterEncoding getVoterEncoding() { return voterEncoding; }
     public double getViewTimeoutSeconds() { return viewTimeoutSeconds; }
     public int getBatchSize() { return batchSize; }
+    public int getTxSizeBytes() { return txSizeBytes; }
     public int getIndividualSignatureSizeBytes() { return individualSignatureSizeBytes; }
     public int getAggregatedSignatureSizeBytes() { return aggregatedSignatureSizeBytes; }
     public int getAggregatedShareSizeBytes() { return aggregatedShareSizeBytes; }
@@ -228,6 +242,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         private VoterEncoding voterEncoding; // sem padrao: a definir com o humano
         private Double viewTimeoutSeconds;
         private Integer batchSize;
+        private Integer txSizeBytes;
         private Integer individualSignatureSizeBytes;
         private Integer aggregatedSignatureSizeBytes;
         private Integer aggregatedShareSizeBytes;
@@ -240,6 +255,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         public Builder voterEncoding(VoterEncoding v) { this.voterEncoding = v; return this; }
         public Builder viewTimeoutSeconds(double v) { this.viewTimeoutSeconds = v; return this; }
         public Builder batchSize(int v) { this.batchSize = v; return this; }
+        public Builder txSizeBytes(int v) { this.txSizeBytes = v; return this; }
         public Builder individualSignatureSizeBytes(int v) { this.individualSignatureSizeBytes = v; return this; }
         public Builder aggregatedSignatureSizeBytes(int v) { this.aggregatedSignatureSizeBytes = v; return this; }
         public Builder aggregatedShareSizeBytes(int v) { this.aggregatedShareSizeBytes = v; return this; }

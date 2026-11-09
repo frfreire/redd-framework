@@ -47,7 +47,7 @@ class HotStuffNetworkMessagesTest {
     private static HotStuffConsensusConfig cfg(SignatureMode m) {
         return HotStuffConsensusConfig.builder().signatureMode(m)
                 .voterEncoding(HotStuffConsensusConfig.VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512))
+                .viewTimeoutSeconds(10.0).batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
                 .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96)
                 .aggregatedShareSizeBytes(96).build();
     }
@@ -55,7 +55,7 @@ class HotStuffNetworkMessagesTest {
     private static HotStuffConsensusConfig cfg25() {
         return HotStuffConsensusConfig.builder()
                 .voterEncoding(HotStuffConsensusConfig.VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(2048).messageOverheadBytes(25)
+                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).messageOverheadBytes(25)
                 .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96)
                 .aggregatedShareSizeBytes(96).build();
     }

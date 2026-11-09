@@ -12,7 +12,7 @@ public final class HotStuffTestConfig {
         return HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0)
-                .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512))
+                .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
                 .individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96)
                 .aggregatedShareSizeBytes(96)

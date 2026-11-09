@@ -66,9 +66,18 @@ class HotStuffLocalLANNetworkTest {
     }
 
     @Test
-    void agendadorDePropostasFalhaAltoAteD3a2a2() {
+    void startConsensusRoundIniciaTodosOsNosUmaVezESoUmaVez() {
+        // Antes da 2b-2 o agendador FALHAVA ALTO (UnsupportedOperationException); agora inicia o protocolo em todos os nos
+        // e iniciar de novo continua falhando alto.
         HotStuffLocalLANNetwork net = rede(1, 4);
-        assertThrows(UnsupportedOperationException.class, () -> net.startConsensusRound(new Simulator(), 10.0));
+        for (HotStuffNode no : net.getAllNodes()) {
+            assertFalse(((HotStuff<?, ?>) no.getConsensusAlgorithm()).isStarted());
+        }
+        net.startConsensusRound(new Simulator(), 10.0);
+        for (HotStuffNode no : net.getAllNodes()) {
+            assertTrue(((HotStuff<?, ?>) no.getConsensusAlgorithm()).isStarted());
+        }
+        assertThrows(IllegalStateException.class, () -> net.startConsensusRound(new Simulator(), 10.0));
     }
 
     @Test
