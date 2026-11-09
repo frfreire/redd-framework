@@ -47,9 +47,12 @@ import java.util.Optional;
  * <p><b>A conferir com o artigo:</b> que o lider conta o proprio voto como um voto qualquer (aqui conta, se for
  * adicionado via {@link #add}); que o QC de uma fase so e formado a partir de votos DA MESMA fase.
  *
+ * <p>Nao e {@code final} so para que o teste do {@link LeaderCore} possa injetar um agregador defeituoso (que
+ * devolve QC antes do quorum) e provar a defesa em profundidade do lider; nao ha outra subclasse prevista.
+ *
  * @param <B> tipo do bloco chaveado (subtipo de {@link HotStuffBlock})
  */
-public final class VoteAggregator<B extends HotStuffBlock> {
+public class VoteAggregator<B extends HotStuffBlock> {
 
     /** Identidade do balde. {@code block} e comparado por {@code equals} de Object (identidade). */
     private record Key(HotStuffVote.Phase phase, long view, HotStuffBlock block) { }

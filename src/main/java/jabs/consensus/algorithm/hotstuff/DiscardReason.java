@@ -40,5 +40,18 @@ public enum DiscardReason {
     /** Voto repetido do mesmo no no mesmo balde (fase, visao, bloco) do agregador do lider. */
     DUPLICATE_VOTE,
     /** NEW_VIEW repetido do mesmo remetente para a mesma visao de destino. */
-    DUPLICATE_NEW_VIEW
+    DUPLICATE_NEW_VIEW,
+    /** Voto para uma visao que este lider conduz mas na qual ainda nao propos (nenhum PREPARE difundido). */
+    VOTE_VIEW_NOT_STARTED,
+    /** Voto de uma visao conduzida por este lider, mas para bloco diferente do curProposal da visao. */
+    VOTE_WRONG_BLOCK,
+    /** Voto de fase que o lider ainda nao solicitou na visao (ex.: voto COMMIT antes de difundir COMMIT). */
+    VOTE_PHASE_OUT_OF_ORDER,
+    /** Voto que chega depois de o QC da sua fase ja ter sido formado (os n-f primeiros bastaram; nao muda nada). */
+    LATE_VOTE,
+    /**
+     * NEW_VIEW para visao que o lider ja iniciou ou que dispensa NEW_VIEW (a visao inicial); chegou depois de o
+     * quorum ter sido usado, entao nao pode mais mudar o highQC da proposta.
+     */
+    UNNEEDED_NEW_VIEW
 }

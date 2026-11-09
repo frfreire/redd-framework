@@ -11,10 +11,10 @@ import java.util.Optional;
 
 /**
  * {@link BlockAccess} sobre a {@link LocalBlockTree} do no. Resolve "quem e o pai de X" SEM depender de
- * {@code Block#getParents()} para decisoes: a lista de pais e lida UMA vez por bloco, na borda de admissao (o mesmo
- * ponto em que a propria {@code LocalBlockTree#add} a le), e o resultado fica num indice proprio (bloco -> pai) que
- * nada mais altera. Decisoes posteriores ({@code safeNode}) usam so o indice: mutar a lista de pais depois da
- * admissao nao muda o resultado.
+ * {@code Block#getParents()}: o pai vem do campo imutavel {@link HotStuffBlock#getFixedParent()} (fixado no
+ * construtor) e fica num indice proprio (bloco -> pai) que nada mais altera. Mutar a lista de pais, antes ou depois
+ * da admissao, nao muda nenhuma decisao desta classe. LIMITE: {@code LocalBlockTree#add} (base) ainda le a lista
+ * mutavel ao inserir o bloco na arvore; isso afeta a estrutura da arvore, nao as decisoes daqui.
  *
  * <p>Um bloco so e admitido se o pai estiver na arvore local, conectado ao genesis, e com altura menor. Nao existe
  * sincronizacao de blocos faltantes nesta parte (limite declarado).
@@ -107,19 +107,26 @@ public final class TreeBlockAccess implements BlockAccess {
     }
 
     /**
-     * Pai de {@code block}: o do indice, ou (unica leitura de {@code getParent}) o da lista de pais SE esse pai esta
-     * na arvore, conectado ao genesis, e e mais baixo que o filho. Nulo = desconhecido.
+     * Pai de {@code block}: o do indice, ou o pai IMUTAVEL do bloco ({@link HotStuffBlock#getFixedParent()}, fixado
+     * no construtor) SE esse pai esta na arvore, conectado ao genesis, e e mais baixo que o filho. Nunca le
+     * {@code Block#getParents()}: mutar a lista de pais, antes ou depois da admissao, nao muda a decisao.
+     * "Conectado" = o proprio genesis, ou um bloco ja ADMITIDO por esta classe (admissao exige pai conectado, logo
+     * a cadeia ate o genesis e imutavel). A marca {@code isConnectedToGenesis} da {@code LocalBlockTree} NAO e usada:
+     * a base a calcula a partir da lista mutavel. Consequencia (mudanca de comportamento declarada): bloco que so
+     * esta na arvore por DataMessage, sem proposta PREPARE aceita, nao serve de pai (UNKNOWN_PARENT). Nulo =
+     * desconhecido.
      */
     private HotStuffBlock resolve(HotStuffBlock block) {
         HotStuffBlock indexed = parentIndex.get(block);
         if (indexed != null) {
             return indexed;
         }
-        HotStuffBlock parent = block.getParent(); // borda de admissao: unica leitura de getParents por bloco
+        HotStuffBlock parent = block.getFixedParent();
         if (parent == null || !tree.contains(parent)) {
             return null;
         }
-        if (!tree.getLocalBlock(parent).isConnectedToGenesis || parent.getHeight() >= block.getHeight()) {
+        boolean connected = parent == tree.getGenesisBlock() || admitted.contains(parent);
+        if (!connected || parent.getHeight() >= block.getHeight()) {
             return null;
         }
         return parent;
