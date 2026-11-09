@@ -33,13 +33,20 @@ echo "==> Diretorio de organizacoes: ${ORG_DIR}"
 
 if [ -d "${ORG_DIR}/ordererOrganizations" ] || [ -d "${ORG_DIR}/peerOrganizations" ]; then
   echo "==> Material criptografico existente encontrado — limpando antes de regenerar (ver nota de idempotencia no cabecalho deste script)."
-  rm -rf "${ORG_DIR}/ordererOrganizations" "${ORG_DIR}/peerOrganizations"
+  # Execucoes antigas deste script geravam arquivos com dono root (cryptogen
+  # rodava como root no container); se o rm direto falhar, remove via container.
+  if ! rm -rf "${ORG_DIR}/ordererOrganizations" "${ORG_DIR}/peerOrganizations" 2>/dev/null; then
+    echo "==> Arquivos com outro dono; removendo via container ${CRYPTOGEN_IMAGE}."
+    docker run --rm -v "${ORG_DIR}:/workspace/organizations" "${CRYPTOGEN_IMAGE}" \
+      bash -c "rm -rf /workspace/organizations/ordererOrganizations /workspace/organizations/peerOrganizations"
+  fi
 fi
 
 run_cryptogen() {
   local config_file="$1"
   echo "==> cryptogen generate --config=cryptogen/${config_file}"
-  docker run --rm \
+  # --user: arquivos gerados pertencem ao usuario do host (reexecucao sem root).
+  docker run --rm --user "$(id -u):$(id -g)" \
     -v "${ORG_DIR}:/workspace/organizations" \
     -w /workspace/organizations \
     "${CRYPTOGEN_IMAGE}" \
@@ -54,7 +61,7 @@ run_cryptogen "crypto-config-verifier.yaml"
 run_cryptogen "crypto-config-marketplace.yaml"
 
 echo "==> Ajustando permissões (containers Fabric rodam como usuário não-root 1000:1000 em algumas imagens; cryptogen roda como root dentro do container)."
-docker run --rm \
+docker run --rm --user "$(id -u):$(id -g)" \
   -v "${ORG_DIR}:/workspace/organizations" \
   "${CRYPTOGEN_IMAGE}" \
   bash -c "chmod -R a+rX /workspace/organizations"
