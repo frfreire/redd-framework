@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evidencia de nao regressao (criterio 7) para protocolos NAO tocados pela T1 (ADR-0006).
+r"""Evidencia de nao regressao (criterio 7) para protocolos NAO tocados pela T1 (ADR-0006).
 
 Compara, com semente fixa, o codigo ATUAL contra uma BASELINE (copia do codigo original) e
 mede a variabilidade da propria baseline (rodando-a duas vezes).
@@ -31,8 +31,27 @@ Uso:
   nao_regressao.py --base /tmp/opencode/nr-build/base --atual /tmp/opencode/nr-build/atual \
       --casos MCO2:10:60,MCO2:50:600,AMBIFY:10:60,OFFSET:40:20000 --semente 1 --timeout 600
 Saida: 0 = nenhuma regressao; 1 = divergencia baseline x atual; 2 = erro/timeout (INCONCLUSIVO).
+(Excecao antiga, mantida: ausencia de target/classes ou de classpath sai com 1 via sys.exit(mensagem).)
 A divergencia baseline-a x baseline-b (nao determinismo pre-existente) e IMPRESSA, mas nao muda o
 codigo de saida: ela e a prova de que a diferenca nao vem da T1.
+
+Flags extras por protocolo: `--extra-flag-protocolo PROTO:--chave=valor` (repetivel). A flag e repassada
+ao jabs.example.MVPComparison SO nos casos de PROTO e nas QUATRO execucoes do caso (base-a, base-b,
+atual-a, atual-b: mesmas flags dos dois lados, senao a comparacao nao vale). Casos de outros protocolos
+nao recebem nada, entao --casos pode misturar protocolos sem poluir a comparacao (a baseline so AVISA
+sobre flag desconhecida, mas assim nem isso). Cada item deve ser `--chave=valor`; nao pode repetir chave
+para o mesmo protocolo nem redefinir flags que o script monta (protocols, validators, trials, duration,
+seed, output); PROTO precisa aparecer em --casos (senao a flag seria ignorada em silencio). Sem
+`--extra-flag-protocolo` o comando gerado e identico ao das versoes anteriores.
+
+TENDERMINT e RECUSADO aqui (saida 2, antes de iniciar qualquer JVM), com ou sem flags: a baseline
+(commit 5102fe2) nao tem Tendermint, entao nao existe comparacao base x atual para ele. Para exercitar o
+Tendermint use `checar-determinismo.py` (atual x atual, mesma semente), que exige e valida as 10 flags
+--tm-* (sem valor padrao; ADR-0010 PI-08/PI-16: a definir com o humano).
+Exemplo (valor SOMENTE DE EXEMPLO, NAO e valor de pesquisa; --foo-exemplo nao existe, so ilustra a forma):
+  nao_regressao.py --base B --atual A --casos MCO2:10:60,AMBIFY:10:60 \
+      --extra-flag-protocolo MCO2:--foo-exemplo=1
+Autoteste sem JVM: `nao_regressao.py --selftest`.
 """
 import argparse
 import csv
@@ -53,10 +72,51 @@ def classpath(raiz: Path) -> str:
     return f"{raiz / 'target' / 'classes'}:{cp.read_text().strip()}"
 
 
-def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax):
+# Flags que montar_cmd ja define: o chamador nao pode redefini-las por --extra-flag-protocolo.
+FLAGS_RESERVADAS = ("--protocols", "--validators", "--trials", "--duration", "--seed", "--output")
+
+
+def montar_cmd(cp, proto, n, dur, semente, saida, extras=()):
+    """Linha de comando do MVPComparison (funcao pura). Sem extras = comando das versoes anteriores."""
+    return ["java", "-cp", cp, "jabs.example.MVPComparison", f"--protocols={proto}",
+            f"--validators={n}", "--trials=1", f"--duration={dur}", f"--seed={semente}", f"--output={saida}",
+            *extras]
+
+
+def parse_extras_protocolo(itens, protos_dos_casos):
+    """Converte ['PROTO:--chave=valor', ...] em {PROTO: ['--chave=valor', ...]} (PROTO em maiuscula).
+    ValueError se: formato ruim, item sem '--', chave repetida ou reservada, TENDERMINT (recusado: a baseline
+    nao tem Tendermint; use checar-determinismo.py) ou PROTO fora de --casos."""
+    por_proto, chaves = {}, set()
+    casos = {x.upper() for x in protos_dos_casos}
+    for item in itens:
+        proto, sep, flag = item.partition(":")
+        proto = proto.strip().upper()
+        if not sep or not proto or not flag.startswith("--") or "=" not in flag or flag.startswith("--="):
+            raise ValueError(f"--extra-flag-protocolo invalido {item!r}: use PROTO:--chave=valor")
+        chave = flag.split("=", 1)[0]
+        if proto == "TENDERMINT":
+            raise ValueError(recusa_tendermint())
+        if chave in FLAGS_RESERVADAS:
+            raise ValueError(f"--extra-flag-protocolo {item!r} redefine {chave}, que este script ja monta")
+        if (proto, chave) in chaves:
+            raise ValueError(f"--extra-flag-protocolo repete {chave} para {proto}")
+        if proto not in casos:
+            raise ValueError(f"--extra-flag-protocolo {item!r}: {proto} nao esta em --casos (a flag seria ignorada)")
+        chaves.add((proto, chave))
+        por_proto.setdefault(proto, []).append(flag)
+    return por_proto
+
+
+def recusa_tendermint():
+    return ("TENDERMINT nao e suportado em nao_regressao.py: a baseline (commit 5102fe2) nao tem Tendermint, "
+            "entao nao existe comparacao base x atual. Use scripts/jabs/checar-determinismo.py "
+            "(atual x atual, mesma semente) com as 10 flags --tm-* via --extra-flag.")
+
+
+def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax, extras=()):
     saida.mkdir(parents=True, exist_ok=True)
-    cmd = ["java", "-cp", classpath(raiz), "jabs.example.MVPComparison", f"--protocols={proto}",
-           f"--validators={n}", "--trials=1", f"--duration={dur}", f"--seed={semente}", f"--output={saida}"]
+    cmd = montar_cmd(classpath(raiz), proto, n, dur, semente, saida, extras)
     t0 = time.time()
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=tmax, cwd=str(raiz))
@@ -119,15 +179,53 @@ def comparar(a: Path, b: Path, extra_ok=False):
     return ("IDENTICO" if not notas else "DIVERGENTE"), "; ".join(notas), total
 
 
+def selftest():
+    """Autoteste sem JVM. Nenhum valor de pesquisa aqui; 'foo' e flag ficticia so de exemplo."""
+    antigo = ["java", "-cp", "CP", "jabs.example.MVPComparison", "--protocols=MCO2", "--validators=10",
+              "--trials=1", "--duration=60", "--seed=1", "--output=/tmp/x"]
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x")) == antigo
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), []) == antigo
+    assert parse_extras_protocolo([], ["MCO2"]) == {}
+    ok = parse_extras_protocolo(["mco2:--foo=1", "MCO2:--bar=2"], ["MCO2", "AMBIFY"])
+    assert ok == {"MCO2": ["--foo=1", "--bar=2"]}, ok
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), ok["MCO2"])[-2:] == ["--foo=1", "--bar=2"]
+    assert "AMBIFY" not in ok  # caso sem flag: comando inalterado
+    for ruim in (["MCO2"], ["MCO2:foo=1"], ["MCO2:--semsinal"], ["MCO2:--seed=2"], ["MCO2:--foo=1", "MCO2:--foo=2"],
+                 ["TENDERMINT:--tm-batch-size=1"], ["OFFSET:--foo=1"], [":--foo=1"]):
+        try:
+            parse_extras_protocolo(ruim, ["MCO2"])
+        except ValueError:
+            continue
+        raise AssertionError(f"deveria rejeitar {ruim!r}")
+    print("SELFTEST OK")
+    return 0
+
+
 def main():
-    ap = argparse.ArgumentParser()
+    if "--selftest" in sys.argv[1:]:
+        return selftest()
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base", required=True)
     ap.add_argument("--atual", required=True)
     ap.add_argument("--casos", default="MCO2:10:60,AMBIFY:10:60,OFFSET:10:60")
     ap.add_argument("--semente", type=int, default=1)
     ap.add_argument("--timeout", type=int, default=600, help="segundos por execucao")
     ap.add_argument("--saida", default="/tmp/opencode/nr")
+    ap.add_argument("--extra-flag-protocolo", dest="extra_proto", action="append", default=[],
+                    metavar="PROTO:--CHAVE=VALOR",
+                    help="flag repassada ao MVPComparison so nos casos de PROTO, nos dois lados (repetivel). "
+                         "TENDERMINT e recusado (a baseline nao o tem; use checar-determinismo.py).")
+    ap.add_argument("--selftest", action="store_true", help="autoteste sem JVM e sai")
     a = ap.parse_args()
+    protos = [c.split(":")[0] for c in a.casos.split(",")]
+    if any(p.strip().upper() == "TENDERMINT" for p in protos):
+        print(f"ERRO: {recusa_tendermint()}")
+        return 2
+    try:
+        extras = parse_extras_protocolo(a.extra_proto, protos)
+    except ValueError as e:
+        print(f"ERRO: {e}")
+        return 2
     base, atual, out = Path(a.base).resolve(), Path(a.atual).resolve(), Path(a.saida)
     for r in (base, atual):
         if not (r / "target" / "classes").exists():
@@ -139,9 +237,13 @@ def main():
             for rep in ("a", "b"):
                 jobs.append((proto, n, dur, lado, rep, raiz))
     print(f"semente={a.semente} timeout={a.timeout}s por execucao; {len(jobs)} execucoes em paralelo")
+    if extras:
+        print("flags extras (nos dois lados, so no protocolo indicado): " +
+              "; ".join(f"{p}: {' '.join(f)}" for p, f in extras.items()))
     with ThreadPoolExecutor(max_workers=len(jobs)) as ex:
         fut = {j: ex.submit(executar, j[5], j[0], j[1], j[2], a.semente,
-                            out / f"{j[0]}-{j[1]}v-{j[2]}s-{j[3]}-{j[4]}", a.timeout) for j in jobs}
+                            out / f"{j[0]}-{j[1]}v-{j[2]}s-{j[3]}-{j[4]}", a.timeout,
+                            extras.get(j[0].strip().upper(), ())) for j in jobs}
         res = {j: f.result() for j, f in fut.items()}
     pior = 0
     for caso in a.casos.split(","):
