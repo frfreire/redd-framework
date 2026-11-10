@@ -1,0 +1,11 @@
+base_commit=45eb3e730fd8ae6630ac01f3fc6e5e2c624af4fc
+git diff 45eb3e7 -- src scripts | sha256sum = e7c3ec8f4725eae24008cd2cf2710cfb9ecd1b55f70336546aed37d3f84b955e  (34726 bytes, 594 linhas)
+arquivos rastreados modificados (entram no hash acima):
+  scripts/jabs/checar-determinismo.py
+  scripts/jabs/nao_regressao.py
+  src/main/java/jabs/example/MVPComparison.java
+arquivos NAO rastreados em src/ e scripts/ (nao entram no hash acima), com sha256 (os que estao sob o diretorio de evidencia sao listados em TABELA.txt, nao aqui):
+  15b914a9674ced5e19ea60ed972f6ebf5b56ac0ad4515eba274166b5af882dd8  scripts/jabs/arquivar-nao-regressao.py
+  67220625d62e08285b1ddb524523e704ebc7b77a0ad6b03a9e541ce766273187  scripts/jabs/congelar-baseline.py
+  943ae3b04f659ff4cca8fcd74599f5971f8a41ca90cdda9c0392521b3f2925c3  src/test/java/jabs/example/MVPComparisonHotStuffTest.java
+  a88e4e9a3fcb913ecc2fcf1fb0dfdebd337367c3ec283be29b8d315021bb724c  src/test/java/jabs/example/MVPComparisonNaoRegressaoTest.java

@@ -1,0 +1,50 @@
+semente=2 timeout=900s por execucao; 32 execucoes em paralelo
+flags extras (nos dois lados, so no protocolo indicado): TENDERMINT: --tm-propose-timeout=1.0 --tm-propose-delta=0.5 --tm-prevote-timeout=1.0 --tm-prevote-delta=0.5 --tm-precommit-timeout=1.0 --tm-precommit-delta=0.5 --tm-batch-size=10 --tm-tx-size=512 --tm-signature-size=64 --tm-proposer-signature-size=80 --tm-message-overhead=10
+
+== ARQ n=10 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,2s, base-b=0,2s, atual-a=0,1s, atual-b=0,2s
+   baseline a x b (pre-existente?): IDENTICO (34 linhas) 
+   atual    a x b                : IDENTICO (34 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (34 linhas) 
+
+== AMBIFY n=10 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (6 linhas) 
+   atual    a x b                : IDENTICO (6 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (6 linhas) 
+
+== MCO2 n=50 duracao=600s semente=2
+   execucoes (rc, segundos): base-a=0,3s, base-b=0,3s, atual-a=0,3s, atual-b=0,3s
+   baseline a x b (pre-existente?): IDENTICO (15 linhas) 
+   atual    a x b                : IDENTICO (15 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (15 linhas) 
+
+== OFFSET n=40 duracao=20000s semente=2
+   execucoes (rc, segundos): base-a=0,9s, base-b=0,9s, atual-a=0,9s, atual-b=0,9s
+   baseline a x b (pre-existente?): IDENTICO (16 linhas) 
+   atual    a x b                : IDENTICO (16 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (16 linhas) 
+
+== EARTH n=40 duracao=20000s semente=2
+   execucoes (rc, segundos): base-a=0,9s, base-b=0,8s, atual-a=0,9s, atual-b=0,9s
+   baseline a x b (pre-existente?): IDENTICO (35 linhas) 
+   atual    a x b                : IDENTICO (35 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (35 linhas) 
+
+== DAGSPER n=10 duracao=600s semente=2
+   execucoes (rc, segundos): base-a=0,2s, base-b=0,2s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (19 linhas) 
+   atual    a x b                : IDENTICO (19 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (19 linhas) 
+
+== TENDERMINT n=4 duracao=20s semente=2
+   execucoes (rc, segundos): base-a=0,2s, base-b=0,2s, atual-a=0,2s, atual-b=0,2s
+   baseline a x b (pre-existente?): IDENTICO (345 linhas) 
+   atual    a x b                : IDENTICO (345 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (345 linhas) 
+
+== TENDERMINT n=7 duracao=20s semente=2
+   execucoes (rc, segundos): base-a=0,2s, base-b=0,3s, atual-a=0,3s, atual-b=0,3s
+   baseline a x b (pre-existente?): IDENTICO (327 linhas) 
+   atual    a x b                : IDENTICO (327 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (327 linhas) 

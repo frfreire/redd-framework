@@ -3,12 +3,14 @@ package jabs.example;
 import jabs.config.ByzantineConfig;
 import jabs.config.NetworkSizing;
 import jabs.consensus.algorithm.tendermint.TendermintTimeouts;
+import jabs.consensus.config.HotStuffConsensusConfig;
 import jabs.consensus.config.TendermintConsensusConfig;
 import jabs.ledgerdata.DoubleSpendTracker;
 import jabs.metrics.SimulationMetrics;
 import jabs.scenario.AbstractScenario;
 import jabs.scenario.DAGsperNetworkScenario;
 import jabs.scenario.ArqReddVotingScenario;
+import jabs.scenario.HotStuffLANScenario;
 import jabs.scenario.HybridNetworkScenario;
 import jabs.scenario.PBFTLANScenario;
 import jabs.scenario.TendermintLANScenario;
@@ -56,6 +58,14 @@ public class MVPComparison {
         if (tendermintConfig != null) {
             for (int validators : validatorsList) {
                 tendermintConfig.validateFor(validators);
+            }
+        }
+        // HotStuff (D3a-2a-2c-4): todas as flags --hs-* sao obrigatorias e sem padrao; n < 4 e ataque falham ANTES de criar saida.
+        rejectAttackForHotStuff(protocolList, cli);
+        HotStuffConsensusConfig hotStuffConfig = parseHotStuffConfigIfRequested(protocolList, cli);
+        if (hotStuffConfig != null) {
+            for (int validators : validatorsList) {
+                hotStuffConfig.validateFor(validators);
             }
         }
         int trials = Integer.parseInt(cli.getOrDefault("trials", "5"));
@@ -125,7 +135,7 @@ public class MVPComparison {
                     try {
                         SimulationMetrics metrics = runProtocol(protocol, validators, runSeed, protocolDuration,
                             outputRoot + "/" + protocol.toLowerCase() + "-" + validators + "v-t" + trial + ".csv",
-                            enableTransactions, txInterval, nodesMode, tendermintConfig);
+                            enableTransactions, txInterval, nodesMode, tendermintConfig, hotStuffConfig);
                         
                         // Accumulate metrics
                         acc.addTrial(
@@ -137,6 +147,7 @@ public class MVPComparison {
                         System.out.println("      ✓ completed");
                     } catch (Exception e) {
                         System.out.println("      ✗ failed: " + e.getMessage());
+                        rethrowIfHotStuff(protocol, validators, runSeed, e);
                     }
                 }
                 
@@ -159,7 +170,10 @@ public class MVPComparison {
             "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0",
             "tm-propose-timeout", "tm-propose-delta", "tm-prevote-timeout", "tm-prevote-delta",
             "tm-precommit-timeout", "tm-precommit-delta", "tm-batch-size", "tm-tx-size", "tm-message-overhead",
-            "tm-signature-size", "tm-proposer-signature-size"};
+            "tm-signature-size", "tm-proposer-signature-size",
+            "hs-view-timeout", "hs-max-future-view-horizon", "hs-batch-size", "hs-tx-size",
+            "hs-individual-signature-size", "hs-aggregated-signature-size", "hs-aggregated-share-size",
+            "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding"};
 
     /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
     private static boolean loadRecordOn = false;
@@ -217,9 +231,14 @@ public class MVPComparison {
     }
 
     private static String requiredCliValue(java.util.Map<String, String> cli, String flag) {
+        return requiredCliValue(cli, flag, "TENDERMINT", "");
+    }
+
+    private static String requiredCliValue(java.util.Map<String, String> cli, String flag, String protocolo,
+            String sufixo) {
         String value = cli.get(flag);
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("protocolo TENDERMINT exige --" + flag + "=valor");
+            throw new IllegalArgumentException("protocolo " + protocolo + " exige --" + flag + "=valor" + sufixo);
         }
         return value;
     }
@@ -240,6 +259,103 @@ public class MVPComparison {
         }
     }
 
+    /** Sufixo das mensagens de flag HotStuff ausente: nenhum valor de pesquisa tem padrao (regra do projeto). */
+    private static final String HS_SEM_PADRAO = " (sem valor padrao; a definir com o humano; ADR-0015)";
+
+    private static double requiredDouble(java.util.Map<String, String> cli, String flag, String protocolo) {
+        try {
+            return Double.parseDouble(requiredCliValue(cli, flag, protocolo, HS_SEM_PADRAO));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--" + flag + " invalido: " + cli.get(flag), e);
+        }
+    }
+
+    private static int requiredInt(java.util.Map<String, String> cli, String flag, String protocolo) {
+        try {
+            return Integer.parseInt(requiredCliValue(cli, flag, protocolo, HS_SEM_PADRAO));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--" + flag + " invalido: " + cli.get(flag), e);
+        }
+    }
+
+    private static long requiredLong(java.util.Map<String, String> cli, String flag, String protocolo) {
+        try {
+            return Long.parseLong(requiredCliValue(cli, flag, protocolo, HS_SEM_PADRAO));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--" + flag + " invalido: " + cli.get(flag), e);
+        }
+    }
+
+    /** Enum pelo nome EXATO (maiusculas): outro texto falha alto listando os validos; nunca cai em padrao. */
+    private static <E extends Enum<E>> E requiredEnum(java.util.Map<String, String> cli, String flag,
+            String protocolo, Class<E> tipo) {
+        String value = requiredCliValue(cli, flag, protocolo, HS_SEM_PADRAO);
+        for (E candidato : tipo.getEnumConstants()) {
+            if (candidato.name().equals(value)) {
+                return candidato;
+            }
+        }
+        throw new IllegalArgumentException("--" + flag + " invalido: '" + value + "'. Validos: "
+                + java.util.Arrays.toString(tipo.getEnumConstants()) + " (nomes exatos, em maiusculas)");
+    }
+
+    /**
+     * Config do HotStuff so e exigida quando {@code HOTSTUFF} aparece em {@code --protocols}. TODAS as 11 flags
+     * {@code --hs-*} sao obrigatorias e sem padrao, inclusive as tres que o {@link HotStuffConsensusConfig} ainda
+     * preenche em silencio (politica de lider, modo de assinatura e overhead de mensagem: ADR-0015 A-08, A-09, A-10):
+     * aqui o padrao do config NUNCA decide, porque o builder recebe sempre o valor da linha de comando. O horizonte de
+     * visoes futuras, o timeout de visao, o lote, os tamanhos e a codificacao dos votantes: a definir com o humano
+     * (ADR-0015 A-24, A-25 etc.).
+     */
+    static HotStuffConsensusConfig parseHotStuffConfigIfRequested(java.util.List<String> protocols,
+            java.util.Map<String, String> cli) {
+        boolean requested = false;
+        for (String protocol : protocols) {
+            if (isHotStuff(protocol)) {
+                requested = true;
+                break;
+            }
+        }
+        if (!requested) {
+            return null;
+        }
+        final String p = "HOTSTUFF";
+        return HotStuffConsensusConfig.builder()
+                .viewTimeoutSeconds(requiredDouble(cli, "hs-view-timeout", p))
+                .maxFutureViewHorizon(requiredLong(cli, "hs-max-future-view-horizon", p))
+                .batchSize(requiredInt(cli, "hs-batch-size", p))
+                .txSizeBytes(requiredInt(cli, "hs-tx-size", p))
+                .individualSignatureSizeBytes(requiredInt(cli, "hs-individual-signature-size", p))
+                .aggregatedSignatureSizeBytes(requiredInt(cli, "hs-aggregated-signature-size", p))
+                .aggregatedShareSizeBytes(requiredInt(cli, "hs-aggregated-share-size", p))
+                .messageOverheadBytes(requiredInt(cli, "hs-message-overhead", p))
+                .signatureMode(requiredEnum(cli, "hs-signature-mode", p, HotStuffConsensusConfig.SignatureMode.class))
+                .leaderPolicy(requiredEnum(cli, "hs-leader-policy", p, HotStuffConsensusConfig.LeaderPolicy.class))
+                .voterEncoding(requiredEnum(cli, "hs-voter-encoding", p, HotStuffConsensusConfig.VoterEncoding.class))
+                .build();
+    }
+
+    /**
+     * O HotStuff so tem o caminho honesto (o ataque EQUIVOCATION e a tarefa 2d). O {@code MVPComparison} nao tem
+     * parametro de ataque; se alguem passar {@code --attack=X} junto com HOTSTUFF, so {@code none}/{@code nenhum} e
+     * aceito (a flag e ignorada pelos demais protocolos, mas aqui um ataque pedido e ignorado em silencio mudaria o
+     * significado do resultado).
+     */
+    static void rejectAttackForHotStuff(java.util.List<String> protocols, java.util.Map<String, String> cli) {
+        String attack = cli.get("attack");
+        if (attack == null) {
+            return;
+        }
+        for (String protocol : protocols) {
+            if (isHotStuff(protocol)) {
+                if (attack.equalsIgnoreCase("none") || attack.equalsIgnoreCase("nenhum")) {
+                    return;
+                }
+                throw new IllegalArgumentException("ataque " + attack + " ainda nao implementado para HOTSTUFF (2d)");
+            }
+        }
+    }
+
     /** Liga o registro de carga neste cenario, se ligado por linha de comando. Desligado: retorna sem fazer nada. */
     private static void attachLoadRecorder(AbstractScenario scenario, String protocol, long seed, String outputPath) {
         if (!loadRecordOn) {
@@ -247,6 +363,27 @@ public class MVPComparison {
         }
         String prefix = outputPath.endsWith(".csv") ? outputPath.substring(0, outputPath.length() - 4) : outputPath;
         scenario.AddNewLogger(new jabs.log.LinkLoadRecorder(prefix, protocol, seed, loadRecordT0));
+    }
+
+    /** Nome canonico do protocolo (unica regra de caixa e de espacos): vale para parse, rejeicao, execucao e falha. */
+    static String normalizeProtocol(String protocol) {
+        return protocol.trim().toUpperCase(java.util.Locale.ROOT);
+    }
+
+    /** O nome (em qualquer caixa, com espacos ao redor) designa o HotStuff? */
+    static boolean isHotStuff(String protocol) {
+        return protocol != null && "HOTSTUFF".equals(normalizeProtocol(protocol));
+    }
+
+    /**
+     * Falha de trial: HotStuff NAO herda o "engole trial" (uma linha de zeros no CSV agregado seria numero inventado),
+     * entao a falha e relancada; os demais protocolos seguem como antes (a mensagem ja foi impressa, o fluxo continua).
+     */
+    static void rethrowIfHotStuff(String protocol, int validators, long seed, Exception e) {
+        if (isHotStuff(protocol)) {
+            throw new IllegalStateException("trial HOTSTUFF falhou (n=" + validators + ", seed=" + seed
+                    + "): " + e.getMessage(), e);
+        }
     }
 
     /** Flags aceitas, como conjunto (so para testes; o fluxo principal usa {@link #KNOWN}). */
@@ -349,7 +486,7 @@ public class MVPComparison {
     static String describeSizing(String protocol, boolean nodesMode, int n) {
         String rot = rotulo(nodesMode);
         StringBuilder sb = new StringBuilder("protocol=").append(protocol);
-        switch (protocol.toUpperCase()) {
+        switch (normalizeProtocol(protocol)) {
             case "MCO2":
             case "TREE": {
                 int[] d = mvpSizing(nodesMode, n);
@@ -376,6 +513,7 @@ public class MVPComparison {
                         .append(n).append(" miners=").append(miners).append(" stakeholders=").append(n - miners)
                         .append(" voters=all").toString();
             }
+            case "HOTSTUFF":
             case "TENDERMINT":
                 return sb.append(" n_semantics=").append(rot).append(" n_requested=").append(n).append(" nodes=")
                         .append(n).append(" validators=").append(n).toString();
@@ -412,7 +550,7 @@ public class MVPComparison {
                 String[] parts = pair.trim().split(":");
                 if (parts.length == 2) {
                     try {
-                        String protocol = parts[0].trim().toUpperCase();
+                        String protocol = normalizeProtocol(parts[0]);
                         double duration = Double.parseDouble(parts[1].trim());
                         map.put(protocol, duration);
                     } catch (NumberFormatException e) {
@@ -467,11 +605,12 @@ public class MVPComparison {
     /**
      * Run a single protocol simulation
      */
-    private static SimulationMetrics runProtocol(String protocol, int validators, long seed,
+    static SimulationMetrics runProtocol(String protocol, int validators, long seed,
             double duration, String outputPath, boolean enableTx, double txInterval,
-            boolean nodesMode, TendermintConsensusConfig tendermintConfig) throws Exception {
+            boolean nodesMode, TendermintConsensusConfig tendermintConfig,
+            HotStuffConsensusConfig hotStuffConfig) throws Exception {
         
-        switch (protocol.toUpperCase()) {
+        switch (normalizeProtocol(protocol)) {
             case "EARTH":
                 return runEarthDollarScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "MCO2":
@@ -488,6 +627,8 @@ public class MVPComparison {
                 return runDAGsperScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "TENDERMINT":
                 return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig);
+            case "HOTSTUFF":
+                return runHotStuffScenario(validators, seed, duration, outputPath, hotStuffConfig);
             default:
                 throw new IllegalArgumentException("Unknown protocol: " + protocol);
         }
@@ -616,6 +757,36 @@ public class MVPComparison {
         System.out.println("Running Tendermint scenario (" + numNodes + " validators, seed=" + seed + ") ...");
         scenario.run();
         SimulationMetrics metrics = scenario.getMetrics();
+        printScenarioFinilizedMetrics(metrics);
+        return metrics;
+    }
+
+    /**
+     * HotStuff honesto (D3a-2a-2c-4): {@code numNodes} validadores (n >= 4) na LAN de malha completa, config das flags
+     * {@code --hs-*} (sem padrao). Mesmas metricas e CSV por bloco dos demais (Tb, C_B recebido pelo primeiro no a
+     * finalizar cada altura, so de pacotes entregues pela rede simulada). Falha alto, sem inventar zero, se a corrida
+     * nao finalizou bloco ou se nenhuma transacao foi confirmada (Tt nao medido).
+     */
+    private static SimulationMetrics runHotStuffScenario(int numNodes, long seed, double duration,
+            String outputPath, HotStuffConsensusConfig config) throws IOException {
+        if (config == null) {
+            throw new IllegalArgumentException("protocolo HOTSTUFF exige flags --hs-* (sem valor padrao)");
+        }
+        HotStuffLANScenario scenario = new HotStuffLANScenario(
+                "HotStuff - " + numNodes + " validators", seed, numNodes, duration, config);
+        scenario.addMetricsLogger(outputPath);
+        attachLoadRecorder(scenario, "HOTSTUFF", seed, outputPath);
+        System.out.println("Running HotStuff scenario (" + numNodes + " validators, seed=" + seed + ") ...");
+        scenario.run();
+        SimulationMetrics metrics = scenario.getMetrics();
+        if (metrics.getBlockCount() == 0) {
+            throw new IllegalStateException("HOTSTUFF finalizou 0 blocos em " + duration
+                    + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+        }
+        if (metrics.getConfirmationCount() == 0) {
+            throw new IllegalStateException("HOTSTUFF sem transacao confirmada: coluna Tt (Tt_avg) nao medida"
+                    + " (nao sera registrada como zero)");
+        }
         printScenarioFinilizedMetrics(metrics);
         return metrics;
     }
@@ -902,7 +1073,7 @@ public class MVPComparison {
     private static java.util.List<String> parseStringList(String csv) {
         java.util.List<String> list = new java.util.ArrayList<>();
         for (String s : csv.split(",")) {
-            list.add(s.trim().toUpperCase());
+            list.add(normalizeProtocol(s));
         }
         return list;
     }

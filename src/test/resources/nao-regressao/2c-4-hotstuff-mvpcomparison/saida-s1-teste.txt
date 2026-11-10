@@ -1,0 +1,14 @@
+semente=1 timeout=300s por execucao; 8 execucoes em paralelo
+flags extras (nos dois lados, so no protocolo indicado): TENDERMINT: --tm-propose-timeout=1.0 --tm-propose-delta=0.5 --tm-prevote-timeout=1.0 --tm-prevote-delta=0.5 --tm-precommit-timeout=1.0 --tm-precommit-delta=0.5 --tm-batch-size=10 --tm-tx-size=512 --tm-signature-size=64 --tm-proposer-signature-size=80 --tm-message-overhead=10
+
+== ARQ n=7 duracao=60s semente=1
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (38 linhas) 
+   atual    a x b                : IDENTICO (38 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (38 linhas) 
+
+== TENDERMINT n=4 duracao=5s semente=1
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (87 linhas) 
+   atual    a x b                : IDENTICO (87 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (87 linhas) 

@@ -26,6 +26,17 @@ Exemplo de uso (valores SOMENTE DE EXEMPLO, NAO sao valor de pesquisa):
       --extra-flag=--tm-batch-size=10 --extra-flag=--tm-tx-size=512 \
       --extra-flag=--tm-signature-size=64 --extra-flag=--tm-proposer-signature-size=80 \
       --extra-flag=--tm-message-overhead=10
+HOTSTUFF (D3a-2a-2c-4) exige 11 flags --hs-* sem valor padrao, TODAS, inclusive politica de lider, modo de
+assinatura e overhead de mensagem (que o HotStuffConsensusConfig ainda preenche em silencio: ADR-0015 A-08, A-09,
+A-10; o MVPComparison exige a flag para que o padrao nao decida). Mesmo contrato do TENDERMINT: nenhum valor mora
+neste script, a JVM nao inicia se faltar flag. Exemplo (valores SOMENTE DE EXEMPLO / fixture, NAO sao valor de pesquisa):
+  checar-determinismo.py --jabs . --protocolo HOTSTUFF --validadores 4 --duracao 10 --semente 7 \
+      --extra-flag=--hs-view-timeout=10.0 --extra-flag=--hs-max-future-view-horizon=1000 \
+      --extra-flag=--hs-batch-size=20 --extra-flag=--hs-tx-size=512 \
+      --extra-flag=--hs-individual-signature-size=64 --extra-flag=--hs-aggregated-signature-size=96 \
+      --extra-flag=--hs-aggregated-share-size=96 --extra-flag=--hs-message-overhead=10 \
+      --extra-flag=--hs-signature-mode=INDIVIDUAL --extra-flag=--hs-leader-policy=ROTATING \
+      --extra-flag=--hs-voter-encoding=BITMAP
 Autoteste sem JVM: `checar-determinismo.py --selftest`.
 """
 import argparse
@@ -60,6 +71,13 @@ TM_FLAGS_OBRIGATORIAS = (
     "--tm-message-overhead",
 )
 
+# Flags obrigatorias do HOTSTUFF (MVPComparison.parseHotStuffConfigIfRequested). Mesma regra: nenhum valor aqui.
+HS_FLAGS_OBRIGATORIAS = (
+    "--hs-view-timeout", "--hs-max-future-view-horizon", "--hs-batch-size", "--hs-tx-size",
+    "--hs-individual-signature-size", "--hs-aggregated-signature-size", "--hs-aggregated-share-size",
+    "--hs-message-overhead", "--hs-signature-mode", "--hs-leader-policy", "--hs-voter-encoding",
+)
+
 MVP_COMPARISON = Path("src/main/java/jabs/example/MVPComparison.java")
 
 
@@ -73,6 +91,25 @@ def flags_tm_do_java(jabs: Path):
         raise ValueError(f"parseTendermintConfigIfRequested nao encontrado em {jabs / MVP_COMPARISON}")
     corpo = src[ini:src.find("private static String requiredCliValue", ini)]
     return ["--" + m for m in re.findall(r'required(?:Double|Int)\(cli,\s*"(tm-[a-z-]+)"\)', corpo)]
+
+
+def flags_hs_do_java(jabs: Path):
+    """Flags --hs-* lidas por parseHotStuffConfigIfRequested (required*(cli, "hs-...", p)), na ordem do codigo."""
+    src = (jabs / MVP_COMPARISON).read_text(encoding="utf-8")
+    ini = src.find("parseHotStuffConfigIfRequested(java.util.List<String> protocols")
+    if ini < 0:
+        raise ValueError(f"parseHotStuffConfigIfRequested nao encontrado em {jabs / MVP_COMPARISON}")
+    corpo = src[ini:src.find("static void rejectAttackForHotStuff", ini)]
+    return ["--" + m for m in re.findall(r'required(?:Double|Int|Long|Enum)\(cli,\s*"(hs-[a-z-]+)"', corpo)]
+
+
+def conferir_hs_com_java(jabs: Path):
+    """Levanta ValueError se HS_FLAGS_OBRIGATORIAS divergir (conjunto) das flags requeridas no Java."""
+    java = flags_hs_do_java(jabs)
+    if sorted(java) != sorted(HS_FLAGS_OBRIGATORIAS) or len(set(java)) != len(java):
+        raise ValueError("HS_FLAGS_OBRIGATORIAS diverge do Java: so no Java="
+                         f"{sorted(set(java) - set(HS_FLAGS_OBRIGATORIAS))}, so no script="
+                         f"{sorted(set(HS_FLAGS_OBRIGATORIAS) - set(java))}")
 
 
 def conferir_com_java(jabs: Path):
@@ -111,6 +148,14 @@ def tm_faltantes(proto, extras):
         return []
     mapa = validar_extras(extras)
     return [f for f in TM_FLAGS_OBRIGATORIAS if not mapa.get(f, "").strip()]
+
+
+def hs_faltantes(proto, extras):
+    """Flags --hs-* obrigatorias ausentes (ou vazias). Lista vazia se o protocolo nao inclui HOTSTUFF."""
+    if not any(p.strip().upper() == "HOTSTUFF" for p in str(proto).split(",")):
+        return []
+    mapa = validar_extras(extras)
+    return [f for f in HS_FLAGS_OBRIGATORIAS if not mapa.get(f, "").strip()]
 
 
 def montar_cmd(cp, proto, n, dur, semente, trials, saida, extras=()):
@@ -181,6 +226,33 @@ def selftest():
             except ValueError:
                 continue
             raise AssertionError(f"conferir_com_java deveria falhar com flag {rotulo}")
+    # 4c) HOTSTUFF: mesmas garantias (11 flags, sem valor no script, bate com o Java)
+    assert len(HS_FLAGS_OBRIGATORIAS) == 11
+    assert hs_faltantes("ARQ", []) == [] and hs_faltantes("TENDERMINT", []) == []
+    assert hs_faltantes("HOTSTUFF", []) == list(HS_FLAGS_OBRIGATORIAS)
+    assert hs_faltantes("hotstuff", []) == list(HS_FLAGS_OBRIGATORIAS)
+    ex_hs = [f"{f}=1" for f in HS_FLAGS_OBRIGATORIAS]
+    assert hs_faltantes("HOTSTUFF", ex_hs) == []
+    assert hs_faltantes("HOTSTUFF", ex_hs[1:]) == [HS_FLAGS_OBRIGATORIAS[0]]
+    assert hs_faltantes("HOTSTUFF", ex_hs[:-1] + [HS_FLAGS_OBRIGATORIAS[-1] + "="]) == [HS_FLAGS_OBRIGATORIAS[-1]]
+    for flag_pol in ("--hs-leader-policy", "--hs-signature-mode", "--hs-message-overhead"):  # A-09, A-08, A-10
+        assert flag_pol in hs_faltantes("HOTSTUFF", [x for x in ex_hs if not x.startswith(flag_pol)])
+    conferir_hs_com_java(raiz)
+    assert sorted(flags_hs_do_java(raiz)) == sorted(HS_FLAGS_OBRIGATORIAS)
+    with tempfile.TemporaryDirectory() as t:
+        alvo = Path(t) / MVP_COMPARISON
+        alvo.parent.mkdir(parents=True)
+        original = (raiz / MVP_COMPARISON).read_text(encoding="utf-8")
+        mutado = original.replace('requiredEnum(cli, "hs-leader-policy", p, HotStuffConsensusConfig.LeaderPolicy.class)',
+                                  'HotStuffConsensusConfig.LeaderPolicy.ROTATING')
+        assert mutado != original
+        alvo.write_text(mutado, encoding="utf-8")
+        try:
+            conferir_hs_com_java(Path(t))
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("conferir_hs_com_java deveria falhar sem a checagem de hs-leader-policy")
     # 5) validacao
     for ruim in ("tm-batch-size=1", "--sem-valor", "--seed=2", "--tm-batch-size=1,--tm-batch-size=2"):
         try:
@@ -204,11 +276,12 @@ def main():
     ap.add_argument("--trials", type=int, default=1)
     ap.add_argument("--extra-flag", dest="extra_flag", action="append", default=[], metavar="--CHAVE=VALOR",
                     help="flag repassada ao MVPComparison nas DUAS execucoes (repetivel; use a forma "
-                         "--extra-flag=--chave=valor). Obrigatorio para as 11 flags --tm-* do TENDERMINT.")
+                         "--extra-flag=--chave=valor). Obrigatorio para as 11 flags --tm-* do TENDERMINT e as 11 flags --hs-* do HOTSTUFF.")
     ap.add_argument("--selftest", action="store_true", help="autoteste sem JVM e sai")
     a = ap.parse_args()
     try:
         faltam = tm_faltantes(a.protocolo, a.extra_flag)
+        faltam_hs = hs_faltantes(a.protocolo, a.extra_flag)
         validar_extras(a.extra_flag)
     except ValueError as e:
         print(f"ERRO: {e}")
@@ -218,7 +291,18 @@ def main():
               f"(MVPComparison.parseTendermintConfigIfRequested; ADR-0010 PI-08/PI-16, valores a definir com o humano). "
               f"Faltam: {', '.join(faltam)}. Passe cada uma como --extra-flag=--tm-...=valor. A JVM nao foi iniciada.")
         return 2
+    if faltam_hs:
+        print(f"ERRO: protocolo HOTSTUFF exige {len(faltam_hs)} flag(s) --hs-* sem valor padrao "
+              f"(MVPComparison.parseHotStuffConfigIfRequested; ADR-0015, valores a definir com o humano). "
+              f"Faltam: {', '.join(faltam_hs)}. Passe cada uma como --extra-flag=--hs-...=valor. A JVM nao foi iniciada.")
+        return 2
     jabs = Path(a.jabs).resolve()
+    if hs_faltantes(a.protocolo, []):  # protocolo inclui HOTSTUFF: a lista do script tem de bater com o Java
+        try:
+            conferir_hs_com_java(jabs)
+        except (ValueError, OSError) as e:
+            print(f"ERRO: {e}. A JVM nao foi iniciada.")
+            return 2
     if tm_faltantes(a.protocolo, []):  # protocolo inclui TENDERMINT: a lista do script tem de bater com o Java
         try:
             conferir_com_java(jabs)

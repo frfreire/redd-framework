@@ -51,6 +51,19 @@ Tendermint use `checar-determinismo.py` (atual x atual, mesma semente), que exig
 Exemplo (valor SOMENTE DE EXEMPLO, NAO e valor de pesquisa; --foo-exemplo nao existe, so ilustra a forma):
   nao_regressao.py --base B --atual A --casos MCO2:10:60,AMBIFY:10:60 \
       --extra-flag-protocolo MCO2:--foo-exemplo=1
+HOTSTUFF (D3a-2a-2c-4) tambem e RECUSADO aqui (saida 2, antes de qualquer JVM): a baseline 45eb3e7 nao tem
+`case HOTSTUFF` no MVPComparison (o harness engoliria "Unknown protocol" por trial e o caso viraria SEM_DADOS ou
+falso verde). O que este script prova para HOTSTUFF e o contrario: que os OUTROS protocolos nao mudaram com a
+chegada do HOTSTUFF; para exercitar o proprio HotStuff use `checar-determinismo.py` com as 11 flags --hs-*.
+`--baseline-tem TENDERMINT` libera o TENDERMINT quando a baseline passada em --base JA o tem (ex.: 45eb3e7, que
+tem `case TENDERMINT` no MVPComparison). Sem a liberacao a recusa acima continua. Se a baseline NAO tiver o caso,
+o MVPComparison dela engole "Unknown protocol" e o caso sai SEM_DADOS (saida 2): nunca um falso IDENTICO.
+As flags --tm-* entram por `--extra-flag-protocolo TENDERMINT:--tm-...=valor`, iguais nos quatro lados.
+
+Opcoes da JVM: `--jvm-flag=-XX:...` (repetivel) vai antes de `-cp` nas QUATRO execucoes. Serve para provar
+Casper/Parlia/Nakamoto, cuja saida depende da sequencia de System.identityHashCode (ADR-0012/0013, N1): use
+`--jvm-flag=-XX:+UnlockExperimentalVMOptions --jvm-flag=-XX:hashCode=2` nos dois lados. Sem `--jvm-flag` o comando
+e identico ao das versoes anteriores.
 Autoteste sem JVM: `nao_regressao.py --selftest`.
 """
 import argparse
@@ -76,14 +89,15 @@ def classpath(raiz: Path) -> str:
 FLAGS_RESERVADAS = ("--protocols", "--validators", "--trials", "--duration", "--seed", "--output")
 
 
-def montar_cmd(cp, proto, n, dur, semente, saida, extras=()):
-    """Linha de comando do MVPComparison (funcao pura). Sem extras = comando das versoes anteriores."""
-    return ["java", "-cp", cp, "jabs.example.MVPComparison", f"--protocols={proto}",
+def montar_cmd(cp, proto, n, dur, semente, saida, extras=(), jvm=()):
+    """Linha de comando do MVPComparison (funcao pura). Sem extras e sem jvm = comando das versoes anteriores.
+    jvm: opcoes da JVM (antes de -cp), as MESMAS nos quatro lados (ex.: hash de identidade fixo, ADR-0012)."""
+    return ["java", *jvm, "-cp", cp, "jabs.example.MVPComparison", f"--protocols={proto}",
             f"--validators={n}", "--trials=1", f"--duration={dur}", f"--seed={semente}", f"--output={saida}",
             *extras]
 
 
-def parse_extras_protocolo(itens, protos_dos_casos):
+def parse_extras_protocolo(itens, protos_dos_casos, liberados=()):
     """Converte ['PROTO:--chave=valor', ...] em {PROTO: ['--chave=valor', ...]} (PROTO em maiuscula).
     ValueError se: formato ruim, item sem '--', chave repetida ou reservada, TENDERMINT (recusado: a baseline
     nao tem Tendermint; use checar-determinismo.py) ou PROTO fora de --casos."""
@@ -95,8 +109,10 @@ def parse_extras_protocolo(itens, protos_dos_casos):
         if not sep or not proto or not flag.startswith("--") or "=" not in flag or flag.startswith("--="):
             raise ValueError(f"--extra-flag-protocolo invalido {item!r}: use PROTO:--chave=valor")
         chave = flag.split("=", 1)[0]
-        if proto == "TENDERMINT":
+        if proto == "TENDERMINT" and proto not in {x.upper() for x in liberados}:
             raise ValueError(recusa_tendermint())
+        if proto == "HOTSTUFF":
+            raise ValueError(recusa_hotstuff())
         if chave in FLAGS_RESERVADAS:
             raise ValueError(f"--extra-flag-protocolo {item!r} redefine {chave}, que este script ja monta")
         if (proto, chave) in chaves:
@@ -114,9 +130,15 @@ def recusa_tendermint():
             "(atual x atual, mesma semente) com as 11 flags --tm-* via --extra-flag.")
 
 
-def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax, extras=()):
+def recusa_hotstuff():
+    return ("HOTSTUFF nao e suportado em nao_regressao.py: a baseline (45eb3e7) nao tem `case HOTSTUFF` no "
+            "MVPComparison, entao nao existe comparacao base x atual. Use scripts/jabs/checar-determinismo.py "
+            "(atual x atual, mesma semente) com as 11 flags --hs-* via --extra-flag.")
+
+
+def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax, extras=(), jvm=()):
     saida.mkdir(parents=True, exist_ok=True)
-    cmd = montar_cmd(classpath(raiz), proto, n, dur, semente, saida, extras)
+    cmd = montar_cmd(classpath(raiz), proto, n, dur, semente, saida, extras, jvm)
     t0 = time.time()
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=tmax, cwd=str(raiz))
@@ -185,13 +207,15 @@ def selftest():
               "--trials=1", "--duration=60", "--seed=1", "--output=/tmp/x"]
     assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x")) == antigo
     assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), []) == antigo
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), (), ["-XX:hashCode=2"])[:3] == ["java", "-XX:hashCode=2", "-cp"]
+    assert parse_extras_protocolo(["TENDERMINT:--tm-batch-size=1"], ["TENDERMINT"], ["TENDERMINT"]) == {"TENDERMINT": ["--tm-batch-size=1"]}
     assert parse_extras_protocolo([], ["MCO2"]) == {}
     ok = parse_extras_protocolo(["mco2:--foo=1", "MCO2:--bar=2"], ["MCO2", "AMBIFY"])
     assert ok == {"MCO2": ["--foo=1", "--bar=2"]}, ok
     assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), ok["MCO2"])[-2:] == ["--foo=1", "--bar=2"]
     assert "AMBIFY" not in ok  # caso sem flag: comando inalterado
     for ruim in (["MCO2"], ["MCO2:foo=1"], ["MCO2:--semsinal"], ["MCO2:--seed=2"], ["MCO2:--foo=1", "MCO2:--foo=2"],
-                 ["TENDERMINT:--tm-batch-size=1"], ["OFFSET:--foo=1"], [":--foo=1"]):
+                 ["TENDERMINT:--tm-batch-size=1"], ["HOTSTUFF:--hs-batch-size=1"], ["OFFSET:--foo=1"], [":--foo=1"]):
         try:
             parse_extras_protocolo(ruim, ["MCO2"])
         except ValueError:
@@ -214,15 +238,30 @@ def main():
     ap.add_argument("--extra-flag-protocolo", dest="extra_proto", action="append", default=[],
                     metavar="PROTO:--CHAVE=VALOR",
                     help="flag repassada ao MVPComparison so nos casos de PROTO, nos dois lados (repetivel). "
-                         "TENDERMINT e recusado (a baseline nao o tem; use checar-determinismo.py).")
+                         "TENDERMINT e HOTSTUFF sao recusados (a baseline nao os tem; use checar-determinismo.py).")
+    ap.add_argument("--jvm-flag", dest="jvm_flag", action="append", default=[], metavar="-XX:OPCAO",
+                    help="opcao da JVM, repassada nas quatro execucoes (repetivel; use --jvm-flag=-XX:hashCode=2)")
+    ap.add_argument("--baseline-tem", dest="baseline_tem", action="append", default=[], metavar="PROTO",
+                    help="libera PROTO (so TENDERMINT) quando a baseline de --base ja o tem; ver o cabecalho")
     ap.add_argument("--selftest", action="store_true", help="autoteste sem JVM e sai")
     a = ap.parse_args()
+    for b in a.baseline_tem:
+        if b.strip().upper() != "TENDERMINT":
+            print(f"ERRO: --baseline-tem so aceita TENDERMINT (recebido {b!r}); HOTSTUFF nao tem baseline")
+            return 2
+    for j in a.jvm_flag:
+        if not j.startswith("-X"):
+            print(f"ERRO: --jvm-flag invalido {j!r}: use opcao da JVM comecando com -X")
+            return 2
     protos = [c.split(":")[0] for c in a.casos.split(",")]
-    if any(p.strip().upper() == "TENDERMINT" for p in protos):
+    if any(p.strip().upper() == "TENDERMINT" for p in protos) and not a.baseline_tem:
         print(f"ERRO: {recusa_tendermint()}")
         return 2
+    if any(p.strip().upper() == "HOTSTUFF" for p in protos):
+        print(f"ERRO: {recusa_hotstuff()}")
+        return 2
     try:
-        extras = parse_extras_protocolo(a.extra_proto, protos)
+        extras = parse_extras_protocolo(a.extra_proto, protos, a.baseline_tem)
     except ValueError as e:
         print(f"ERRO: {e}")
         return 2
@@ -237,13 +276,15 @@ def main():
             for rep in ("a", "b"):
                 jobs.append((proto, n, dur, lado, rep, raiz))
     print(f"semente={a.semente} timeout={a.timeout}s por execucao; {len(jobs)} execucoes em paralelo")
+    if a.jvm_flag:
+        print("opcoes da JVM (nas quatro execucoes): " + " ".join(a.jvm_flag))
     if extras:
         print("flags extras (nos dois lados, so no protocolo indicado): " +
               "; ".join(f"{p}: {' '.join(f)}" for p, f in extras.items()))
     with ThreadPoolExecutor(max_workers=len(jobs)) as ex:
         fut = {j: ex.submit(executar, j[5], j[0], j[1], j[2], a.semente,
                             out / f"{j[0]}-{j[1]}v-{j[2]}s-{j[3]}-{j[4]}", a.timeout,
-                            extras.get(j[0].strip().upper(), ())) for j in jobs}
+                            extras.get(j[0].strip().upper(), ()), a.jvm_flag) for j in jobs}
         res = {j: f.result() for j, f in fut.items()}
     pior = 0
     for caso in a.casos.split(","):

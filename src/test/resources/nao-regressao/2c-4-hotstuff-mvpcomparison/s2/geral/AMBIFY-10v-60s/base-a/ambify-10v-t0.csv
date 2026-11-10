@@ -1,0 +1,7 @@
+#Simulation name: Ambify - 10 stakeholders      Number of nodes: 10      Network type: ParliaGlobalBlockchainNetwork      Cb granularity: bytes received by first-finalizing node per height; TrafficUntilFinalization=C_B_total, TrafficConsensusUntilFinalization=C_B_consenso (-1=not measured)
+Time,NodeID,BlockHeight,BlockHashCode,BlockSize,BlockCreationTime,BlockCreator,BlockFinalizationTime,TrafficUntilFinalization,Tb_AvgFinalizationTime_s,Cb_AvgTraffic_MB,BFT_ByzantineTolerance_pct,Pdv_DoubleSend_SuccessProbability_pct,TrafficConsensusUntilFinalization
+0.3414735021614206,3,1,109961541,543,0.0,0,0.3414735021614206,1629,0.3414735021614206,0.0015535354614257812,100.0,0.0,-1
+9.43415522943803,0,2,1068824137,757,9.0,0,0.43415522943803,757,0.3878143657997253,0.0011377334594726562,100.0,0.0,-1
+30.546587746495238,0,3,760563749,1290,30.0,1,0.5465877464952378,2580,0.4407388260315628,0.0015786488850911458,100.0,0.0,-1
+39.297119790783,1,4,94345706,959,39.0,1,0.2971197907830003,1918,0.40483406721942217,0.0016412734985351562,100.0,0.0,-1
+48.31850816954379,1,5,25548982,1360,48.0,1,0.31850816954379013,1360,0.38756888768429576,0.001572418212890625,100.0,0.0,-1
