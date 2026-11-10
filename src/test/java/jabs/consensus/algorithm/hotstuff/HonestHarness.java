@@ -33,7 +33,7 @@ final class HonestHarness {
             this.id = id;
             this.tree = new LocalBlockTree<>(genesis);
             this.access = new TreeBlockAccess(tree);
-            this.core = new ReplicaCore(n, leaders, state, access, discards);
+            this.core = new ReplicaCore(n, leaders, state, access, discards, Fixtures.cfg().getMaxFutureViewHorizon());
         }
     }
 
@@ -64,8 +64,9 @@ final class HonestHarness {
             reps.add(new Rep(i, n, leaders, genesis));
             leaderDiscards[i] = new DiscardCounters();
             voteAggs[i] = new VoteAggregator<>();
+            final Rep rep = reps.get(i);
             leaderCores[i] = new LeaderCore(n, i, 0L, leaders, cfg, genesis, this::propose, voteAggs[i],
-                    new NewViewAggregator(), leaderDiscards[i]);
+                    new NewViewAggregator(), leaderDiscards[i], () -> rep.state.getCurrentView());
         }
     }
 
@@ -93,8 +94,10 @@ final class HonestHarness {
             LeaderMessage msg = LeaderMessage.fromProposal(toMessage(a, nodes[l]));
             for (Rep r : reps) {
                 for (ReplicaAction ra : r.core.onLeaderMessage(msg)) {
-                    if (ra.kind() == ReplicaAction.Kind.FINALIZE) {
+                    if (ra.kind() == ReplicaAction.Kind.FINALIZE || ra.kind() == ReplicaAction.Kind.FINALIZE_ANCESTOR) {
                         r.finalized.add(ra.block());
+                    } else if (ra.kind() == ReplicaAction.Kind.NEW_VIEW) {
+                        continue; // o harness envia os NEW_VIEW de cada visao em runView, a partir do estado da replica
                     } else if (!muted.contains(r.id)) {
                         queue.addAll(leaderCores[l].onVote(
                                 new HotStuffVote(nodes[r.id], ra.votePhase(), ra.view(), ra.block(), cfg)));

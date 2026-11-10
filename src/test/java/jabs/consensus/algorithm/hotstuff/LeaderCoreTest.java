@@ -25,18 +25,24 @@ class LeaderCoreTest {
     private final HotStuffBlock genesis = new HotStuffBlock(0, 0, 0.0, null, null);
     private final DiscardCounters discards = new DiscardCounters();
     private final List<Object[]> proposerCalls = new ArrayList<>();
+    private NewViewAggregator newViewAgg = new NewViewAggregator();
+    private VoteAggregator<HotStuffBlock> voteAgg = new VoteAggregator<>();
     private LeaderCore core;
     private int n;
+    /** Visao corrente da replica deste no (o dono real le do ReplicaState). Por padrao 0: nunca abandona. */
+    private long replicaView = 0L;
 
     /** Monta o LeaderCore do no {@code ownId} numa rede de n nos. */
     private void monta(int n, int ownId) {
         this.n = n;
+        this.voteAgg = new VoteAggregator<>();
+        this.newViewAgg = new NewViewAggregator();
         this.core = new LeaderCore(n, ownId, 0L, new ViewLeaders(cfg, n), cfg, genesis,
                 (view, parent) -> {
                     proposerCalls.add(new Object[] {view, parent});
                     return new HotStuffBlock(1000, parent.getHeight() + 1, 0.0, null, parent);
                 },
-                new VoteAggregator<>(), new NewViewAggregator(), discards);
+                voteAgg, newViewAgg, discards, () -> replicaView);
     }
 
     private static int f(int n) { return HotStuffConsensusConfig.maxFaultyNodes(n); }
@@ -242,6 +248,133 @@ class LeaderCoreTest {
         assertSame(p.block(), core.curProposal(1).get());
     }
 
+    // ---- D3a-2a-2c-3 rodada 2: visao abandonada pela replica (artigo, secao 4.3: nextView aborta os blocos "as") ----
+
+    /** (a) e (b): as tres comparacoes de replicaView com a visao T do NEW_VIEW: &lt; T e == T propoem, &gt; T descarta. */
+    @ParameterizedTest
+    @ValueSource(ints = {4, 7, 10})
+    void newViewCompletaQuorumSoSeAReplicaNaoPassouDaVisaoAlvo(int n) {
+        long alvo = 1; // lider = no 1
+        // replicaView == T-1 = 0 e replicaView == T = 1: legitimos (a replica do lider pode terminar T-1 depois dos outros)
+        for (long rv : new long[] {alvo - 1, alvo}) {
+            DiscardCounters d = new DiscardCounters();
+            LeaderCore c = new LeaderCore(n, 1, 0L, new ViewLeaders(cfg, n), cfg, genesis,
+                    (view, parent) -> new HotStuffBlock(1000, parent.getHeight() + 1, 0.0, null, parent),
+                    new VoteAggregator<>(), new NewViewAggregator(), d, () -> rv);
+            for (int id = 0; id < 2 * f(n); id++) {
+                assertTrue(c.onNewView(alvo, id, Optional.empty()).isEmpty(), "n=" + n + " rv=" + rv);
+            }
+            List<LeaderAction> a = c.onNewView(alvo, 2 * f(n), Optional.empty());
+            assertEquals(1, a.size(), "n=" + n + " replicaView=" + rv + ": propoe ao atingir n-f");
+            assertEquals(Phase.PREPARE, a.get(0).phase());
+            assertEquals(0, d.total(), "nenhum descarte");
+        }
+        // replicaView == T+1: abandonada. Nem o NEW_VIEW que completaria o quorum propoe.
+        monta(n, 1);
+        replicaView = alvo + 1;
+        for (int id = 0; id <= 2 * f(n); id++) {
+            assertTrue(core.onNewView(alvo, id, Optional.empty()).isEmpty());
+        }
+        assertFalse(core.hasStarted(alvo));
+        assertEquals(0, proposerCalls.size(), "BlockProposer nao e chamado numa visao abandonada");
+        assertEquals(q(n), discards.get(DiscardReason.LEADER_VIEW_ABANDONED), "todos contados");
+        assertEquals(q(n), discards.total());
+        assertEquals(0, newViewAgg.count(alvo), "NEW_VIEW tardio NAO e armazenado");
+    }
+
+    /** O caso do gap: NEW_VIEW guardados enquanto a replica estava em T, e o que completaria o quorum chega depois do abandono. */
+    @ParameterizedTest
+    @ValueSource(ints = {4, 7, 10})
+    void newViewTardioQueCompletariaOQuorumDepoisDoAbandonoNaoIniciaProposta(int n) {
+        monta(n, 1);
+        replicaView = 1; // == T
+        for (int id = 0; id < 2 * f(n); id++) {
+            assertTrue(core.onNewView(1, id, Optional.empty()).isEmpty());
+        }
+        assertEquals(2 * f(n), newViewAgg.count(1));
+        replicaView = 2; // nextView(1): a replica abandonou a visao 1
+        assertTrue(core.onNewView(1, 2 * f(n), Optional.empty()).isEmpty(), "n-f-esimo NEW_VIEW, tardio demais");
+        assertFalse(core.hasStarted(1));
+        assertEquals(0, proposerCalls.size());
+        assertEquals(1, discards.get(DiscardReason.LEADER_VIEW_ABANDONED));
+        assertEquals(2 * f(n), newViewAgg.count(1), "o tardio nao entrou no agregador");
+    }
+
+    /** A visao seguinte do mesmo lider (T+n) nao e afetada por ter abandonado T. */
+    @Test
+    void abandonarUmaVisaoNaoImpedeAProximaVisaoDoMesmoLider() {
+        monta(4, 1);
+        replicaView = 4; // == T (visao 5 e do no 1) -> (4 < 5) tambem seria legitimo; abandono so de visoes < 4
+        assertTrue(core.onNewView(1, 0, Optional.empty()).isEmpty());
+        assertEquals(1, discards.get(DiscardReason.LEADER_VIEW_ABANDONED));
+        for (int id = 0; id < 3; id++) {
+            List<LeaderAction> a = core.onNewView(5, id, Optional.empty());
+            assertEquals(id == 2 ? 1 : 0, a.size());
+        }
+        assertTrue(core.hasStarted(5));
+    }
+
+    /** (c): PREPARE difundido, a replica abandona a visao; os votos que chegam depois nao geram PRE_COMMIT e sao contados. */
+    @ParameterizedTest
+    @ValueSource(ints = {4, 7, 10})
+    void votosDepoisDoAbandonoNaoGeramFaseSeguinteESaoContados(int n) {
+        monta(n, 0);
+        HotStuffBlock b = iniciaVisaoInicial(); // visao 0, replicaView = 0 == visao
+        assertEquals(0, votos(HotStuffVote.Phase.PREPARE, 0, b, 0, 2 * f(n)).size());
+        replicaView = 1; // nextView(0)
+        // o voto n-f-esimo completaria o QC; todos os demais tambem sao tardios
+        List<LeaderAction> depois = votos(HotStuffVote.Phase.PREPARE, 0, b, 2 * f(n), n);
+        assertTrue(depois.isEmpty(), "n=" + n + ": visao abandonada nao emite PRE_COMMIT");
+        assertEquals(n - 2 * f(n), discards.get(DiscardReason.LEADER_VIEW_ABANDONED));
+        assertEquals(n - 2 * f(n), discards.total());
+        assertEquals(2 * f(n), votesDistintos(b), "os votos descartados nao entram no agregador");
+        // tambem as fases seguintes (se um voto de fase adiantada chegasse): nada sai
+        assertTrue(votos(HotStuffVote.Phase.PRE_COMMIT, 0, b, 0, n).isEmpty());
+        assertTrue(votos(HotStuffVote.Phase.COMMIT, 0, b, 0, n).isEmpty());
+    }
+
+    /** Fases mais adiantadas: o lider ja difundiu COMMIT, a replica expira; votos COMMIT nao geram DECIDE. */
+    @Test
+    void votosDeCommitDepoisDoAbandonoNaoGeramDecide() {
+        monta(4, 0);
+        HotStuffBlock b = iniciaVisaoInicial();
+        assertEquals(1, votos(HotStuffVote.Phase.PREPARE, 0, b, 0, 3).size());
+        assertEquals(1, votos(HotStuffVote.Phase.PRE_COMMIT, 0, b, 0, 3).size()); // COMMIT difundido
+        assertEquals(0, votos(HotStuffVote.Phase.COMMIT, 0, b, 0, 2).size());
+        replicaView = 1;
+        assertTrue(votos(HotStuffVote.Phase.COMMIT, 0, b, 2, 4).isEmpty(), "nenhum DECIDE de visao abandonada");
+        assertEquals(2, discards.get(DiscardReason.LEADER_VIEW_ABANDONED));
+    }
+
+    /** Voto de fase ja concluida segue LATE_VOTE (a ordem das checagens antigas e preservada, o contador antigo nao muda). */
+    @Test
+    void votoDeFaseJaConcluidaContinuaSendoLateVoteMesmoComVisaoAbandonada() {
+        monta(4, 0);
+        HotStuffBlock b = iniciaVisaoInicial();
+        assertEquals(1, votos(HotStuffVote.Phase.PREPARE, 0, b, 0, 3).size());
+        replicaView = 1;
+        assertTrue(votos(HotStuffVote.Phase.PREPARE, 0, b, 3, 4).isEmpty());
+        assertEquals(1, discards.get(DiscardReason.LATE_VOTE));
+        assertEquals(0, discards.get(DiscardReason.LEADER_VIEW_ABANDONED));
+    }
+
+    /** Votos de visao ainda corrente (replicaView == view) e de visao futura (replicaView &lt; view) agregam normalmente. */
+    @Test
+    void votosComReplicaNaVisaoOuAtrasadaFormamQc() {
+        for (long rv : new long[] {0L, 1L}) {
+            monta(4, 1);
+            replicaView = rv; // lider da visao 1; a replica esta em 0 (atrasada) ou em 1 (== T)
+            core.onNewView(1, 0, Optional.empty());
+            core.onNewView(1, 2, Optional.empty());
+            HotStuffBlock b = core.onNewView(1, 3, Optional.empty()).get(0).block();
+            assertEquals(1, votos(HotStuffVote.Phase.PREPARE, 1, b, 0, 3).size(), "replicaView=" + rv);
+        }
+    }
+
+    private int votesDistintos(HotStuffBlock b) {
+        return voteAgg.distinctVoters(HotStuffVote.Phase.PREPARE, 0, b);
+    }
+
     // ---- visao inicial: mesmo caminho das demais (Algoritmo 2, linhas 4-5: n-f new-view, "special" da visao 0) ----
 
     @ParameterizedTest
@@ -320,7 +453,7 @@ class LeaderCoreTest {
     void proposerQueViolaOContratoFalhaAlto() {
         LeaderCore ruim = new LeaderCore(4, 0, 0L, new ViewLeaders(cfg, 4), cfg, genesis,
                 (view, parent) -> new HotStuffBlock(1000, 5, 0.0, null, parent),
-                new VoteAggregator<>(), new NewViewAggregator(), new DiscardCounters());
+                new VoteAggregator<>(), new NewViewAggregator(), new DiscardCounters(), () -> 0L);
         assertTrue(ruim.onNewView(0, 0, Optional.empty()).isEmpty());
         assertTrue(ruim.onNewView(0, 1, Optional.empty()).isEmpty());
         assertThrows(IllegalStateException.class, () -> ruim.onNewView(0, 2, Optional.empty()));
@@ -346,7 +479,7 @@ class LeaderCoreTest {
         AgregadorPrematuro defeituoso = new AgregadorPrematuro();
         LeaderCore c = new LeaderCore(n, 0, 0L, new ViewLeaders(cfg, n), cfg, genesis,
                 (view, parent) -> new HotStuffBlock(1000, parent.getHeight() + 1, 0.0, null, parent),
-                defeituoso, new NewViewAggregator(), discards);
+                defeituoso, new NewViewAggregator(), discards, () -> 0L);
         HotStuffBlock b = null;
         for (int id = 0; id < q(n); id++) {
             List<LeaderAction> a = c.onNewView(0, id, Optional.empty());
@@ -374,10 +507,12 @@ class LeaderCoreTest {
         assertThrows(IllegalArgumentException.class, () -> core.onNewView(0, 0, null));
         ViewLeaders l = new ViewLeaders(cfg, 4);
         assertThrows(IllegalArgumentException.class, () -> new LeaderCore(4, 4, 0L, l, cfg, genesis,
-                (v, p) -> p, new VoteAggregator<>(), new NewViewAggregator(), discards));
+                (v, p) -> p, new VoteAggregator<>(), new NewViewAggregator(), discards, () -> 0L));
         assertThrows(IllegalArgumentException.class, () -> new LeaderCore(3, 0, 0L, l, cfg, genesis,
-                (v, p) -> p, new VoteAggregator<>(), new NewViewAggregator(), discards));
+                (v, p) -> p, new VoteAggregator<>(), new NewViewAggregator(), discards, () -> 0L));
         assertThrows(IllegalArgumentException.class, () -> new LeaderCore(4, 0, 0L, l, cfg, genesis,
-                null, new VoteAggregator<>(), new NewViewAggregator(), discards));
+                null, new VoteAggregator<>(), new NewViewAggregator(), discards, () -> 0L));
+        assertThrows(IllegalArgumentException.class, () -> new LeaderCore(4, 0, 0L, l, cfg, genesis,
+                (v, p) -> p, new VoteAggregator<>(), new NewViewAggregator(), discards, null));
     }
 }

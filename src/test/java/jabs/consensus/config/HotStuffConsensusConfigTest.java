@@ -73,7 +73,7 @@ class HotStuffConsensusConfigTest {
     private static HotStuffConsensusConfig.Builder completo() {
         return HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0)
+                .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */
                 .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
                 .individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96)
@@ -114,10 +114,24 @@ class HotStuffConsensusConfigTest {
     }
 
     @Test
+    void builderSemHorizonteDeVisoesFuturasFalhaSemPadrao() {
+        HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .voterEncoding(VoterEncoding.BITMAP)
+                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
+                .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
+        IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
+        assertTrue(e.getMessage().contains("maxFutureViewHorizon"));
+        assertTrue(e.getMessage().contains("a definir com o humano"));
+        assertThrows(IllegalArgumentException.class, () -> completo().maxFutureViewHorizon(0L).build());
+        assertThrows(IllegalArgumentException.class, () -> completo().maxFutureViewHorizon(-5L).build());
+        assertEquals(1000L, padrao().getMaxFutureViewHorizon()); // fixture de teste
+    }
+
+    @Test
     void builderSemLoteFalha() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).individualSignatureSizeBytes(64)
+                .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
         IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
         assertTrue(e.getMessage().contains("batchSize"));
@@ -127,7 +141,7 @@ class HotStuffConsensusConfigTest {
     void builderSemTamanhoDeTransacaoFalhaSemPadrao() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(2048).individualSignatureSizeBytes(64)
+                .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
         IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
         assertTrue(e.getMessage().contains("txSizeBytes"));
@@ -140,7 +154,7 @@ class HotStuffConsensusConfigTest {
     @Test
     void builderSemCodificacaoDeVotantesFalhaSemPadraoSilencioso() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
-                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
+                .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
         IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
         assertTrue(e.getMessage().contains("voterEncoding"));
@@ -165,12 +179,12 @@ class HotStuffConsensusConfigTest {
     void builderVazioFalha() {
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder().build());
         assertThrows(IllegalStateException.class,
-                () -> HotStuffConsensusConfig.builder().viewTimeoutSeconds(10.0).build());
+                () -> HotStuffConsensusConfig.builder().viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.build());
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder()
-                .voterEncoding(VoterEncoding.BITMAP).viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).build());
+                .voterEncoding(VoterEncoding.BITMAP).viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512).build());
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
-                .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
+                .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).build());
     }
 
@@ -179,7 +193,7 @@ class HotStuffConsensusConfigTest {
         HotStuffConsensusConfig c = HotStuffConsensusConfig.builder()
                 .voterEncoding(VoterEncoding.BITMAP)
                 .leaderPolicy(LeaderPolicy.STABLE).signatureMode(SignatureMode.AGGREGATED)
-                .viewTimeoutSeconds(2.5).batchSize(50).txSizeBytes(512)
+                .viewTimeoutSeconds(2.5).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(50).txSizeBytes(512)
                 .individualSignatureSizeBytes(71).aggregatedSignatureSizeBytes(48)
                 .aggregatedShareSizeBytes(48).messageOverheadBytes(0).build();
         assertEquals(LeaderPolicy.STABLE, c.getLeaderPolicy());

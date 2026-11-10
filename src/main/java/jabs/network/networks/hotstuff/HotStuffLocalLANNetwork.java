@@ -10,6 +10,8 @@ import jabs.network.stats.lan.SingleNodeType;
 import jabs.simulator.Simulator;
 import jabs.simulator.randengine.RandomnessEngine;
 
+import java.util.Set;
+
 /**
  * Rede LAN do HotStuff (molde: PBFTLocalLANNetwork). D3a-2a-1: monta os nos e a malha completa.
  *
@@ -78,12 +80,37 @@ public class HotStuffLocalLANNetwork extends Network<HotStuffNode, SingleNodeTyp
     /**
      * Inicia o HotStuff em todos os nos (cada um emite o NEW_VIEW inicial ao lider da visao inicial). Deve ser
      * chamado depois de {@link #populateNetwork} e antes de rodar a simulacao; a partir dai o caminho honesto se
-     * autossustenta (cada DECIDE leva ao NEW_VIEW da visao seguinte). Nao ha agendador externo nem timeout
-     * (troca de visao por timeout: 2c-3). Chamar duas vezes falha alto.
+     * autossustenta (cada DECIDE leva ao NEW_VIEW da visao seguinte; um timer por visao faz a troca de visao por
+     * timeout, 2c-3). Nao ha agendador externo. Chamar duas vezes falha alto.
      */
     public void startConsensusRound(Simulator simulator, double simulationStopTime) {
+        startConsensusRound(simulator, simulationStopTime, Set.of());
+    }
+
+    /**
+     * Como {@link #startConsensusRound(Simulator, double)}, mas os nos de {@code crashedNodeIds} sao postos em CRASH
+     * ({@code Node#crash()}: a interface de rede cai, nada sai nem chega) e NAO sao iniciados. E falha por crash
+     * injetada pelo cenario (D3a-2a-2c-3), NAO ataque do estudo (o ataque e EQUIVOCATION, tarefa 2d). Conjunto
+     * vazio = comportamento anterior. Crash de mais de f nos e permitido (observacao de vivacidade).
+     *
+     * @throws IllegalArgumentException se algum id estiver fora de [0, n)
+     */
+    public void startConsensusRound(Simulator simulator, double simulationStopTime, Set<Integer> crashedNodeIds) {
+        if (crashedNodeIds == null) {
+            throw new IllegalArgumentException("crashedNodeIds obrigatorio (use Set.of() para nenhum)");
+        }
+        int n = this.getAllNodes().size();
+        for (int id : crashedNodeIds) {
+            if (id < 0 || id >= n) {
+                throw new IllegalArgumentException("id em crash fora de [0," + n + "): " + id);
+            }
+        }
         for (HotStuffNode node : this.getAllNodes()) {
-            node.startConsensus();
+            if (crashedNodeIds.contains(node.getNodeID())) {
+                node.crash();
+            } else {
+                node.startConsensus();
+            }
         }
     }
 }

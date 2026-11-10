@@ -29,6 +29,7 @@ import jabs.network.node.nodes.Node;
 import jabs.network.node.nodes.PeerBlockchainNode;
 import jabs.network.node.nodes.hotstuff.HotStuffNode;
 import jabs.simulator.event.BlockFinalizationEvent;
+import jabs.simulator.event.HotStuffViewTimeoutEvent;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -105,13 +106,35 @@ import java.util.Optional;
  *   <li><b>Trafego.</b> So conta o que este no RECEBE pela rede; os envios do lider nao entram. NEW_VIEW com QC e
  *       atribuido ao bloco do QC e fica sujeito ao corte de {@link #markLocallyFinalized} (convencao PBFT): chegando
  *       depois da finalizacao local desse bloco, nao soma em C_B daquele bloco.</li>
- *   <li><b>Fora do escopo:</b> troca de visao por timeout/pacemaker (2c-3), EQUIVOCATION (2d). O caminho honesto
- *       nao usa {@code viewTimeoutSeconds}.</li>
+ *   <li><b>Fora do escopo:</b> EQUIVOCATION (2d).</li>
  * </ul>
  *
- * <p><b>Pendencias (nao feitas aqui):</b>
+ * <h3>D3a-2a-2c-3: troca de visao por TIMEOUT (Basic HotStuff, secao 4.1, "nextView interrupt")</h3>
  * <ul>
- *   <li>D3a-2a-2c-3: troca de visao por timeout (pacemaker) e sincronizacao de replica atrasada;</li>
+ *   <li><b>Timer por visao.</b> Ao entrar numa visao (em {@link #start()} e a cada avanco) a replica agenda um
+ *       {@link HotStuffViewTimeoutEvent}(this, view) com atraso {@code config.getViewTimeoutSeconds()} (valor do
+ *       config; nenhum valor embutido). O timer NAO e cancelado quando a visao termina por DECIDE: o evento obsoleto
+ *       chega e o {@link ReplicaCore} o filtra e conta em {@link DiscardReason#STALE_VIEW_TIMEOUT} (mesmo estilo do
+ *       {@code TendermintTimeoutEvent}). O evento nao consome aleatoriedade e, no regime honesto (timeout bem maior
+ *       que a duracao de uma visao), so aparece como obsoleto: a sequencia de finalizacoes nao muda.</li>
+ *   <li><b>Expirou o timer da visao corrente v</b> ({@link #onViewTimeout}): a replica avanca para v+1, envia
+ *       NEW_VIEW(view = v, prepareQC ou sem QC se bottom) ao lider de v+1 (pacote pela rede; autoentrega local se for
+ *       ela o lider) e arma o timer de v+1. E a mesma acao {@link ReplicaAction.Kind#NEW_VIEW} do fim de visao por
+ *       DECIDE: um unico caminho de envio e de contabilizacao de trafego.</li>
+ *   <li><b>PROVISORIO:</b> timeout de duracao CONSTANTE por visao, sem backoff exponencial. A politica de
+ *       crescimento do timeout e o valor de Delta sao <b>a definir com o humano</b> (ADR-0015 Q12, A-24). Nada foi
+ *       escolhido aqui.</li>
+ *   <li><b>Trafego.</b> Os NEW_VIEW de troca de visao sao pacotes da rede simulada, medidos como os iniciais pelo
+ *       hook de {@code PeerBlockchainNode} e por {@link #recordQcMessageTraffic} (sem QC: contador a parte; com QC:
+ *       ao bloco do QC, sujeito ao corte). Nao ha contagem paralela. Pacote de no em crash nao existe.</li>
+ *   <li><b>Limites declarados (nao implementados):</b> sincronizacao de replica atrasada (catch-up por QC/state
+ *       transfer, Pacemaker/Cogsworth): a troca de visao e LOCAL, sem mensagem que alinhe visoes; retencao de visoes
+ *       futuras limitada pelo horizonte {@code maxFutureViewHorizon} do config (obrigatorio, sem padrao; valor de
+ *       producao a definir com o humano; excedente descartado e contado em {@link DiscardReason#FUTURE_VIEW_BEYOND_HORIZON};
+ *       custo sobre replica atrasada descrito em {@link ReplicaCore}); proposta de visao
+ *       que a replica ja deixou e perdida (e, no lado do lider, NEW_VIEW e votos de visao que a propria replica ja
+ *       abandonou sao descartados e contados em {@link DiscardReason#LEADER_VIEW_ABANDONED}: ver {@link LeaderCore}). Falha de lider so por CRASH ({@code Node#crash()} no teste/cenario);
+ *       {@code supportedAttacks()} continua vazio.</li>
  *   <li>D3a-2a-2d: {@code supportedAttacks()}: continua o padrao (vazio), logo {@code setByzantineConfig} com
  *       ataque FALHA ALTO ate o algoritmo declarar EQUIVOCATION (decisao do humano para o estudo).</li>
  * </ul>
@@ -156,7 +179,10 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
     private int maxLeaderActionDepth = 0;
     private long deferredLeaderActions = 0L;
     private long executedLeaderActions = 0L;
+    private long leaderActionsOnAbandonedView = 0L;
     private boolean started = false;
+    private long crashedTimeouts = 0L;
+    private long finalizedAncestors = 0L;
 
     /** Contadores de um bloco devolvidos (e zerados) por {@link #takeTraffic}. */
     public record BlockTraffic(long total, long consensus) { }
@@ -184,10 +210,11 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
         LocalBlockTree<HotStuffBlock> hotStuffTree = (LocalBlockTree<HotStuffBlock>) (LocalBlockTree<?>) localBlockTree;
         this.blockAccess = new TreeBlockAccess(hotStuffTree);
         this.replica = new ReplicaCore(numAllParticipants, leaders, new ReplicaState<HotStuffBlock>(INITIAL_VIEW),
-                blockAccess, discards);
+                blockAccess, discards, config.getMaxFutureViewHorizon());
         HotStuffBlock genesisBlock = hotStuffTree.getGenesisBlock();
         this.leaderCore = new LeaderCore(numAllParticipants, self, INITIAL_VIEW, leaders, config, genesisBlock,
-                this::proposeBlock, voteAggregator, newViewAggregator, discards);
+                this::proposeBlock, voteAggregator, newViewAggregator, discards,
+                () -> replica.state().getCurrentView());
     }
 
     public HotStuffConsensusConfig getConfig() {
@@ -402,9 +429,42 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
             throw new IllegalStateException("HotStuff ja iniciado no no " + ownId());
         }
         started = true;
+        armViewTimer(INITIAL_VIEW);
         runEntry(() -> sendNewView(INITIAL_NEW_VIEW_VIEW,
                 HotStuffQcMessage.newViewWithoutPrepareQc(requireNode(), INITIAL_NEW_VIEW_VIEW,
                         numAllParticipants, config)));
+    }
+
+    /**
+     * Agenda o timeout da visao {@code view}: {@code config.getViewTimeoutSeconds()} a partir de agora. Sem
+     * cancelamento (o evento obsoleto e filtrado pelo {@link ReplicaCore}); sem aleatoriedade.
+     */
+    private void armViewTimer(long view) {
+        if (!started) {
+            // no dirigido a mao por teste (mensagens entregues sem start()): nao ha protocolo em curso, logo nao ha
+            // timer. Em execucao normal start() precede qualquer mensagem.
+            return;
+        }
+        requireNode().getSimulator().putEvent(new HotStuffViewTimeoutEvent(this, view),
+                config.getViewTimeoutSeconds());
+    }
+
+    /**
+     * O timer da visao {@code view} expirou (entregue por {@link HotStuffViewTimeoutEvent}). Timeout obsoleto
+     * (a replica ja passou dessa visao) e contado em {@link DiscardReason#STALE_VIEW_TIMEOUT} e nao tem efeito;
+     * o da visao corrente executa o nextView (ver a documentacao da classe). So atua depois de {@link #start()}.
+     */
+    public void onViewTimeout(long view) {
+        if (!started) {
+            throw new IllegalStateException("timeout de visao antes de start() no no " + ownId());
+        }
+        if (requireNode().getNodeNetworkInterface().isNetworkInterfaceDown()) {
+            // no em CRASH ({@code Node#crash()}, injetado pelo teste/cenario; nao e ataque do estudo): nao executa o
+            // protocolo. Sem isto o no "morto" continuaria avancando visoes localmente e se autoentregando.
+            crashedTimeouts++;
+            return;
+        }
+        runEntry(() -> execute(replica.onViewTimeout(view)));
     }
 
     public boolean isStarted() {
@@ -489,6 +549,12 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
      * latencia e sem trafego (ADR-0006). Todas as fases, DECIDE inclusive, usam {@link HotStuffProposalMessage}.
      */
     private void executeLeaderAction(LeaderAction a) {
+        if (a.view() < replica.state().getCurrentView()) {
+            // TRIPWIRE de observabilidade, nao correcao: o LeaderCore nao deveria ter devolvido esta acao (visao que a
+            // propria replica ja abandonou; ver LeaderCore, "Visao abandonada pela replica"). Em execucao correta fica
+            // em 0; os testes o conferem no instante do envio (antes da autoentrega, que pode avancar a visao).
+            leaderActionsOnAbandonedView++;
+        }
         HotStuffProposalMessage message = toProposal(a);
         requireNode().broadcastMessage(message);
         onProposal(message);
@@ -534,9 +600,15 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
                 case VOTE:
                     sendVote(new HotStuffVote(requireNode(), a.votePhase(), a.view(), a.block(), config));
                     break;
+                case FINALIZE_ANCESTOR:
+                    finalizedAncestors++;
+                    finalizeLocally(a.block());
+                    break;
                 case FINALIZE:
                     finalizeLocally(a.block());
-                    advanceToNextView(a.view());
+                    break;
+                case NEW_VIEW:
+                    endView(a);
                     break;
                 default:
                     throw new IllegalStateException("acao desconhecida: " + a.kind());
@@ -545,14 +617,17 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
     }
 
     /**
-     * Fim da visao {@code endedView} (DECIDE): NEW_VIEW com o prepareQC da replica ao lider de {@code endedView+1}
-     * (Algoritmo 2, linha 5 do lider seguinte). O prepareQC existe sempre aqui (PRE_COMMIT precede DECIDE); se nao
-     * existisse seria bug do nucleo, e falha alto.
+     * Fim da visao {@code a.view()} (por DECIDE ou por timeout): NEW_VIEW ao lider de {@code a.view()+1} (Algoritmo 2,
+     * linha 5 do lider seguinte; secao 4.1, nextView) com o prepareQC que a replica tinha ao terminar a visao (ou sem
+     * QC se bottom, caso so do timeout) e timer da nova visao.
      */
-    private void advanceToNextView(long endedView) {
-        HotStuffQuorumCertificate prepareQc = replica.state().getPrepareQc().orElseThrow(
-                () -> new IllegalStateException("DECIDE da visao " + endedView + " sem prepareQC na replica"));
-        sendNewView(endedView, HotStuffQcMessage.newView(requireNode(), endedView, prepareQc));
+    private void endView(ReplicaAction a) {
+        long endedView = a.view();
+        HotStuffQcMessage message = a.qc().isPresent()
+                ? HotStuffQcMessage.newView(requireNode(), endedView, a.qc().get())
+                : HotStuffQcMessage.newViewWithoutPrepareQc(requireNode(), endedView, numAllParticipants, config);
+        sendNewView(endedView, message);
+        armViewTimer(endedView + 1);
     }
 
     /**
@@ -608,14 +683,25 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
     /** Visao corrente desta replica. */
     public long getCurrentView() { return replica.state().getCurrentView(); }
     public ReplicaState<HotStuffBlock> getReplicaState() { return replica.state(); }
-    /** Mensagens do lider retidas agora (visao futura ou fase adiantada). Sem teto: ver javadoc de ReplicaCore. */
+    /** Mensagens do lider retidas agora (visao futura ou fase adiantada). Limitada pelo horizonte do config: ver javadoc de ReplicaCore. */
     public int getPendingProposalCount() { return replica.pendingSize(); }
     /** Pico da retencao desta replica na simulacao (para o cenario relatar). */
     public int getPeakPendingProposalCount() { return replica.peakPending(); }
+    /** Timeouts de visao ignorados porque este no estava em crash ({@code Node#crash()}); 0 em execucao sem crash. */
+    public long getCrashedTimeouts() { return crashedTimeouts; }
+    /** Blocos finalizados como ANCESTRAIS de um DECIDE (visao cujo DECIDE esta replica nao viu); 0 sem troca de visao. */
+    public long getFinalizedAncestors() { return finalizedAncestors; }
+    /** Quantas vezes esta replica avancou de visao por TIMEOUT (nao conta o avanco por DECIDE). */
+    public long getTimeoutAdvances() { return replica.timeoutAdvances(); }
     /** Maior aninhamento de execucao de {@link LeaderAction} observado (1 = nunca reentrou). */
     public int getMaxLeaderActionDepth() { return maxLeaderActionDepth; }
     /** Acoes que o LeaderCore devolveu a uma entrada ANINHADA (voto/NEW_VIEW local) e que esperaram a vez (nao reentraram). */
     public long getDeferredLeaderActions() { return deferredLeaderActions; }
+    /**
+     * Acoes do lider executadas numa visao MENOR que a visao corrente da propria replica no instante do envio (isto
+     * e, de visao abandonada). Tripwire de teste: 0 em execucao correta.
+     */
+    public long getLeaderActionsOnAbandonedView() { return leaderActionsOnAbandonedView; }
     /** Acoes do lider executadas ate agora (difusoes de fase). */
     public long getExecutedLeaderActions() { return executedLeaderActions; }
     public LeaderCore getLeaderCore() { return leaderCore; }

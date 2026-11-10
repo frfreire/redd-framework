@@ -40,8 +40,9 @@ import java.util.Optional;
  *   <li>{@code prepareQC} e atualizado ao receber a proposta PRE_COMMIT (carrega o prepareQC formado);</li>
  *   <li>{@code lockedQC} e atualizado ao receber a proposta COMMIT (carrega o precommitQC formado);</li>
  *   <li>o bloco e finalizado ao receber DECIDE (carrega o commitQC);</li>
- *   <li>que a visao avanca por timeout/NEW_VIEW e que o lider da nova visao usa o maior prepareQC dos NEW_VIEW
- *       (highQC) na proposta PREPARE;</li>
+ *   <li>que a visao avanca por timeout ({@link #advanceViewByTimeout}, secao 4.1 "nextView interrupt") e que o
+ *       lider da nova visao usa o maior prepareQC dos NEW_VIEW (highQC) na proposta PREPARE (isso e do
+ *       {@code LeaderCore});</li>
  *   <li>que "estritamente maior" para o prepareQC e "maior ou igual" para o lockedQC e a leitura certa de
  *       "so avanca" / "nao regride" (o artigo atualiza para o QC recebido sem exigir comparacao; as checagens
  *       aqui sao defesa adicional).</li>
@@ -100,6 +101,31 @@ public final class ReplicaState<B extends HotStuffBlock> {
             throw new IllegalStateException("a visao nao regride: atual=" + currentView + ", pedida=" + newView);
         }
         currentView = newView;
+    }
+
+    /**
+     * Avanca a visao POR TIMEOUT (Basic HotStuff, secao 4.1, "nextView interrupt": a replica "also increments
+     * viewNumber and starts the next view"). Diferente de {@link #advanceView}, que no-op para visao igual, aqui o
+     * avanco e SEMPRE de exatamente uma visao e so vale para o timeout da visao CORRENTE: a replica nunca regride
+     * nem "avanca" para visao menor ou igual a atual.
+     *
+     * <p>Quem chama (o {@link ReplicaCore}) ja filtrou o timeout obsoleto (visao menor que a corrente), que e
+     * contado e nao chega aqui; um timeout obsoleto ou de visao futura que chegue a este metodo e erro de
+     * programacao e falha alto.
+     *
+     * @param expiredView visao cujo timer expirou (deve ser igual a visao corrente)
+     * @return a nova visao corrente ({@code expiredView + 1})
+     * @throws IllegalArgumentException se {@code expiredView} &lt; 0
+     * @throws IllegalStateException se {@code expiredView} nao for a visao corrente
+     */
+    public long advanceViewByTimeout(long expiredView) {
+        requireViewNonNegative(expiredView);
+        if (expiredView != currentView) {
+            throw new IllegalStateException("timeout so avanca a visao corrente: atual=" + currentView
+                    + ", expirada=" + expiredView + " (obsoleto e filtrado antes; futuro nao existe)");
+        }
+        currentView = expiredView + 1;
+        return currentView;
     }
 
     /**

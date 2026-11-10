@@ -5,7 +5,9 @@ import jabs.ledgerdata.hotstuff.HotStuffQuorumCertificate;
 import jabs.ledgerdata.hotstuff.HotStuffVote;
 import jabs.network.message.HotStuffProposalMessage.Phase;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,13 @@ import java.util.Optional;
  *   <li>remetente diferente do lider da visao da mensagem: descartada (WRONG_LEADER);</li>
  *   <li>coerencia do QC (fase, visao, bloco, n): incoerente descartada (INCOHERENT_QC). E checada ANTES de reter,
  *       para que mensagem invalida nao ocupe a retencao;</li>
- *   <li>visao futura, ou fase adiantada na visao corrente (a rede pode reordenar): <b>retida</b> em
- *       {@link LinkedHashMap} (ordem de chegada) por (visao, fase) e reavaliada quando a replica chega la.
- *       A retencao NAO tem teto de contagem (ver "Memoria da retencao" abaixo): uma proposta honesta valida nunca
- *       e perdida nem recusada, porque o simulador nao tem retransmissao e atraso finito nao viola a entrega
- *       confiavel do caminho honesto. Segunda mensagem da mesma (visao, fase): a primeira vale, a outra e contada
+ *   <li>visao futura ALEM do horizonte ({@code visao - visaoCorrente > maxFutureViewHorizon}): descartada e contada
+ *       (FUTURE_VIEW_BEYOND_HORIZON) SEM armazenar nada (ver "Memoria da retencao"). Checada depois da coerencia do
+ *       QC e antes de reter;</li>
+ *   <li>visao futura DENTRO do horizonte, ou fase adiantada na visao corrente (a rede pode reordenar): <b>retida</b>
+ *       em {@link LinkedHashMap} (ordem de chegada) por (visao, fase) e reavaliada quando a replica chega la.
+ *       Uma proposta honesta valida dentro do horizonte nunca e perdida nem recusada, porque o simulador nao tem
+ *       retransmissao e atraso finito nao viola a entrega confiavel do caminho honesto. Segunda mensagem da mesma (visao, fase): a primeira vale, a outra e contada
  *       (DUPLICATE_PENDING). Como o remetente ja foi conferido como o lider da visao da mensagem (passo
  *       anterior), duas mensagens da mesma (visao, fase) so podem vir do MESMO lider; de um lider honesto elas
  *       sao identicas (uma proposta por fase e visao; DECIDE por proposta e por mensagem de QC carregam o mesmo
@@ -43,18 +47,53 @@ import java.util.Optional;
  *
  * <h3>Memoria da retencao</h3>
  * <ol>
- *   <li>O consumo de memoria cresce com o atraso da replica: uma entrada por (visao, fase) pendente, no maximo
- *       uma mensagem por chave. Nao ha teto; o que existe e observabilidade: {@link #pendingSize()} (tamanho atual)
- *       e {@link #peakPending()} (maximo ja atingido), que o {@code HotStuff} expoe para o cenario relatar.</li>
- *   <li>O simulador tem horizonte finito ({@code duracao_sim_s}); logo a retencao e limitada pelo tempo simulado,
- *       nao por um parametro desta classe. Replica lenta num horizonte longo retem mais.</li>
- *   <li><b>RISCO PARA A PARTE 2d:</b> um lider bizantino de visao futura pode inflar a retencao de replicas
- *       honestas com visoes arbitrarias (uma entrada por visao em que ele e lider, mesmo com o QC coerente, pois
- *       a coerencia so olha a mensagem). A defesa (sincronizacao de visao por QC e/ou horizonte maximo de visoes
- *       futuras) e decisao da 2c-3/2d e fica <b>a definir com o humano</b>. Nenhum valor foi escolhido aqui.</li>
- *   <li>Limite declarado: a recuperacao de replica atrasada por QC (pacemaker, sincronizacao de visao) AINDA NAO
- *       EXISTE. A replica atrasada so alcanca as visoes futuras pelas proprias mensagens retidas.</li>
+ *   <li><b>Defesa implementada (2c-3, rodada 3):</b> a retencao tem horizonte de visoes futuras
+ *       {@code H = maxFutureViewHorizon}, parametro OBRIGATORIO do config, sem padrao e validado ({@code > 0}).
+ *       Mensagem com {@code visao - visaoCorrente > H} e descartada e contada em
+ *       {@link DiscardReason#FUTURE_VIEW_BEYOND_HORIZON} antes de qualquer insercao: o descarte nao consome memoria.
+ *       Como a visao corrente so cresce, nenhuma chave retida fica alem de {@code corrente + H}; logo a retencao
+ *       tem cota: no maximo {@code 4 * (H + 1) - 1} entradas (4 fases em cada uma das visoes corrente..corrente+H,
+ *       menos a fase esperada, que nao e retida), independentemente do que um lider bizantino enviar.
+ *       {@link #pendingSize()} e {@link #peakPending()} continuam expostos para observabilidade.</li>
+ *   <li><b>Valor de H: a definir com o humano.</b> Nenhum valor de producao foi escolhido nem calibrado; os testes
+ *       usam fixtures de teste e os cenarios recebem o valor da config explicita.</li>
+ *   <li><b>Custo sobre vivacidade, declarado:</b> uma replica atrasada mais de H visoes em relacao as propostas em
+ *       voo perde as propostas alem do horizonte (nao ha retransmissao). Ela so avanca por DECIDE das visoes que
+ *       reteve ou por timeout local, entao fica ate H visoes atras do resto e so volta a acompanhar quando o lider
+ *       enviar mensagem dentro do novo horizonte; as visoes que ela perdeu nunca chegam a ela e um bloco filho
+ *       dessas visoes falha em UNKNOWN_PARENT. Para o quorum ela conta como falha (n-f continua valendo se f nao
+ *       for excedido), mas sua participacao so e restabelecida com catch-up.</li>
+ *   <li>O horizonte nao impede por si so que um lider bizantino ocupe a retencao ate a cota H com mensagens
+ *       coerentes das visoes em que e lider (a cota limita, nao elimina); tambem nao ha como saber, sem catch-up
+ *       por QC, se a visao anunciada e real. O consumo de memoria honesto cresce com o atraso ate a cota.</li>
+ *   <li>Limite declarado: a recuperacao de replica atrasada por QC (state transfer / catch-up, sincronizacao de
+ *       visao tipo Pacemaker/Cogsworth) AINDA NAO EXISTE e continua em aberto (2d). A replica atrasada so alcanca
+ *       as visoes futuras pelas proprias mensagens retidas. A troca de visao por TIMEOUT existe ({@link
+ *       #onViewTimeout}), mas e LOCAL a cada replica: nao ha mensagem que puxe uma replica para a visao dos
+ *       outros. Consequencia: proposta de uma visao que a replica ja deixou por timeout e perdida (OLD_VIEW) e o
+ *       bloco dela nunca chega a replica; um bloco filho dele entao falha em UNKNOWN_PARENT nela.</li>
  * </ol>
+ *
+ * <h3>Troca de visao por timeout (2c-3; Yin et al., secao 4.1, "nextView interrupt")</h3>
+ * {@link #onViewTimeout}: ao expirar o timer da visao CORRENTE v, a replica avanca para v+1
+ * ({@link ReplicaState#advanceViewByTimeout}), devolve a acao {@link ReplicaAction.Kind#NEW_VIEW} (o dono envia
+ * NEW_VIEW com o prepareQC ao lider de v+1 e arma o timer de v+1) e reavalia as mensagens retidas (as de v+1 ja
+ * podem ser processadas; as de visoes ultrapassadas sao purgadas como OLD_VIEW). Timeout de visao menor que a
+ * corrente e obsoleto: contado em {@link DiscardReason#STALE_VIEW_TIMEOUT}, sem efeito. O timer NAO e cancelado
+ * quando a visao termina por DECIDE (mesmo estilo do Tendermint): o evento chega e e filtrado aqui.
+ * <p><b>Timeout de duracao constante por visao (sem backoff) e PROVISORIO:</b> o crescimento do timeout e o valor
+ * de Delta ficam <b>a definir com o humano</b> (ADR-0015 Q12, A-24). O valor vem do config; nada e embutido.
+ * <p><b>Seguranca com troca de visao:</b> o travamento ({@code lockedQC}) sobrevive a troca de visao; a replica so
+ * vota no PREPARE de v+1 se {@link SafetyRule#safeNode} valer (estende o bloco travado, ou o QC do highQC e de
+ * visao maior que a do travamento).
+ *
+ * <h3>Finalizacao do ramo no DECIDE</h3>
+ * O artigo (alg. 2, linha 40) executa os comandos "through m.justify.node": o ramo inteiro. Sem troca de visao
+ * cada DECIDE finaliza um bloco cujo pai ja esta finalizado. COM troca de visao um bloco pode ter o prepareQC/
+ * lockedQC formado numa visao cujo DECIDE esta replica nao viu (o lider caiu antes do DECIDE, ou ela ja tinha
+ * expirado); o bloco da visao seguinte o estende, e o DECIDE dele finaliza tambem os ancestrais ainda nao
+ * finalizados ({@link ReplicaAction.Kind#FINALIZE_ANCESTOR}, do mais baixo ao mais alto, antes do bloco do DECIDE).
+ * Se o ramo do DECIDE nao estende o bloco ja finalizado, e violacao de seguranca e falha alto.
  *
  * <h3>Efeitos por fase (alg. 2)</h3>
  * <ul>
@@ -81,11 +120,13 @@ public final class ReplicaCore {
     private final ReplicaState<HotStuffBlock> state;
     private final BlockAccess blocks;
     private final DiscardCounters discards;
+    private final long maxFutureViewHorizon;
     private final Map<PendingKey, LeaderMessage> pending = new LinkedHashMap<>();
 
     private long phaseView;
     private Phase expected = Phase.PREPARE;
     private int peakPending = 0;
+    private long timeoutAdvances = 0L;
 
     /**
      * @param n numero de replicas (&gt;= 4)
@@ -93,16 +134,22 @@ public final class ReplicaCore {
      * @param state estado da replica
      * @param blocks acesso aos blocos da arvore local
      * @param discards contadores de descarte
-     * @throws IllegalArgumentException se algum objeto for nulo ou {@code n} &lt; 4
+     * @param maxFutureViewHorizon horizonte de visoes futuras retidas (&gt; 0; sem padrao; valor de producao a
+     *                             definir com o humano; vem de {@code HotStuffConsensusConfig})
+     * @throws IllegalArgumentException se algum objeto for nulo, {@code n} &lt; 4 ou o horizonte for &lt;= 0
      */
     public ReplicaCore(int n, ViewLeaders leaders, ReplicaState<HotStuffBlock> state, BlockAccess blocks,
-                       DiscardCounters discards) {
+                       DiscardCounters discards, long maxFutureViewHorizon) {
         if (leaders == null || state == null || blocks == null || discards == null) {
             throw new IllegalArgumentException("leaders, state, blocks e discards sao obrigatorios");
         }
         if (n < 4) {
             throw new IllegalArgumentException("n deve ser >= 4: " + n);
         }
+        if (maxFutureViewHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureViewHorizon deve ser > 0: " + maxFutureViewHorizon);
+        }
+        this.maxFutureViewHorizon = maxFutureViewHorizon;
         this.n = n;
         this.leaders = leaders;
         this.state = state;
@@ -115,8 +162,13 @@ public final class ReplicaCore {
     public DiscardCounters discards() { return discards; }
     /** Tamanho atual da retencao: chaves (visao, fase) pendentes. */
     public int pendingSize() { return pending.size(); }
-    /** Pico da retencao: maior {@link #pendingSize()} ja atingido por esta replica (observabilidade, nao limite). */
+    /** Horizonte de visoes futuras aceitas para retencao (parametro obrigatorio; valor de producao a definir com o humano). */
+    public long maxFutureViewHorizon() { return maxFutureViewHorizon; }
+    /** Pico da retencao: maior {@link #pendingSize()} ja atingido por esta replica (observabilidade; o limite e o horizonte). */
     public int peakPending() { return peakPending; }
+
+    /** Quantas vezes esta replica avancou de visao por TIMEOUT (nao conta o avanco por DECIDE). */
+    public long timeoutAdvances() { return timeoutAdvances; }
 
     /** Fase que a replica espera na visao corrente (PREPARE no inicio de cada visao). */
     public Phase expectedPhase() {
@@ -141,6 +193,39 @@ public final class ReplicaCore {
         return out;
     }
 
+    /**
+     * O timer da visao {@code view} expirou (Basic HotStuff, secao 4.1, "nextView interrupt").
+     * <ul>
+     *   <li>{@code view} &lt; visao corrente: obsoleto, contado em {@link DiscardReason#STALE_VIEW_TIMEOUT}, sem
+     *       efeito;</li>
+     *   <li>{@code view} == visao corrente: a replica avanca para {@code view + 1}; a acao
+     *       {@link ReplicaAction.Kind#NEW_VIEW} (com o prepareQC de AGORA) vem primeiro, depois as acoes das
+     *       mensagens retidas que a nova visao destravou;</li>
+     *   <li>{@code view} &gt; visao corrente: impossivel (so se arma timer de visao em que a replica entrou) e falha
+     *       alto.</li>
+     * </ul>
+     *
+     * @throws IllegalArgumentException se {@code view} &lt; 0
+     * @throws IllegalStateException se {@code view} for maior que a visao corrente
+     */
+    public List<ReplicaAction> onViewTimeout(long view) {
+        if (view < 0) {
+            throw new IllegalArgumentException("view deve ser >= 0: " + view);
+        }
+        List<ReplicaAction> out = new ArrayList<>();
+        long cur = state.getCurrentView();
+        if (view < cur) {
+            discards.count(DiscardReason.STALE_VIEW_TIMEOUT);
+            return out;
+        }
+        Optional<HotStuffQuorumCertificate> prepareQc = state.getPrepareQc();
+        state.advanceViewByTimeout(view); // lanca IllegalStateException se view > cur
+        timeoutAdvances++;
+        out.add(ReplicaAction.newView(view, prepareQc));
+        drain(out);
+        return out;
+    }
+
     private void step(LeaderMessage m, List<ReplicaAction> out) {
         long cur = state.getCurrentView();
         if (m.getView() < cur) {
@@ -154,6 +239,10 @@ public final class ReplicaCore {
         if (!qcCoherent(m)) {
             discards.count(DiscardReason.INCOHERENT_QC);
             return;
+        }
+        if (m.getView() - cur > maxFutureViewHorizon) { // m.getView() >= cur aqui: sem overflow
+            discards.count(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON);
+            return; // nao armazena: o descarte nao consome memoria
         }
         Phase exp = expectedPhase();
         if (m.getView() > cur || m.getPhase().ordinal() > exp.ordinal()) {
@@ -262,12 +351,49 @@ public final class ReplicaCore {
                 expected = Phase.DECIDE;
                 break;
             case DECIDE:
-                state.finalizeBlock(block);
+                finalizeBranch(view, block, out);
+                if (state.getPrepareQc().isEmpty()) {
+                    throw new IllegalStateException("DECIDE da visao " + view + " sem prepareQC na replica");
+                }
                 state.advanceView(view + 1); // expectedPhase() volta a PREPARE ao notar a visao nova
-                out.add(ReplicaAction.finalizeBlock(view, block));
+                out.add(ReplicaAction.newView(view, state.getPrepareQc()));
                 break;
             default:
                 throw new IllegalStateException("fase inesperada: " + m.getPhase());
         }
+    }
+
+    /**
+     * Finaliza o ramo do DECIDE: ancestrais ainda nao finalizados (do mais baixo ao mais alto) e depois o proprio
+     * bloco. Sem troca de visao so o proprio bloco (o pai ja esta finalizado). O ramo tem de estender o bloco ja
+     * finalizado; senao seria violacao de seguranca (dois ramos finalizados) e falha alto.
+     */
+    private void finalizeBranch(long view, HotStuffBlock block, List<ReplicaAction> out) {
+        Optional<HotStuffBlock> done = state.getHighestFinalized();
+        int floor = done.map(HotStuffBlock::getHeight).orElse(0);
+        ParentLookup lookup = blocks.lookupFor(block);
+        Deque<HotStuffBlock> ancestors = new ArrayDeque<>(); // do mais baixo ao mais alto, sem o proprio bloco
+        HotStuffBlock cur = block;
+        while (cur.getHeight() > floor) {
+            Optional<HotStuffBlock> parent = lookup.parentOf(cur);
+            if (parent.isEmpty()) {
+                throw new IllegalStateException("ramo do DECIDE da visao " + view + " desconectado na altura "
+                        + cur.getHeight() + " (bloco admitido deveria ter ascendencia conhecida)");
+            }
+            cur = parent.get();
+            if (cur.getHeight() > floor) {
+                ancestors.addFirst(cur);
+            }
+        }
+        if (done.isPresent() && cur != done.get()) {
+            throw new IllegalStateException("violacao de seguranca: DECIDE da visao " + view
+                    + " em ramo que nao estende o bloco finalizado (altura " + floor + ")");
+        }
+        for (HotStuffBlock ancestor : ancestors) {
+            state.finalizeBlock(ancestor);
+            out.add(ReplicaAction.finalizeAncestor(view, ancestor));
+        }
+        state.finalizeBlock(block); // DECIDE repetido do mesmo bloco e no-op; altura que regride lanca
+        out.add(ReplicaAction.finalizeBlock(view, block));
     }
 }

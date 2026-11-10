@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.LongSupplier;
 
 /**
  * Nucleo de decisao do LADO DO LIDER do caminho honesto do HotStuff basico (Yin, Malkhi, Reiter, Gueta, Abraham,
@@ -91,10 +92,34 @@ import java.util.Optional;
  *   <li><b>Nada some em silencio.</b> Voto/NEW_VIEW rejeitado incrementa um {@link DiscardReason}.</li>
  * </ul>
  *
+ * <h3>Visao abandonada pela replica (D3a-2a-2c-3, rodada 2)</h3>
+ * Artigo (Yin et al., arXiv:1803.05069, secao 4.3, texto logo antes do Algoritmo 1): <i>"A nextView interrupt aborts
+ * all operations in any as block, and jumps to the 'Finally' block."</i>; Algoritmo 2, linhas 41-43 ("Finally",
+ * "nextView interrupt: goto this line if nextView(curView) is called during 'wait for' in any phase", "send
+ * Msg(new-view, bottom, prepareQC) to leader(curView+1)"). Os papeis leader e replica dividem o mesmo {@code curView}
+ * (um no e as duas coisas): quando {@code curView} passa de T, o bloco "as a leader" da visao T e abortado, seja ele
+ * a espera dos NEW_VIEW (linha 5) ou a espera dos votos (linhas 16, 25, 34). Este nucleo nao conhece relogio nem
+ * rede, entao le a visao corrente da PROPRIA replica por um ponto de leitura injetado ({@link LongSupplier}, somente
+ * leitura, monotono). Regra exata, com {@code R} = visao corrente da replica deste no:
+ * <ul>
+ *   <li><b>NEW_VIEW para T:</b> {@code R > T} = visao abandonada: descartado e contado em
+ *       {@link DiscardReason#LEADER_VIEW_ABANDONED}, e NAO e armazenado (nao entra no agregador; nunca completa
+ *       quorum). {@code R == T} ou {@code R < T} NAO e abandono e segue o fluxo normal: os NEW_VIEW de T sao enviados
+ *       por replicas que terminam T-1, e a replica deste lider pode terminar T-1 depois delas. A checagem vem DEPOIS
+ *       de "visao ja iniciada" (que continua UNNEEDED_NEW_VIEW): o regime sem timeout nao muda de contador.</li>
+ *   <li><b>Voto da visao V:</b> {@code R > V} e o voto seria o que conta para o quorum da fase pendente: descartado e
+ *       contado em {@code LEADER_VIEW_ABANDONED} ANTES de entrar no agregador, entao nenhuma fase nova (PRE_COMMIT,
+ *       COMMIT, DECIDE) sai de visao abandonada. Voto de fase ja concluida continua LATE_VOTE (a ordem das checagens
+ *       existentes e preservada). Votos ja agregados antes do abandono ficam inertes: o QC so se forma na chamada que
+ *       completa o quorum, e essa e recusada.</li>
+ *   <li>Nao ha estado novo de "abandonada" no lider: {@code R} e monotono, entao a condicao e consultada a cada
+ *       entrada. Seguranca ({@code safeNode}/{@code lockedQC}) e da replica e nao muda.</li>
+ * </ul>
+ *
  * <p><b>Memoria:</b> um {@code ViewState} por visao conduzida por este no, sem poda (limitado pelo horizonte
  * simulado e por 1/n das visoes); os agregadores guardam um balde por (fase, visao, bloco) e por visao de NEW_VIEW.
  * <b>Limites declarados (nao tratados aqui):</b> sincronizacao de blocos faltantes (se o lider nao tem o bloco do
- * highQC, a propria replica local o contara como UNKNOWN_PARENT) e troca de visao por timeout (2c-3).
+ * highQC, a propria replica local o contara como UNKNOWN_PARENT) e o catch-up de visao (a troca de visao por timeout existe e e tratada acima).
  */
 public final class LeaderCore {
     /** Ultima fase JA difundida na visao; os ordinais coincidem com {@link HotStuffVote.Phase}. */
@@ -119,6 +144,7 @@ public final class LeaderCore {
     private final VoteAggregator<HotStuffBlock> votes;
     private final NewViewAggregator newViews;
     private final DiscardCounters discards;
+    private final LongSupplier replicaView;
     private final int quorum;
     private final Map<Long, ViewState> views = new LinkedHashMap<>();
     private long highestStarted = -1L;
@@ -134,15 +160,17 @@ public final class LeaderCore {
      * @param votes agregador de votos (o do dono, para que as consultas existentes continuem validas)
      * @param newViews agregador de NEW_VIEW (idem)
      * @param discards contadores de descarte (os mesmos do {@link ReplicaCore} do mesmo no)
+     * @param replicaView leitura (somente leitura) da visao corrente da REPLICA deste mesmo no; obrigatorio, sem
+     *                    padrao: esquecer de injetar desligaria a regra de visao abandonada em silencio
      * @throws IllegalArgumentException se algum objeto for nulo, {@code n} &lt; 4, {@code ownId} fora de [0, n) ou
      *                                  {@code initialView} &lt; 0
      */
     public LeaderCore(int n, int ownId, long initialView, ViewLeaders leaders, HotStuffConsensusConfig config,
                       HotStuffBlock genesis, BlockProposer proposer, VoteAggregator<HotStuffBlock> votes,
-                      NewViewAggregator newViews, DiscardCounters discards) {
+                      NewViewAggregator newViews, DiscardCounters discards, LongSupplier replicaView) {
         if (leaders == null || config == null || genesis == null || proposer == null || votes == null
-                || newViews == null || discards == null) {
-            throw new IllegalArgumentException("leaders, config, genesis, proposer, votes, newViews e discards sao obrigatorios");
+                || newViews == null || discards == null || replicaView == null) {
+            throw new IllegalArgumentException("leaders, config, genesis, proposer, votes, newViews, discards e replicaView sao obrigatorios");
         }
         this.quorum = HotStuffConsensusConfig.quorumSize(n); // lanca IllegalArgumentException se n < 4
         if (ownId < 0 || ownId >= n) {
@@ -161,6 +189,7 @@ public final class LeaderCore {
         this.votes = votes;
         this.newViews = newViews;
         this.discards = discards;
+        this.replicaView = replicaView;
     }
 
     public DiscardCounters discards() { return discards; }
@@ -179,7 +208,8 @@ public final class LeaderCore {
      * contada: id fora de [0,n) (SENDER_OUT_OF_RANGE); este no nao e o lider de {@code targetView}
      * (NOT_VIEW_LEADER); QC na visao inicial (la so ha bottom), ou de fase diferente de PREPARE, de visao
      * &gt;= {@code targetView} ou de outro n (INCOHERENT_QC); visao ja iniciada, ou menor que a mais alta iniciada (UNNEEDED_NEW_VIEW: nao pode mais mudar
-     * o highQC); remetente repetido (DUPLICATE_NEW_VIEW). Ao completar {@code n-f} NEW_VIEW distintos, propoe
+     * o highQC); visao que a propria replica ja abandonou, {@code replicaView > targetView}
+     * (LEADER_VIEW_ABANDONED; {@code ==} e {@code <} NAO sao abandono); remetente repetido (DUPLICATE_NEW_VIEW). Ao completar {@code n-f} NEW_VIEW distintos, propoe
      * PREPARE com o highQC deles.
      *
      * @return acoes a executar (vazia, ou um PREPARE)
@@ -205,6 +235,10 @@ public final class LeaderCore {
             discards.count(DiscardReason.UNNEEDED_NEW_VIEW);
             return out;
         }
+        if (replicaView.getAsLong() > targetView) { // nextView ja abortou o bloco de lider desta visao: nao armazena
+            discards.count(DiscardReason.LEADER_VIEW_ABANDONED);
+            return out;
+        }
         if (!newViews.add(targetView, senderId, prepareQc)) {
             discards.count(DiscardReason.DUPLICATE_NEW_VIEW);
             return out;
@@ -220,7 +254,8 @@ public final class LeaderCore {
      * contada: id fora de [0,n) (SENDER_OUT_OF_RANGE); este no nao conduz a visao do voto (NOT_VIEW_LEADER); a
      * visao ainda nao foi iniciada aqui (VOTE_VIEW_NOT_STARTED); bloco diferente do curProposal da visao
      * (VOTE_WRONG_BLOCK); fase que ainda nao foi difundida (VOTE_PHASE_OUT_OF_ORDER); fase cujo QC ja foi formado
-     * (LATE_VOTE); voto repetido (DUPLICATE_VOTE). Quando os votos distintos da fase chegam a {@code n-f}, forma o
+     * (LATE_VOTE); visao que a propria replica ja abandonou, {@code replicaView > view}
+     * (LEADER_VIEW_ABANDONED, antes de agregar); voto repetido (DUPLICATE_VOTE). Quando os votos distintos da fase chegam a {@code n-f}, forma o
      * QC e devolve a difusao da fase seguinte.
      *
      * @return acoes a executar (vazia, ou a proxima fase)
@@ -256,6 +291,10 @@ public final class LeaderCore {
         }
         if (st.sent.ordinal() > phase.ordinal()) {
             discards.count(DiscardReason.LATE_VOTE);
+            return out;
+        }
+        if (replicaView.getAsLong() > view) { // nextView abortou a espera de votos: nao agrega, logo nao forma QC
+            discards.count(DiscardReason.LEADER_VIEW_ABANDONED);
             return out;
         }
         if (!votes.add(vote)) {

@@ -10,6 +10,10 @@ package jabs.consensus.config;
  * {@link Builder} (o {@code build()} falha com {@link IllegalStateException} se faltar algum). Sao eles:
  * <ul>
  *   <li>{@code viewTimeoutSeconds}: a definir com o humano (o artigo nao fixa valor).</li>
+ *   <li>{@code maxFutureViewHorizon}: quantas visoes ALEM da visao corrente da replica ainda aceitam retencao de
+ *       proposta de visao futura (defesa de memoria contra lider bizantino de visao futura; ver {@code ReplicaCore}).
+ *       <b>Valor de producao: a definir com o humano</b> (o artigo nao fixa; nenhum valor foi calibrado). Sem padrao;
+ *       obrigatorio e {@code > 0}. Valores em testes sao fixtures de teste, nao de pesquisa.</li>
  *   <li>{@code batchSize}: derivavel do spec oficial por {@link #batchSizeFor(int, int)}
  *       (.experimento/bateria1.yaml: tamanho_bloco_kb=1024, tamanho_tx_bytes=512 -&gt; 2048);
  *       o valor final continua sendo escolha explicita de quem constroi.</li>
@@ -62,6 +66,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
     private final SignatureMode signatureMode;
     private final VoterEncoding voterEncoding;
     private final double viewTimeoutSeconds;
+    private final long maxFutureViewHorizon;
     private final int batchSize;
     private final int txSizeBytes;
     private final int individualSignatureSizeBytes;
@@ -80,6 +85,11 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         requireSet(b.individualSignatureSizeBytes, "individualSignatureSizeBytes");
         requireSet(b.aggregatedSignatureSizeBytes, "aggregatedSignatureSizeBytes");
         requireSet(b.aggregatedShareSizeBytes, "aggregatedShareSizeBytes");
+        requireSet(b.maxFutureViewHorizon,
+                "maxFutureViewHorizon (horizonte de visoes futuras retidas; valor de producao a definir com o humano)");
+        if (b.maxFutureViewHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureViewHorizon deve ser > 0: " + b.maxFutureViewHorizon);
+        }
         if (!(b.viewTimeoutSeconds > 0.0) || Double.isInfinite(b.viewTimeoutSeconds)) {
             throw new IllegalArgumentException("viewTimeoutSeconds deve ser finito e > 0: " + b.viewTimeoutSeconds);
         }
@@ -103,6 +113,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         this.signatureMode = b.signatureMode;
         this.voterEncoding = b.voterEncoding;
         this.viewTimeoutSeconds = b.viewTimeoutSeconds;
+        this.maxFutureViewHorizon = b.maxFutureViewHorizon;
         this.batchSize = b.batchSize;
         this.txSizeBytes = b.txSizeBytes;
         this.individualSignatureSizeBytes = b.individualSignatureSizeBytes;
@@ -229,6 +240,8 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
     public SignatureMode getSignatureMode() { return signatureMode; }
     public VoterEncoding getVoterEncoding() { return voterEncoding; }
     public double getViewTimeoutSeconds() { return viewTimeoutSeconds; }
+    /** Horizonte maximo de visoes futuras aceitas para retencao (&gt; 0; sem padrao; a definir com o humano). */
+    public long getMaxFutureViewHorizon() { return maxFutureViewHorizon; }
     public int getBatchSize() { return batchSize; }
     public int getTxSizeBytes() { return txSizeBytes; }
     public int getIndividualSignatureSizeBytes() { return individualSignatureSizeBytes; }
@@ -241,6 +254,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         private SignatureMode signatureMode = DEFAULT_SIGNATURE_MODE;
         private VoterEncoding voterEncoding; // sem padrao: a definir com o humano
         private Double viewTimeoutSeconds;
+        private Long maxFutureViewHorizon; // sem padrao: a definir com o humano
         private Integer batchSize;
         private Integer txSizeBytes;
         private Integer individualSignatureSizeBytes;
@@ -254,6 +268,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         public Builder signatureMode(SignatureMode v) { this.signatureMode = v; return this; }
         public Builder voterEncoding(VoterEncoding v) { this.voterEncoding = v; return this; }
         public Builder viewTimeoutSeconds(double v) { this.viewTimeoutSeconds = v; return this; }
+        public Builder maxFutureViewHorizon(long v) { this.maxFutureViewHorizon = v; return this; }
         public Builder batchSize(int v) { this.batchSize = v; return this; }
         public Builder txSizeBytes(int v) { this.txSizeBytes = v; return this; }
         public Builder individualSignatureSizeBytes(int v) { this.individualSignatureSizeBytes = v; return this; }
@@ -265,7 +280,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
          * Constroi a configuracao.
          *
          * @return configuracao imutavel
-         * @throws IllegalStateException se timeout de visao, lote, tamanhos de assinatura ou codificacao dos votantes nao foram informados
+         * @throws IllegalStateException se timeout de visao, horizonte de visoes futuras, lote, tamanhos de assinatura ou codificacao dos votantes nao foram informados
          * @throws IllegalArgumentException se algum valor for invalido
          */
         public HotStuffConsensusConfig build() {

@@ -19,9 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Retencao do {@link ReplicaCore}: SEM teto de contagem. Uma replica atrasada por muitas visoes retem tudo, sem lancar
- * e sem perder proposta honesta, e processa as retidas na ordem (visao, fase) quando a visao alcanca. A retencao e
- * observavel por {@code pendingSize()} e {@code peakPending()}.
+ * Retencao do {@link ReplicaCore}. Dentro do horizonte de visoes futuras uma replica atrasada retem tudo, sem lancar e
+ * sem perder proposta honesta, e processa as retidas na ordem (visao, fase) quando a visao alcanca. Alem do horizonte
+ * a mensagem e descartada, contada e NAO armazenada (defesa de memoria contra lider bizantino de visao futura). A
+ * retencao e observavel por {@code pendingSize()} e {@code peakPending()}. Os horizontes usados aqui sao fixtures de
+ * teste, nao valores de producao (a definir com o humano).
  */
 class ReplicaCoreRetentionTest {
 
@@ -46,10 +48,17 @@ class ReplicaCoreRetentionTest {
     private ReplicaCore core;
     private int n;
 
+    /** Horizonte de FIXTURE DE TESTE (nao e valor de producao; a definir com o humano): nao e atingido nos testes de "sem perda". */
+    private static final long HORIZONTE_FIXTURE_LARGO = 1_000_000L;
+
     private void monta(int n) {
+        monta(n, HORIZONTE_FIXTURE_LARGO);
+    }
+
+    private void monta(int n, long horizonte) {
         this.n = n;
         this.state = new ReplicaState<>(0L);
-        this.core = new ReplicaCore(n, new ViewLeaders(cfg, n), state, access, discards);
+        this.core = new ReplicaCore(n, new ViewLeaders(cfg, n), state, access, discards, horizonte);
     }
 
     private Node leader(long view) {
@@ -179,9 +188,13 @@ class ReplicaCoreRetentionTest {
     @Test
     void construtorValidaArgumentos() {
         assertThrows(IllegalArgumentException.class, () -> new ReplicaCore(4, new ViewLeaders(cfg, 4),
-                new ReplicaState<>(0L), access, null));
+                new ReplicaState<>(0L), access, null, 10L));
         assertThrows(IllegalArgumentException.class, () -> new ReplicaCore(3, new ViewLeaders(cfg, 4),
-                new ReplicaState<>(0L), access, discards));
+                new ReplicaState<>(0L), access, discards, 10L));
+        assertThrows(IllegalArgumentException.class, () -> new ReplicaCore(4, new ViewLeaders(cfg, 4),
+                new ReplicaState<>(0L), access, discards, 0L), "horizonte sem padrao e > 0");
+        assertThrows(IllegalArgumentException.class, () -> new ReplicaCore(4, new ViewLeaders(cfg, 4),
+                new ReplicaState<>(0L), access, discards, -1L));
     }
 
     // ---------- muitas visoes futuras: sem teto ----------
@@ -212,11 +225,14 @@ class ReplicaCoreRetentionTest {
         acoes.addAll(core.onLeaderMessage(msg(Phase.PREPARE, 0, b.get(0)))); // a visao alcanca
 
         List<ReplicaAction> esperadas = new ArrayList<>();
+        assertTrue(acoes.stream().filter(a -> a.kind() == ReplicaAction.Kind.NEW_VIEW).count() == visoes);
         for (int v = 0; v < visoes; v++) {
             esperadas.add(ReplicaAction.vote(HotStuffVote.Phase.PREPARE, v, b.get(v)));
             esperadas.add(ReplicaAction.vote(HotStuffVote.Phase.PRE_COMMIT, v, b.get(v)));
             esperadas.add(ReplicaAction.vote(HotStuffVote.Phase.COMMIT, v, b.get(v)));
             esperadas.add(ReplicaAction.finalizeBlock(v, b.get(v)));
+            // o NEW_VIEW leva a fotografia do prepareQC no instante do DECIDE da visao v (nao o de uma retida seguinte)
+            esperadas.add(ReplicaAction.newView(v, snapshotPrepareQc(acoes, v)));
         }
         assertEquals(esperadas, acoes, "todas as retidas processadas na ordem (visao, fase)");
         assertEquals(visoes, state.getCurrentView());
@@ -224,5 +240,138 @@ class ReplicaCoreRetentionTest {
         assertEquals(esperadoRetidas, core.peakPending(), "o pico guarda o maximo");
         assertEquals(0, discards.total(), "nenhum descarte, nenhuma perda");
         assertEquals(b.subList(0, visoes), access.admitted);
+    }
+
+    /** O prepareQC que o NEW_VIEW da visao {@code v} efetivamente carregou (o teste confere o resto, nao o QC). */
+    private static java.util.Optional<jabs.ledgerdata.hotstuff.HotStuffQuorumCertificate> snapshotPrepareQc(
+            List<ReplicaAction> acoes, long v) {
+        for (ReplicaAction a : acoes) {
+            if (a.kind() == ReplicaAction.Kind.NEW_VIEW && a.view() == v) {
+                assertTrue(a.qc().isPresent(), "DECIDE exige prepareQC");
+                assertEquals(v, a.qc().get().getView(), "NEW_VIEW da visao v leva o prepareQC DA visao v, nunca o de v+1");
+                return a.qc();
+            }
+        }
+        throw new AssertionError("sem NEW_VIEW da visao " + v);
+    }
+
+    // ---------- horizonte de visoes futuras (fixtures de teste) ----------
+
+    @Test
+    void visaoNoLimiteDoHorizonteEReretidaEAlemDeleEDescartadaContadaESemArmazenar() {
+        monta(4, 3L); // fixture de teste
+        List<HotStuffBlock> b = cadeia(6);
+        core.onLeaderMessage(msg(Phase.PREPARE, 3, b.get(3))); // corrente 0 + 3: dentro
+        assertEquals(1, core.pendingSize());
+        assertEquals(0, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON));
+        core.onLeaderMessage(msg(Phase.PREPARE, 4, b.get(4))); // corrente 0 + 4 > 3: fora
+        core.onLeaderMessage(msg(Phase.PRE_COMMIT, 5, b.get(5)));
+        assertEquals(1, core.pendingSize(), "o descarte nao ocupa a retencao");
+        assertEquals(1, core.peakPending());
+        assertEquals(2, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON));
+        assertEquals(2, discards.total(), "nada descartado sem ser contado, so esse motivo");
+    }
+
+    @Test
+    void horizonteAcompanhaAVisaoCorrente() {
+        monta(4, 2L);
+        List<HotStuffBlock> b = cadeia(10);
+        core.onLeaderMessage(msg(Phase.PREPARE, 3, b.get(3)));
+        assertEquals(0, core.pendingSize());
+        assertEquals(1, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON), "3 > 0 + 2");
+        state.advanceView(5);
+        core.onLeaderMessage(msg(Phase.PREPARE, 7, b.get(7))); // 5 + 2: dentro
+        core.onLeaderMessage(msg(Phase.PREPARE, 8, b.get(8))); // 5 + 3: fora
+        assertEquals(1, core.pendingSize());
+        assertEquals(2, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON));
+    }
+
+    @Test
+    void visaoAlemDoHorizonteNaoViraOldViewNemDuplicata() {
+        monta(4, 1L);
+        List<HotStuffBlock> b = cadeia(5);
+        core.onLeaderMessage(msg(Phase.PREPARE, 4, b.get(4)));
+        core.onLeaderMessage(msg(Phase.PREPARE, 4, b.get(4)));
+        assertEquals(2, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON));
+        assertEquals(0, discards.get(DiscardReason.DUPLICATE_PENDING));
+        assertEquals(0, discards.get(DiscardReason.OLD_VIEW));
+    }
+
+    @Test
+    void visaoGiganteNaoEstouraNemRetem() {
+        monta(4, 5L);
+        HotStuffBlock b = tree.child(tree.genesis());
+        long enorme = Long.MAX_VALUE - 3; // lider = enorme % n via ViewLeaders; msg() usa a mesma conta
+        core.onLeaderMessage(msg(Phase.PREPARE, enorme, b));
+        assertEquals(0, core.pendingSize());
+        assertEquals(1, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1L, 3L, 8L})
+    void liderBizantinoDeVisaoFuturaComMuitasVisoesAltasNaoInflaAMemoriaAlemDaCota(long horizonte) {
+        monta(4, horizonte); // fixture de teste
+        int visoes = 5_000; // bem alem de qualquer horizonte testado
+        List<HotStuffBlock> b = cadeia(visoes);
+        // no 1 e lider das visoes 1, 5, 9, ...: envia as 4 fases coerentes de cada uma, da menor para a maior
+        long emitidas = 0;
+        for (int v = 1; v < visoes; v += 4) {
+            for (Phase f : Phase.values()) {
+                core.onLeaderMessage(msg(f, v, b.get(v)));
+                emitidas++;
+            }
+        }
+        long cota = 4 * (horizonte + 1) - 1;
+        assertTrue(core.pendingSize() <= cota, "pendingSize=" + core.pendingSize() + " cota=" + cota);
+        assertTrue(core.peakPending() <= cota, "peakPending=" + core.peakPending() + " cota=" + cota);
+        assertTrue(core.peakPending() < emitidas / 10, "bem menos que o enviado: nao cresce com as visoes do atacante");
+        assertEquals(emitidas, core.pendingSize() + discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON),
+                "cada mensagem ou esta retida ou foi descartada e contada");
+    }
+
+    @Test
+    void liderBizantinoNaoInflaAMemoriaMesmoEnquantoAReplicaAvanca() {
+        monta(4, 4L); // fixture de teste
+        List<HotStuffBlock> b = cadeia(400);
+        long cota = 4 * (4 + 1) - 1;
+        for (int v = 1; v < 400; v += 4) { // visao do no 1
+            state.advanceView(Math.max(state.getCurrentView(), (v / 4) * 2L)); // a replica anda mais devagar que o atacante
+            for (Phase f : Phase.values()) {
+                core.onLeaderMessage(msg(f, v, b.get(v)));
+            }
+            assertTrue(core.pendingSize() <= cota);
+        }
+        assertTrue(core.peakPending() <= cota);
+        assertTrue(discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON) > 0);
+    }
+
+    @Test
+    void replicaAtrasadaAlemDoHorizonteDeixaDeVerAsPropostasForaDelaECustoEHonesto() {
+        monta(4, 2L); // fixture de teste
+        List<HotStuffBlock> b = cadeia(6);
+        // lider honesto ja esta na visao 4; a replica ainda esta na 0 e perde 3 e 4 (fora do horizonte), retem 1 e 2
+        for (int v = 4; v >= 1; v--) {
+            core.onLeaderMessage(msg(Phase.PREPARE, v, b.get(v)));
+        }
+        assertEquals(2, core.pendingSize());
+        assertEquals(2, discards.get(DiscardReason.FUTURE_VIEW_BEYOND_HORIZON));
+        // a visao 0 chega: processa 0, 1, 2? So processa quem tem as fases seguintes; aqui so ha PREPARE retidos
+        List<ReplicaAction> a = core.onLeaderMessage(msg(Phase.PREPARE, 0, b.get(0)));
+        assertEquals(1, a.size(), "so o PREPARE da visao 0; o das visoes 1 e 2 espera as fases seguintes");
+        assertEquals(2, core.pendingSize());
+        assertEquals(List.of(b.get(0)), access.admitted, "as propostas 3 e 4 perdidas nunca chegam: sem catch-up");
+    }
+
+    @Test
+    void semDefesaOHorizonteDeUmCenarioHonestoDentroDoLimiteNaoPerdeNada() {
+        monta(4, 4L); // fixture de teste
+        List<HotStuffBlock> b = cadeia(4);
+        for (int v = 3; v >= 1; v--) {
+            for (Phase f : Phase.values()) {
+                core.onLeaderMessage(msg(f, v, b.get(v)));
+            }
+        }
+        assertEquals(12, core.pendingSize());
+        assertEquals(0, discards.total());
     }
 }

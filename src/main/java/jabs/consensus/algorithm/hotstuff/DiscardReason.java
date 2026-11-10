@@ -3,8 +3,9 @@ package jabs.consensus.algorithm.hotstuff;
 /**
  * Motivo pelo qual uma replica NAO agiu sobre uma mensagem do HotStuff. Toda mensagem ignorada incrementa o
  * contador do seu motivo (nunca ha descarte em silencio). Aqui so entram descartes que NAO mudam o resultado do
- * protocolo (mensagem que nao pode produzir efeito, duplicada ou invalida); perder uma proposta honesta valida
- * (retencao cheia) nao e descarte: {@code ReplicaCore} lanca {@link IllegalStateException}. O estado da replica (visao, prepareQC, lockedQC, bloco
+ * protocolo (mensagem que nao pode produzir efeito, duplicada ou invalida); uma proposta
+ * alem do horizonte de visoes futuras e descartada e contada em {@link #FUTURE_VIEW_BEYOND_HORIZON} (defesa de
+ * memoria, com perda possivel declarada no {@code ReplicaCore}). O estado da replica (visao, prepareQC, lockedQC, bloco
  * finalizado, arvore local) e os votos NAO mudam por causa de uma mensagem descartada.
  */
 public enum DiscardReason {
@@ -53,5 +54,25 @@ public enum DiscardReason {
      * NEW_VIEW para visao que o lider ja iniciou ou que dispensa NEW_VIEW (a visao inicial); chegou depois de o
      * quorum ter sido usado, entao nao pode mais mudar o highQC da proposta.
      */
-    UNNEEDED_NEW_VIEW
+    UNNEEDED_NEW_VIEW,
+    /**
+     * Evento de timeout de visao cuja visao a replica ja deixou (avancou por DECIDE ou por outro timeout). Nao e erro:
+     * o timer de cada visao nao e cancelado (mesmo estilo do Tendermint); o evento obsoleto e filtrado e contado. No
+     * regime honesto cada visao deixa um destes, entao o contador cresce com o numero de visoes.
+     */
+    STALE_VIEW_TIMEOUT,
+    /**
+     * NEW_VIEW ou voto para uma visao que a PROPRIA replica deste no (lider) ja abandonou ({@code replicaView >
+     * visao}). Artigo (Yin et al., secao 4.3): o nextView interrupt aborta as operacoes de qualquer bloco "as", o do
+     * lider inclusive. Descartado sem armazenar: nao completa quorum e nao inicia nem avanca proposta. So conta
+     * {@code replicaView > visao}; igual ou menor nao e abandono.
+     */
+    LEADER_VIEW_ABANDONED,
+    /**
+     * Mensagem do lider cuja visao excede a visao corrente da replica somada ao horizonte configurado
+     * ({@code maxFutureViewHorizon}). Descartada SEM armazenar (nao ocupa a retencao). Defesa contra lider bizantino
+     * de visao futura; custo declarado: uma replica atrasada mais que o horizonte perde as propostas alem dele (nao
+     * ha retransmissao nem catch-up). O valor do horizonte e a definir com o humano.
+     */
+    FUTURE_VIEW_BEYOND_HORIZON
 }
