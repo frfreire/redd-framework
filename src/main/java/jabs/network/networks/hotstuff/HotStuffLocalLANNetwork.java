@@ -1,5 +1,6 @@
 package jabs.network.networks.hotstuff;
 
+import jabs.config.ByzantineConfig;
 import jabs.consensus.config.ConsensusAlgorithmConfig;
 import jabs.consensus.config.HotStuffConsensusConfig;
 import jabs.network.networks.Network;
@@ -66,6 +67,34 @@ public class HotStuffLocalLANNetwork extends Network<HotStuffNode, SingleNodeTyp
 
         for (Node node : this.getAllNodes()) {
             node.getP2pConnections().connectToNetwork(this);
+        }
+    }
+
+    /**
+     * Injeta a MESMA {@link ByzantineConfig} em todos os nos (D3a-2a-2d-1). Cada no precisa saber quem e bizantino
+     * (pre-condicao de destinatarios honestos do ataque); so os ids da config agem como bizantinos. Ataque que o
+     * HotStuff nao implementa (so {@code EQUIVOCATION}) falha alto com {@link UnsupportedOperationException}, sem
+     * deixar a config gravada. Deve ser chamado depois de {@link #populateNetwork} e antes de
+     * {@link #startConsensusRound}. A escolha do conjunto bizantino e do cenario/experimento, nao daqui.
+     *
+     * @throws IllegalArgumentException se a config for nula ou incoerente com o tamanho da rede
+     */
+    public void applyByzantineConfig(ByzantineConfig byzantineConfig) {
+        if (byzantineConfig == null) {
+            throw new IllegalArgumentException("ByzantineConfig obrigatorio (nao chame para o cenario sem ataque)");
+        }
+        int n = this.getAllNodes().size();
+        if (byzantineConfig.getTotalValidators() != n) {
+            throw new IllegalArgumentException("ByzantineConfig.totalValidators=" + byzantineConfig.getTotalValidators()
+                    + " difere do tamanho da rede n=" + n);
+        }
+        for (int id : byzantineConfig.getByzantineValidatorIds()) {
+            if (id < 0 || id >= n) {
+                throw new IllegalArgumentException("id bizantino fora de [0," + n + "): " + id);
+            }
+        }
+        for (HotStuffNode node : this.getAllNodes()) {
+            node.getConsensusAlgorithm().setByzantineConfig(byzantineConfig);
         }
     }
 

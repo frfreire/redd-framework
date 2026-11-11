@@ -1,5 +1,6 @@
 package jabs.scenario;
 
+import jabs.config.ByzantineConfig;
 import jabs.consensus.config.HotStuffConsensusConfig;
 import jabs.log.EnhancedBlockFinalizationLogger;
 import jabs.metrics.SimulationMetrics;
@@ -17,7 +18,16 @@ import java.util.Set;
  * chama {@code start()} (NEW_VIEW inicial) e o protocolo se autossustenta: cada DECIDE leva ao NEW_VIEW da visao
  * seguinte. A retencao de propostas de visao futura usa {@code maxFutureViewHorizon} do config (obrigatorio; valor de
  * producao a definir com o humano; este cenario nao o escolhe). Cada no arma um timer por visao (troca de visao por timeout, 2c-3; {@code viewTimeoutSeconds} do config).
- * NAO ha ataque bizantino (2d): sem {@code ByzantineConfig}.
+ * Ataque bizantino so por {@link ByzantineConfig} opcional (abaixo); sem ele o cenario e o honesto de sempre.
+ *
+ * <p><b>Bizantinos (D3a-2a-2d-1).</b> Opcional: um {@link ByzantineConfig} com conjunto EXPLICITO de ids (terceiro
+ * construtor de {@code ByzantineConfig}) e injetado em TODOS os nos por {@code HotStuffLocalLANNetwork#applyByzantineConfig},
+ * que falha alto para ataque que o HotStuff nao implementa (so {@code EQUIVOCATION}). Todos os nos recebem a mesma
+ * config para que cada um saiba quem e bizantino (pre-condicao de destinatarios honestos do ataque e metrica de BFT);
+ * so os ids da config agem como bizantinos. O SORTEIO do conjunto (universo, gerador, aninhamento entre valores de
+ * f) NAO esta aqui: depende de ADR-0010 PI-13 / ADR-0015 Q30, ainda {@code a definir com o humano}. A particao, a
+ * abrangencia e a coordenacao do ataque sao PROVISORIAS (ADR-0015 Q28; ver {@code HotStuff}). Sem config (ou
+ * {@code null}) a saida e identica a anterior. Sem flag no {@code MVPComparison} (tarefa 2d-2).
  *
  * <p><b>Nos em crash (2c-3).</b> O conjunto explicito {@code crashedNodeIds} (default vazio: comportamento anterior,
  * saida identica) poe esses nos em CRASH desde o inicio ({@code Node#crash()}) e nao os inicia. E falha por crash
@@ -32,6 +42,7 @@ public class HotStuffLANScenario extends AbstractScenario {
     private final HotStuffConsensusConfig config;
     private final SimulationMetrics metrics;
     private final Set<Integer> crashedNodeIds;
+    private final ByzantineConfig byzantineConfig;
 
     public HotStuffLANScenario(String name, long seed, int numNodes, double simulationStopTime,
                                HotStuffConsensusConfig config) {
@@ -44,6 +55,17 @@ public class HotStuffLANScenario extends AbstractScenario {
      */
     public HotStuffLANScenario(String name, long seed, int numNodes, double simulationStopTime,
                                HotStuffConsensusConfig config, Set<Integer> crashedNodeIds) {
+        this(name, seed, numNodes, simulationStopTime, config, crashedNodeIds, null);
+    }
+
+    /**
+     * @param byzantineConfig config com ids explicitos em [0, numNodes) e {@code totalValidators == numNodes}, ou
+     *                        {@code null} para o cenario sem ataque (comportamento anterior, mesma saida)
+     * @throws IllegalArgumentException se a config for incoerente com {@code numNodes}
+     */
+    public HotStuffLANScenario(String name, long seed, int numNodes, double simulationStopTime,
+                               HotStuffConsensusConfig config, Set<Integer> crashedNodeIds,
+                               ByzantineConfig byzantineConfig) {
         super(name, seed);
         if (config == null) {
             throw new IllegalArgumentException("HotStuffConsensusConfig obrigatorio");
@@ -60,12 +82,27 @@ public class HotStuffLANScenario extends AbstractScenario {
                 throw new IllegalArgumentException("id em crash fora de [0," + numNodes + "): " + id);
             }
         }
+        if (byzantineConfig != null) {
+            if (byzantineConfig.getTotalValidators() != numNodes) {
+                throw new IllegalArgumentException("ByzantineConfig.totalValidators=" + byzantineConfig.getTotalValidators()
+                        + " difere de numNodes=" + numNodes);
+            }
+            for (int id : byzantineConfig.getByzantineValidatorIds()) {
+                if (id < 0 || id >= numNodes) {
+                    throw new IllegalArgumentException("id bizantino fora de [0, " + numNodes + "): " + id);
+                }
+            }
+        }
+        this.byzantineConfig = byzantineConfig;
         this.crashedNodeIds = Set.copyOf(crashedNodeIds);
         this.numNodes = numNodes;
         this.simulationStopTime = simulationStopTime;
         this.config = config;
         this.metrics = new SimulationMetrics();
         this.metrics.setTotalValidators(numNodes);
+        if (byzantineConfig != null) {
+            this.metrics.setByzantineValidators(byzantineConfig.getByzantineCount());
+        }
         this.metrics.setConsensusType(SimulationMetrics.ConsensusType.VOTING);
     }
 
@@ -74,6 +111,10 @@ public class HotStuffLANScenario extends AbstractScenario {
         HotStuffLocalLANNetwork hotStuffNetwork = new HotStuffLocalLANNetwork(randomnessEngine);
         this.network = hotStuffNetwork;
         hotStuffNetwork.populateNetwork(this.simulator, this.numNodes, this.config);
+        if (this.byzantineConfig != null) {
+            // Sem try/catch: ataque que o HotStuff nao implementa falha alto aqui.
+            hotStuffNetwork.applyByzantineConfig(this.byzantineConfig);
+        }
     }
 
     @Override
@@ -98,6 +139,11 @@ public class HotStuffLANScenario extends AbstractScenario {
 
     public Set<Integer> getCrashedNodeIds() {
         return crashedNodeIds;
+    }
+
+    /** Config bizantina injetada, ou {@code null} no cenario sem ataque. */
+    public ByzantineConfig getByzantineConfig() {
+        return byzantineConfig;
     }
 
     public int getNumNodes() {

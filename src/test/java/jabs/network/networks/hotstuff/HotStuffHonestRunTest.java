@@ -299,13 +299,20 @@ class HotStuffHonestRunTest {
     // ---------- (vi) sem ataque suportado ----------
 
     @Test
-    void qualquerAtaqueBizantinoFalhaAlto() {
+    void soEquivocationEAceitoOsDemaisAtaquesFalhamAlto() {
         Run r = new Run(1, 4, 1.0);
         for (ByzantineConfig.AttackType tipo : ByzantineConfig.AttackType.values()) {
             if (tipo == ByzantineConfig.AttackType.NONE) {
                 continue;
             }
             ByzantineConfig cfg = new ByzantineConfig(4, java.util.Set.of(3), tipo.name(), 1L);
+            if (tipo == ByzantineConfig.AttackType.EQUIVOCATION) {
+                // D3a-2a-2d-1: unico ataque implementado; aceito (o comportamento esta em HotStuffEquivocationTest)
+                r.net.getNode(0).getConsensusAlgorithm().setByzantineConfig(cfg);
+                assertEquals("EQUIVOCATION", r.net.getNode(0).getConsensusAlgorithm().getByzantineAttackType());
+                r.net.getNode(0).getConsensusAlgorithm().setByzantineConfig(null);
+                continue;
+            }
             assertThrows(UnsupportedOperationException.class,
                     () -> r.net.getNode(0).getConsensusAlgorithm().setByzantineConfig(cfg), tipo.name());
         }

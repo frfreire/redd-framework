@@ -1,5 +1,6 @@
 package jabs.consensus.algorithm;
 
+import jabs.config.ByzantineConfig;
 import jabs.consensus.algorithm.hotstuff.DiscardCounters;
 import jabs.consensus.algorithm.hotstuff.DiscardReason;
 import jabs.consensus.algorithm.hotstuff.LeaderAction;
@@ -18,6 +19,7 @@ import jabs.ledgerdata.BlockFactory;
 import jabs.ledgerdata.SingleParentBlock;
 import jabs.ledgerdata.Tx;
 import jabs.ledgerdata.hotstuff.HotStuffBlock;
+import jabs.ledgerdata.hotstuff.HotStuffBlockWithTx;
 import jabs.ledgerdata.hotstuff.HotStuffQcMessage;
 import jabs.ledgerdata.hotstuff.HotStuffQuorumCertificate;
 import jabs.ledgerdata.hotstuff.HotStuffVote;
@@ -32,10 +34,13 @@ import jabs.simulator.event.BlockFinalizationEvent;
 import jabs.simulator.event.HotStuffViewTimeoutEvent;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * ESQUELETO D3a-2a-1 do HotStuff: sem logica de protocolo. O algoritmo (fases PREPARE, PRE_COMMIT, COMMIT, DECIDE,
@@ -106,7 +111,6 @@ import java.util.Optional;
  *   <li><b>Trafego.</b> So conta o que este no RECEBE pela rede; os envios do lider nao entram. NEW_VIEW com QC e
  *       atribuido ao bloco do QC e fica sujeito ao corte de {@link #markLocallyFinalized} (convencao PBFT): chegando
  *       depois da finalizacao local desse bloco, nao soma em C_B daquele bloco.</li>
- *   <li><b>Fora do escopo:</b> EQUIVOCATION (2d).</li>
  * </ul>
  *
  * <h3>D3a-2a-2c-3: troca de visao por TIMEOUT (Basic HotStuff, secao 4.1, "nextView interrupt")</h3>
@@ -134,10 +138,61 @@ import java.util.Optional;
  *       custo sobre replica atrasada descrito em {@link ReplicaCore}); proposta de visao
  *       que a replica ja deixou e perdida (e, no lado do lider, NEW_VIEW e votos de visao que a propria replica ja
  *       abandonou sao descartados e contados em {@link DiscardReason#LEADER_VIEW_ABANDONED}: ver {@link LeaderCore}). Falha de lider so por CRASH ({@code Node#crash()} no teste/cenario);
- *       {@code supportedAttacks()} continua vazio.</li>
- *   <li>D3a-2a-2d: {@code supportedAttacks()}: continua o padrao (vazio), logo {@code setByzantineConfig} com
- *       ataque FALHA ALTO ate o algoritmo declarar EQUIVOCATION (decisao do humano para o estudo).</li>
+ *       {@code supportedAttacks()} declara so EQUIVOCATION (D3a-2a-2d-1, abaixo).</li>
  * </ul>
+ *
+ * <h3>D3a-2a-2d-1: ataque EQUIVOCATION (ADR-0010 PI-12)</h3>
+ * {@link #supportedAttacks()} = {EQUIVOCATION}. {@code SILENT}, {@code WITHHOLD}, {@code DOUBLE_SIGN} e nome
+ * desconhecido continuam recusados com falha alta em {@code setByzantineConfig} (nunca viram no honesto em silencio).
+ * Definicao (ADR-0010 PI-12): o no bizantino emite DUAS mensagens conflitantes, cada uma a um subconjunto DISJUNTO de
+ * nos honestos. O nucleo ({@link LeaderCore}, {@link ReplicaCore}) NAO foi alterado: o no bizantino roda o mesmo
+ * protocolo honesto para o estado interno e a equivocacao fica so na camada de ENVIO, depois de o nucleo decidir
+ * (como no Tendermint). Os pacotes conflitantes vao pela fila de upload ({@code addToUpLinkQueue}) e sao contados
+ * pelo hook de trafego de {@code PeerBlockchainNode} no receptor, como qualquer outro.
+ * <p><b>PROVISORIO ({@code a definir com o humano}, ADR-0015 Q28; B-34, B-35, B-36):</b> particao, abrangencia e
+ * coordenacao abaixo sao escolhas provisorias, iguais ao PBFT e ao Tendermint onde possivel, para os resultados
+ * serem comparaveis e a troca ser trivial depois.
+ * <ul>
+ *   <li><b>Particao (B-34):</b> duas metades por INDICE dos vizinhos ({@code half = max(1, size/2)}); indices
+ *       [0, half) recebem o valor A e [half, size) o valor B. No {@code HotStuffP2P} os vizinhos sao todos os OUTROS
+ *       nos em ordem crescente de id. Pre-condicao ({@link #requireEquivocationSplit}): ao menos 2 vizinhos e ao
+ *       menos 1 destinatario HONESTO em cada metade; senao {@link IllegalStateException} com mensagem clara, antes
+ *       de fabricar bloco ou enviar pacote (nunca degrada para no honesto).</li>
+ *   <li><b>Abrangencia (B-35), o que EQUIVOCA:</b> (i) o LIDER bizantino, a proposta PREPARE de cada visao que
+ *       conduz: A (o bloco do {@link LeaderCore}) aos vizinhos [0, half), B (bloco conflitante, mesmo pai, mesma
+ *       altura e mesmo tamanho, valido para a visao) aos demais; (ii) a REPLICA bizantina, cada VOTO que envia pela
+ *       rede (PREPARE, PRE_COMMIT, COMMIT): o voto no bloco real aos vizinhos [0, half) e o voto num bloco
+ *       conflitante aos demais.</li>
+ *   <li><b>O que NAO equivoca, e por que.</b> (1) PRE_COMMIT, COMMIT e DECIDE do lider: cada uma carrega o QC da
+ *       fase anterior SOBRE o bloco proposto ({@code HotStuffProposalMessage} exige o mesmo bloco); uma versao B
+ *       exigiria um QC sobre B, isto e, 2f+1 votos em B que o lider nao tem. Fabrica-lo (copiando os votantes do QC
+ *       de A) modelaria a quebra da assinatura de QC, nao uma equivocacao. (2) Alem disso essas fases sao
+ *       INALCANCAVEIS para um lider que equivoca o PREPARE: A so chega a {@code half} vizinhos mais o proprio lider
+ *       (voto local), e {@code floor((n-1)/2) + 1 < n - floor((n-1)/3)} para todo n &gt;= 4, logo o
+ *       {@link LeaderCore} nunca forma o QC de A; os votos em B que chegam ao lider sao contados como
+ *       {@link DiscardReason#VOTE_WRONG_BLOCK}. Consequencia (liveness): a visao de um lider que equivoca nunca
+ *       decide; as replicas saem dela por timeout. Se um lider equivocador algum dia emitir uma fase posterior, ela
+ *       sai HONESTA e e CONTADA em {@link #getUnequivocatedLeaderPhases()} (nunca em silencio); os testes exigem 0.
+ *       (3) O voto que o proprio lider da visao entrega a si mesmo (chamada local, sem pacote), NEW_VIEW e timeouts:
+ *       nao ha destinatario para dividir.</li>
+ *   <li><b>Voto: canal replica-&gt;lider.</b> Diferente do Tendermint (voto em broadcast), o voto honesto do HotStuff
+ *       tem UM destinatario, o lider. A replica bizantina aplica a particao por indice a TODOS os vizinhos: o voto
+ *       real aos de [0, half) e o conflitante aos demais. Como o lider cai numa das metades, so UMA das versoes chega
+ *       ao lider; as outras chegam a nao-lideres e sao descartadas por NOT_VIEW_LEADER, mas ocupam banda e sao
+ *       contadas pelo hook. O trafego extra e MEDIDO sobre um modelo provisorio, nao o custo de um HotStuff real.</li>
+ *   <li><b>Coordenacao (B-36):</b> nenhuma. Cada bizantino decide sozinho, com a mesma particao por indice, e
+ *       fabrica o seu proprio bloco conflitante.</li>
+ * </ul>
+ * Bloco conflitante: {@link #conflictingBlock}. E um {@code HotStuffBlockWithTx} novo (identidade e hash distintos),
+ * com o MESMO pai ({@code getFixedParent}), altura e tamanho do bloco real, e conjunto de transacoes VAZIO: nao
+ * chama {@code BlockFactory} (que poe transacoes em {@code HashSet} sem {@code hashCode}, ou seja, consome
+ * {@code identityHashCode} da thread principal, ADR-0012 RM-08), nao consome aleatoriedade e nao chama
+ * {@code hashCode}. O cache (visao, bloco real) -&gt; B e uma lista varrida por identidade, sem mapa hash. B nunca
+ * e finalizado (nao ha QC sobre B), entao o conjunto vazio nao chega a Tt.
+ * <p><b>Descarte de visao.</b> O ataque nao contorna {@link LeaderCore} nem {@link ReplicaCore}: so envia o que o
+ * {@link LeaderCore} devolveu (a checagem LEADER_VIEW_ABANDONED vem antes) e toda mensagem conflitante entra no
+ * receptor por {@link #onProposal}/{@link #onVote}, portanto sob OLD_VIEW e FUTURE_VIEW_BEYOND_HORIZON. O voto
+ * conflitante sai do {@code ReplicaCore} (que ja filtrou visao) e so muda o bloco, nunca a visao.
  *
  * @param <B> tipo de bloco
  * @param <T> tipo de transacao
@@ -184,6 +239,15 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
     private long crashedTimeouts = 0L;
     private long finalizedAncestors = 0L;
 
+    // ---- D3a-2a-2d-1: EQUIVOCATION (camada de envio) ----
+    /** Bloco conflitante (B) fabricado para um bloco real (A) numa visao. Lista varrida por IDENTIDADE (sem hash). */
+    private record Alternative(long view, HotStuffBlock real, HotStuffBlock conflicting) { }
+
+    private final ArrayList<Alternative> alternatives = new ArrayList<>();
+    private long equivocatedProposals = 0L;
+    private long equivocatedVotes = 0L;
+    private long unequivocatedLeaderPhases = 0L;
+
     /** Contadores de um bloco devolvidos (e zerados) por {@link #takeTraffic}. */
     public record BlockTraffic(long total, long consensus) { }
 
@@ -223,6 +287,15 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
 
     public int getNumAllParticipants() {
         return numAllParticipants;
+    }
+
+    /**
+     * Unico ataque implementado: {@code EQUIVOCATION} (ver a secao D3a-2a-2d-1 do javadoc da classe; particao,
+     * abrangencia e coordenacao PROVISORIAS, ADR-0015 Q28). Os demais sao recusados por {@code setByzantineConfig}.
+     */
+    @Override
+    protected Set<ByzantineConfig.AttackType> supportedAttacks() {
+        return EnumSet.of(ByzantineConfig.AttackType.EQUIVOCATION);
     }
 
     /** Quorum teorico 2f+1 para o n deste consenso (comparar sempre com {@code >=}). */
@@ -556,7 +629,15 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
             leaderActionsOnAbandonedView++;
         }
         HotStuffProposalMessage message = toProposal(a);
-        requireNode().broadcastMessage(message);
+        if (isEquivocator() && a.phase() == HotStuffProposalMessage.Phase.PREPARE) {
+            // Sem catch: precondicao violada, falha ao fabricar B ou ao enviar derrubam a simulacao.
+            broadcastPrepareEquivocation(a, message);
+        } else {
+            if (isEquivocator()) {
+                unequivocatedLeaderPhases++; // fase com QC: nao equivocada (ver javadoc); contada, nunca silenciosa
+            }
+            requireNode().broadcastMessage(message);
+        }
         onProposal(message);
     }
 
@@ -642,9 +723,144 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
             onVote(vote);
             return;
         }
+        if (isEquivocator()) {
+            broadcastVoteEquivocation(vote);
+            return;
+        }
         requireNode().getNodeNetworkInterface().addToUpLinkQueue(
                 new Packet(requireNode(), neighbor(leaderId, vote.getView()), new VoteMessage(vote)));
     }
+
+    // ------------------------------------------------------------------------------------------------------
+    // D3a-2a-2d-1: EQUIVOCATION (camada de envio; o nucleo honesto nao muda).
+    // ------------------------------------------------------------------------------------------------------
+
+    /** Este no e bizantino E o ataque configurado e EQUIVOCATION. Sem config: falso, sem efeito colateral. */
+    private boolean isEquivocator() {
+        return isByzantineValidator(ownId())
+                && ByzantineConfig.AttackType.EQUIVOCATION.name().equals(getByzantineAttackType());
+    }
+
+    /**
+     * PREPARE equivocado: A (mensagem do nucleo) aos vizinhos [0, half) e B (mesma visao e mesmo highQC; bloco
+     * conflitante) aos demais. Um pacote por vizinho; nenhum para si.
+     */
+    private void broadcastPrepareEquivocation(LeaderAction a, HotStuffProposalMessage messageA) {
+        PeerBlockchainNode<B, T> self = requireNode();
+        List<Node> neighbors = self.getP2pConnections().getNeighbors();
+        int half = requireEquivocationSplit(neighbors, "PREPARE");
+        HotStuffBlock b = conflictingBlock(a.view(), a.block());
+        HotStuffProposalMessage messageB = a.qc().isPresent()
+                ? HotStuffProposalMessage.prepare(a.view(), self, b, a.qc().get(), numAllParticipants)
+                : HotStuffProposalMessage.prepareWithoutHighQc(a.view(), self, b, config, numAllParticipants);
+        for (int i = 0; i < neighbors.size(); i++) {
+            self.getNodeNetworkInterface().addToUpLinkQueue(
+                    new Packet(self, neighbors.get(i), i < half ? messageA : messageB));
+        }
+        equivocatedProposals++;
+    }
+
+    /**
+     * Voto equivocado (so quando o lider da visao e OUTRO no): o voto no bloco real aos vizinhos [0, half) e um voto
+     * da mesma fase e visao num bloco conflitante aos demais. Ver o javadoc da classe sobre o destinatario unico.
+     */
+    private void broadcastVoteEquivocation(HotStuffVote vote) {
+        PeerBlockchainNode<B, T> self = requireNode();
+        List<Node> neighbors = self.getP2pConnections().getNeighbors();
+        int half = requireEquivocationSplit(neighbors, vote.getPhase().name());
+        HotStuffBlock b = conflictingBlock(vote.getView(), vote.getBlock());
+        VoteMessage messageA = new VoteMessage(vote);
+        VoteMessage messageB = new VoteMessage(new HotStuffVote(self, vote.getPhase(), vote.getView(), b, config));
+        for (int i = 0; i < neighbors.size(); i++) {
+            self.getNodeNetworkInterface().addToUpLinkQueue(
+                    new Packet(self, neighbors.get(i), i < half ? messageA : messageB));
+        }
+        equivocatedVotes++;
+    }
+
+    /**
+     * Bloco conflitante com {@code real} na visao {@code view}: novo objeto (identidade e hash distintos), mesmo pai,
+     * altura e tamanho, transacoes vazias (ver o javadoc da classe). O mesmo B serve a todas as fases da visao.
+     */
+    private HotStuffBlock conflictingBlock(long view, HotStuffBlock real) {
+        for (Alternative alt : alternatives) {
+            if (alt.view() == view && alt.real() == real) { // identidade: Block nao define equals
+                return alt.conflicting();
+            }
+        }
+        HotStuffBlock parent = real.getFixedParent();
+        if (parent == null) {
+            throw new IllegalStateException("EQUIVOCATION (no " + ownId() + "): bloco real sem pai (genesis?) na visao "
+                    + view + "; nao ha como fabricar o conflito");
+        }
+        if (!(requireNode() instanceof HotStuffNode)) {
+            throw new IllegalStateException("EQUIVOCATION so fabrica blocos em HotStuffNode");
+        }
+        HotStuffNode creator = (HotStuffNode) (Object) requireNode();
+        HotStuffBlock conflicting = new HotStuffBlockWithTx(real.getSize(), real.getHeight(),
+                requireNode().getSimulator().getSimulationTime(), creator, parent, null);
+        alternatives.add(new Alternative(view, real, conflicting));
+        return conflicting;
+    }
+
+    /** Poda os blocos conflitantes de alturas ja finalizadas (a lista fica limitada ao que esta em voo). */
+    private void pruneAlternatives(int finalizedHeight) {
+        if (!alternatives.isEmpty()) {
+            alternatives.removeIf(alt -> alt.real().getHeight() <= finalizedHeight);
+        }
+    }
+
+    /**
+     * Valida que a rede permite equivocar: ao menos 2 vizinhos e ao menos um destinatario HONESTO em cada metade.
+     * Caso contrario falha alto com mensagem clara (nunca degrada para no honesto). Vem antes de fabricar bloco ou
+     * enviar pacote e nao consome aleatoriedade. Mesmo criterio do PBFT e do Tendermint.
+     *
+     * @return {@code half}, o tamanho da primeira metade (indices [0, half) recebem o valor A)
+     * @throws IllegalStateException se a rede nao tem destinatarios honestos disjuntos suficientes
+     */
+    private int requireEquivocationSplit(List<Node> neighbors, String phase) {
+        int size = neighbors.size();
+        int selfId = ownId();
+        if (size < 2) {
+            throw new IllegalStateException("EQUIVOCATION em " + phase + " (no " + selfId
+                    + ") exige ao menos 2 vizinhos para enviar mensagens conflitantes a destinatarios disjuntos; "
+                    + "a rede tem " + size + ". Ataque nao aplicado: simulacao abortada em vez de degradar.");
+        }
+        int half = Math.max(1, size / 2);
+        int honestFirst = 0;
+        int honestSecond = 0;
+        for (int i = 0; i < size; i++) {
+            Node nb = neighbors.get(i);
+            if (nb == null) {
+                throw new IllegalStateException("EQUIVOCATION em " + phase + " (no " + selfId
+                        + "): vizinho nulo no indice " + i + "; rede mal formada.");
+            }
+            if (!isByzantineValidator(nb.getNodeID())) {
+                if (i < half) {
+                    honestFirst++;
+                } else {
+                    honestSecond++;
+                }
+            }
+        }
+        if (honestFirst == 0 || honestSecond == 0) {
+            throw new IllegalStateException("EQUIVOCATION em " + phase + " (no " + selfId
+                    + ") exige ao menos 1 destinatario honesto em cada metade disjunta dos vizinhos; "
+                    + "honestos na 1a metade=" + honestFirst + ", na 2a=" + honestSecond + " (vizinhos=" + size
+                    + "). Ataque nao aplicado: simulacao abortada em vez de degradar para no honesto.");
+        }
+        return half;
+    }
+
+    /** PREPARE que este no (como lider bizantino) enviou em duas versoes conflitantes. */
+    public long getEquivocatedProposals() { return equivocatedProposals; }
+    /** Votos que este no (como replica bizantina) enviou em duas versoes conflitantes. */
+    public long getEquivocatedVotes() { return equivocatedVotes; }
+    /**
+     * Fases com QC (PRE_COMMIT, COMMIT, DECIDE) que um lider equivocador enviou HONESTAS (nao equivocadas). Esperado 0
+     * (inalcancavel, ver o javadoc da classe); contador para a omissao nunca ser silenciosa.
+     */
+    public long getUnequivocatedLeaderPhases() { return unequivocatedLeaderPhases; }
 
     /**
      * DECIDE: corte do trafego, retirada dos contadores e {@link BlockFinalizationEvent} como no PBFT (C_B_total e
@@ -655,6 +871,7 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
     private void finalizeLocally(HotStuffBlock hsBlock) {
         B block = (B) hsBlock;
         markLocallyFinalized(block); // antes do take: pacote tardio nao recomeca a conta
+        pruneAlternatives(hsBlock.getHeight());
         BlockTraffic traffic = takeTraffic(block);
         this.currentMainChainHead = block;
         updateChain();
