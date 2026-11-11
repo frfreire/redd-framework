@@ -166,13 +166,61 @@ def ler(path: Path):
 
 EXTRA_ATUAL = "TrafficConsensusUntilFinalization"  # coluna nova da T1 (ADR-0006); -1 = nao medido
 
+# HS-CB-fase2 (B3): arquivos ADITIVOS CONHECIDOS. A Parte A do HS-CB-fase2 gera, so para HOTSTUFF e TENDERMINT, um
+# segundo arquivo ao lado do mvp-results.csv; a baseline nao o tem. Ele sai da comparacao da LISTA de arquivos, de forma
+# explicita: so os nomes desta tupla, so na raiz da pasta de saida (caminho relativo == nome), nunca por padrao/regex.
+# Qualquer outro arquivo extra continua divergindo, e o conteudo do aditivo e verificado a parte (atual a x atual b,
+# comparar_aditivo), porque nao existe base dele.
+ARQUIVOS_ADITIVOS = ("mvp-results-cb.csv",)
+# Protocolos em que o aditivo TEM de existir no atual (MVPComparison.hasCbRede); nos demais ele nao pode aparecer.
+PROTOCOLOS_COM_ADITIVO = ("HOTSTUFF", "TENDERMINT")
+# Maximo de JVMs simultaneas (B1/HS-CB-fase2): com ate 4 nao houve divergencia em 100 execucoes por protocolo; carga
+# alta degrada o determinismo da escrita do CSV (AbstractCSVLogger.flushBuffer sem sincronizacao). Ver README do hs-cb-fase2.
+MAX_PARALELO = 4
+
+
+def listar_csv(raiz: Path, ignorar_aditivos=True):
+    """CSV sob raiz (caminho relativo, ordenado). ignorar_aditivos=True tira so ARQUIVOS_ADITIVOS na raiz da pasta."""
+    todos = sorted(p.relative_to(raiz) for p in raiz.rglob("*.csv"))
+    if not ignorar_aditivos:
+        return todos
+    return [p for p in todos if not (len(p.parts) == 1 and p.name in ARQUIVOS_ADITIVOS)]
+
+
+def comparar_aditivo(a: Path, b: Path, nome: str, esperado: bool):
+    """Determinismo atual x atual do arquivo aditivo `nome` (nao existe base). Mesmo criterio do projeto ('#' e colunas
+    'hash' ignoradas). esperado=True: o protocolo deveria te-lo gerado; ausencia nos dois lados e DIVERGENTE.
+    esperado=False: o aditivo NAO pode aparecer (protocolo sem C_B de rede); se aparecer, DIVERGENTE.
+    Retorna (veredito, detalhe, linhas). Veredito: IDENTICO, DIVERGENTE, SEM_DADOS ou N/A (nao esperado e ausente)."""
+    pa, pb = a / nome, b / nome
+    if not pa.exists() and not pb.exists():
+        return ("DIVERGENTE", f"{nome} ausente nos dois lados (esperado)", 0) if esperado else ("N/A", "", 0)
+    if not esperado:
+        return "DIVERGENTE", f"{nome} apareceu em protocolo que nao deveria te-lo", 0
+    if pa.exists() != pb.exists():
+        return "DIVERGENTE", f"{nome} existe so em um dos lados", 0
+    ca, ra = ler(pa)
+    cb, rb = ler(pb)
+    if not ra:
+        return "SEM_DADOS", f"{nome} sem linhas de dados", 0
+    if ca != cb:
+        return "DIVERGENTE", f"{nome}: cabecalho {ca} vs {cb}", len(ra)
+    if len(ra) != len(rb):
+        return "DIVERGENTE", f"{nome}: {len(ra)} vs {len(rb)} linhas", len(ra)
+    for i, (x, y) in enumerate(zip(ra, rb), 1):
+        if x != y:
+            d = [(ca[j], x[j], y[j]) for j in range(min(len(x), len(y))) if x[j] != y[j]][:3]
+            return "DIVERGENTE", f"{nome} linha {i}: {d}", len(ra)
+    return "IDENTICO", "", len(ra)
+
 
 def comparar(a: Path, b: Path, extra_ok=False):
     """Retorna (veredito, detalhe, linhas_comparadas). a = referencia, b = candidato.
     extra_ok: aceita em b a coluna EXTRA_ATUAL ausente em a, desde que valha -1 em todas as linhas
-    (esquema ampliado, protocolo que nao mede a decomposicao); a coluna sai antes de comparar."""
-    fa = sorted(p.relative_to(a) for p in a.rglob("*.csv"))
-    fb = sorted(p.relative_to(b) for p in b.rglob("*.csv"))
+    (esquema ampliado, protocolo que nao mede a decomposicao); a coluna sai antes de comparar.
+    Arquivos de ARQUIVOS_ADITIVOS (raiz da pasta) ficam fora da lista de arquivos comparada (ver acima)."""
+    fa = listar_csv(a)
+    fb = listar_csv(b)
     if not fa:
         return "SEM_DADOS", "nenhum CSV gerado", 0
     if fa != fb:
@@ -227,8 +275,63 @@ def selftest():
         except ValueError:
             continue
         raise AssertionError(f"deveria rejeitar {ruim!r}")
+    selftest_aditivo()
     print("SELFTEST OK")
     return 0
+
+
+def selftest_aditivo():
+    """B3: arquivo aditivo ignorado; extra desconhecido ainda diverge; coluna alterada em mvp-results.csv ainda diverge;
+    aditivo atual x atual (determinismo) e presenca coerente com o protocolo. Sem JVM, em diretorio temporario."""
+    import tempfile
+    cab = "project;n;trials;Tb_avg\n"
+    cb = "# c\nprotocolo;n;CbRede_avg_B\nHOTSTUFF;4;100\n"
+
+    def pasta(raiz, nome, arquivos):
+        p = Path(raiz) / nome
+        p.mkdir(parents=True)
+        for f, c in arquivos.items():
+            (p / f).write_text(c)
+        return p
+
+    with tempfile.TemporaryDirectory() as t:
+        base = pasta(t, "base", {"mvp-results.csv": cab + "HOTSTUFF;4;1;1.0\n"})
+        atual = pasta(t, "atual", {"mvp-results.csv": cab + "HOTSTUFF;4;1;1.0\n", "mvp-results-cb.csv": cb})
+        # 1. aditivo conhecido ignorado na lista de arquivos
+        assert comparar(base, atual)[0] == "IDENTICO", comparar(base, atual)
+        # 2. arquivo extra DESCONHECIDO ainda diverge (nem por prefixo parecido, nem em subpasta)
+        for extra in ("outro.csv", "mvp-results-cb2.csv", "x-mvp-results-cb.csv"):
+            a2 = pasta(t, "a-" + extra, {"mvp-results.csv": cab + "HOTSTUFF;4;1;1.0\n", extra: cb})
+            v = comparar(base, a2)
+            assert v[0] == "DIVERGENTE" and "arquivos diferem" in v[1], (extra, v)
+        sub = pasta(t, "a-sub", {"mvp-results.csv": cab + "HOTSTUFF;4;1;1.0\n"})
+        (sub / "tmp").mkdir()
+        (sub / "tmp" / "mvp-results-cb.csv").write_text(cb)  # mesmo nome, mas fora da raiz: NAO e o aditivo conhecido
+        assert comparar(base, sub)[0] == "DIVERGENTE"
+        # 3. coluna alterada em mvp-results.csv ainda diverge, mesmo com o aditivo presente
+        alt = pasta(t, "a-alt", {"mvp-results.csv": cab + "HOTSTUFF;4;1;2.0\n", "mvp-results-cb.csv": cb})
+        v = comparar(base, alt)
+        assert v[0] == "DIVERGENTE" and "Tb_avg" in v[1], v
+        # 4. o aditivo some do lado base tambem (baseline antiga que ja tivesse o arquivo): continua ignorado
+        base2 = pasta(t, "base2", {"mvp-results.csv": cab + "HOTSTUFF;4;1;1.0\n", "mvp-results-cb.csv": cb})
+        assert comparar(base2, atual)[0] == "IDENTICO"
+        # 5. aditivo atual x atual: igual / conteudo diferente / so um lado / ausente esperado / presente nao esperado
+        atual_b = pasta(t, "atual-b", {"mvp-results.csv": cab + "HOTSTUFF;4;1;1.0\n", "mvp-results-cb.csv": cb})
+        n = "mvp-results-cb.csv"
+        assert comparar_aditivo(atual, atual_b, n, True)[0] == "IDENTICO"
+        assert comparar_aditivo(atual, atual_b, n, True)[2] == 1
+        outra = pasta(t, "atual-c", {"mvp-results.csv": cab, n: cb.replace("100", "101")})
+        v = comparar_aditivo(atual, outra, n, True)
+        assert v[0] == "DIVERGENTE" and "CbRede_avg_B" in v[1], v
+        so_um = pasta(t, "atual-d", {"mvp-results.csv": cab})
+        assert comparar_aditivo(atual, so_um, n, True)[0] == "DIVERGENTE"
+        assert comparar_aditivo(so_um, so_um, n, True)[0] == "DIVERGENTE"  # esperado e ausente nos dois
+        assert comparar_aditivo(so_um, so_um, n, False)[0] == "N/A"
+        assert comparar_aditivo(atual, atual_b, n, False)[0] == "DIVERGENTE"  # ARQ & cia nao podem ter aditivo
+        so_hash = pasta(t, "atual-e", {"mvp-results.csv": cab, n: "# outro comentario\nprotocolo;n;CbRede_avg_B\nHOTSTUFF;4;100\n"})
+        assert comparar_aditivo(atual, so_hash, n, True)[0] == "IDENTICO"  # '#' ignorado
+    assert ARQUIVOS_ADITIVOS == ("mvp-results-cb.csv",)  # lista explicita, nao regex
+    assert MAX_PARALELO == 4
 
 
 def main():
@@ -250,7 +353,14 @@ def main():
     ap.add_argument("--baseline-tem", dest="baseline_tem", action="append", default=[], metavar="PROTO",
                     help="libera PROTO (TENDERMINT ou HOTSTUFF) quando a baseline de --base ja o tem; ver o cabecalho")
     ap.add_argument("--selftest", action="store_true", help="autoteste sem JVM e sai")
+    ap.add_argument("--paralelo", type=int, default=MAX_PARALELO,
+                    help=f"JVMs simultaneas (padrao e maximo {MAX_PARALELO}; B1/HS-CB-fase2: o determinismo da escrita de "
+                         "CSV se degrada sob carga alta, ver AbstractCSVLogger)")
     a = ap.parse_args()
+    if not 1 <= a.paralelo <= MAX_PARALELO:
+        print(f"ERRO: --paralelo deve estar em 1..{MAX_PARALELO} (recebido {a.paralelo}): acima disso a escrita concorrente "
+              "do CSV (AbstractCSVLogger) pode produzir falso DIVERGENTE")
+        return 2
     for b in a.baseline_tem:
         if b.strip().upper() not in ("TENDERMINT", "HOTSTUFF"):
             print(f"ERRO: --baseline-tem so aceita TENDERMINT ou HOTSTUFF (recebido {b!r})")
@@ -282,13 +392,13 @@ def main():
         for lado, raiz in (("base", base), ("atual", atual)):
             for rep in ("a", "b"):
                 jobs.append((proto, n, dur, lado, rep, raiz))
-    print(f"semente={a.semente} timeout={a.timeout}s por execucao; {len(jobs)} execucoes em paralelo")
+    print(f"semente={a.semente} timeout={a.timeout}s por execucao; {len(jobs)} execucoes, no maximo {min(a.paralelo, len(jobs))} JVM simultaneas")
     if a.jvm_flag:
         print("opcoes da JVM (nas quatro execucoes): " + " ".join(a.jvm_flag))
     if extras:
         print("flags extras (nos dois lados, so no protocolo indicado): " +
               "; ".join(f"{p}: {' '.join(f)}" for p, f in extras.items()))
-    with ThreadPoolExecutor(max_workers=len(jobs)) as ex:
+    with ThreadPoolExecutor(max_workers=min(a.paralelo, len(jobs))) as ex:
         fut = {j: ex.submit(executar, j[5], j[0], j[1], j[2], a.semente,
                             out / f"{j[0]}-{j[1]}v-{j[2]}s-{j[3]}-{j[4]}", a.timeout,
                             extras.get(j[0].strip().upper(), ()), a.jvm_flag) for j in jobs}
@@ -313,6 +423,16 @@ def main():
                 pior = max(pior, 2)
             elif v == "DIVERGENTE" and rot.startswith("baseline a x atual"):
                 pior = max(pior, 1)
+        # B3: o aditivo nao tem base; so determinismo atual a x atual b (e presenca/ausencia coerente com o protocolo)
+        esperado = proto.strip().upper() in PROTOCOLOS_COM_ADITIVO
+        for nome in ARQUIVOS_ADITIVOS:
+            v, det, lin = comparar_aditivo(d("atual", "a"), d("atual", "b"), nome, esperado)
+            if v != "N/A":
+                print(f"   aditivo {nome} atual a x b (sem base): {v} ({lin} linhas) {det}")
+            if v == "DIVERGENTE":
+                pior = max(pior, 1)
+            elif v == "SEM_DADOS":
+                pior = max(pior, 2)
     return pior
 
 

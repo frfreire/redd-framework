@@ -1,0 +1,16 @@
+semente=2 timeout=900s por execucao; 8 execucoes, no maximo 4 JVM simultaneas
+flags extras (nos dois lados, so no protocolo indicado): HOTSTUFF: --hs-view-timeout=10.0 --hs-max-future-view-horizon=1000 --hs-batch-size=20 --hs-tx-size=512 --hs-individual-signature-size=64 --hs-aggregated-signature-size=96 --hs-aggregated-share-size=96 --hs-message-overhead=10 --hs-signature-mode=INDIVIDUAL --hs-leader-policy=ROTATING --hs-voter-encoding=BITMAP
+
+== HOTSTUFF n=4 duracao=30s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (193 linhas) 
+   atual    a x b                : IDENTICO (193 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (193 linhas) 
+   aditivo mvp-results-cb.csv atual a x b (sem base): IDENTICO (1 linhas) 
+
+== HOTSTUFF n=7 duracao=30s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (185 linhas) 
+   atual    a x b                : IDENTICO (185 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (185 linhas) 
+   aditivo mvp-results-cb.csv atual a x b (sem base): IDENTICO (1 linhas) 

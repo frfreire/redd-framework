@@ -1,0 +1,24 @@
+base_commit=8c680840925899e6fb3cbcf790b80a89e0ad3356
+git diff 8c68084 -- src scripts | sha256sum = cce33fab28b760d77955c58b56ac5e22559eaf260f2638e93361bc1b4a4fb59e  (35255 bytes, 610 linhas)
+arquivos rastreados modificados (entram no hash acima):
+  scripts/jabs/arquivar-nao-regressao.py
+  scripts/jabs/nao_regressao.py
+  src/main/java/jabs/consensus/algorithm/HotStuff.java
+  src/main/java/jabs/consensus/algorithm/Tendermint.java
+  src/main/java/jabs/example/MVPComparison.java
+  src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java
+  src/main/java/jabs/metrics/SimulationMetrics.java
+arquivos NAO rastreados em src/ e scripts/ (nao entram no hash acima), com sha256 (os que estao sob o diretorio de evidencia sao listados em TABELA.txt, nao aqui):
+  475d91b1daf7b413b7ef62d0ba357e16bdca1efe3946a90945f20072d5798df2  scripts/jabs/arquivar_b1.py
+  2843ff5dcb4319edff2ad323fca4dd35aad61948033ef5ecdabafb53e284b460  scripts/jabs/diag_determinismo_carga.py
+  344f6f187d7ca72a5adcae5ef88c040da1523a06c8893fc453325ce181bfcc30  scripts/jabs/diag_variante_logger.py
+  7899d2b5cecbc375834b1618efa5e2113453a1da33eb3c608716f878a6d2ed16  scripts/jabs/fixture_canonica.py
+  424d26db45c9ce25767fea36df0d888ab66e3e7c97cc3af44c38eca63693ad4f  scripts/jabs/nr_hscb_fase2.py
+  40e349f89b9054d608ff5e88831560d4b38245a5c0af4966cda544ee54abba28  src/main/java/jabs/metrics/CbRedeMedida.java
+  702bfb9c22a02447aa4ddd2f6f32fe5bc00018197ad6d4e5845e9332e31ce242  src/main/java/jabs/metrics/NetworkHeightLedger.java
+  3e71b3a0968597e59b9fb29842b1845ccb6274dd7165c716c0bd239d1823b96a  src/test/java/jabs/example/FixtureCanonica.java
+  576c1a181f987ad2af9f68d9dbe3446184656839f3ccb6bb50e822a35449f559  src/test/java/jabs/example/MVPComparisonCbRedeTest.java
+  144e964dff2c5d867cf675226e486dbe27dc328d27baa4c2f55a3a127c19da82  src/test/java/jabs/example/MVPComparisonFixtureTravaTest.java
+  06477366ee7bc9c67a3d90f440f6b224712836cb812e38e6c6cb72e1355a7229  src/test/java/jabs/metrics/CbRedeMedidaTest.java
+  aff12dd1eb937e00817da1c2f4253c3f81a333d507b067a966d89ef4de5ad19e  src/test/resources/fixture/fixture-canonica.properties
+  a81b35ee4495b20b3084017164d45682cd28c4aa16eec76226ad5d6a0afc54c7  src/test/resources/nao-regressao/2d-hotstuff-equivocation/ERRATA-fixture-lote.txt

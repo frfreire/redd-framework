@@ -1,0 +1,23 @@
+ERRATA ao README.txt desta pasta (D3a-2a-2d-2) - escrita em HS-CB-fase2, parte B (B2). O README.txt NAO foi alterado.
+================================================================================================================
+
+O que o README.txt (secao 3, comandos) registra:
+  fixture TENDERMINT : --tm-batch-size=10  --tm-tx-size=512
+  fixture HOTSTUFF   : --hs-batch-size=20  --hs-tx-size=512
+Ou seja, as duas fixtures usam LOTES DIFERENTES (10 x 20). Isso nao invalida a evidencia desta pasta: cada protocolo foi
+comparado base x atual com a SUA fixture, nos mesmos dois lados, em execucoes SEPARADAS (grupos G1 e G3), e o criterio 7
+(nao regressao) so exige que base e atual coincidam. Mas:
+
+  1. NENHUM numero desta pasta pode ser lido como comparacao HOTSTUFF x TENDERMINT. Os lotes diferem (10 x 20): C_B,
+     Tb e Tt dos dois protocolos aqui NAO sao comparaveis entre si. A pasta nunca afirmou o contrario, mas o README nao
+     dizia isso em voz alta.
+  2. A partir de HS-CB-fase2 (B2, decisao D4) o MVPComparison RECUSA rodar HOTSTUFF e TENDERMINT na MESMA execucao com
+     lote ou tx-size diferentes (a menos de --allow-fixture-mismatch=true, que deixa rastro). Os comandos desta pasta
+     rodavam um protocolo por vez e continuam validos; o par 10 x 20 NAO deve ser reutilizado numa execucao conjunta.
+  3. A fixture canonica de lote e tx-size (igual para os dois) passou a viver em UM lugar:
+        src/test/resources/fixture/fixture-canonica.properties
+     lida pelos testes (jabs.example.FixtureCanonica) e pelos scripts (scripts/jabs/fixture_canonica.py). E FIXTURE DE
+     TESTE, nao e calibracao. Os valores de lote e tx-size da pesquisa: a definir com o humano.
+  4. A evidencia nova (hs-cb-fase2/) usa o par canonico nos dois protocolos. Esta pasta fica como esta, historica.
+
+Nada aqui foi reexecutado nem reescrito.

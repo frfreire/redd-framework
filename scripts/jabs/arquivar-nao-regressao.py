@@ -21,6 +21,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Fonte unica da lista de aditivos conhecidos (B3): a do comparador, importada, nao copiada.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from nao_regressao import ARQUIVOS_ADITIVOS  # noqa: E402
+
 
 def sha256_bytes(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
@@ -92,9 +96,25 @@ def main():
                 # rglob: casos do nao_regressao.py tem os CSV na raiz da pasta (nome simples, como antes); os do
                 # nao_regressao_sweep.py (D3a-2a-2d-2) tem tambem tmp/<TIPO>/*.csv (nome relativo, subpasta preservada)
                 nomes = sorted(str(p.relative_to(db)) for p in db.rglob("*.csv"))
-                if nomes != sorted(str(p.relative_to(da)) for p in da.rglob("*.csv")):
+                nomes_atual = sorted(str(p.relative_to(da)) for p in da.rglob("*.csv"))
+                # HS-CB-fase2 (B3): arquivos ADITIVOS CONHECIDOS (mesma lista do nao_regressao.py) existem so no atual;
+                # ficam fora do conjunto comparado e vao para a tabela como "sem base" (copia do atual-a, se couber).
+                aditivos = [x for x in nomes_atual if x in ARQUIVOS_ADITIVOS]
+                nomes_atual = [x for x in nomes_atual if x not in ARQUIVOS_ADITIVOS]
+                if nomes != nomes_atual:
                     print(f"ERRO: {caso}: conjuntos de CSV diferem")
                     return 2
+                for nome in aditivos:
+                    ba = (da / nome).read_bytes()
+                    copiado = len(ba) <= a.limite_bytes
+                    if copiado:
+                        alvo = destino / s / g / caso / "atual-a" / nome
+                        alvo.parent.mkdir(parents=True, exist_ok=True)
+                        alvo.write_bytes(ba)
+                    tabela.append(" | ".join([f"{s}/{g}/{caso}/{nome}", "-", "-", str(len(ba)), str(linhas(ba)), "-",
+                                              sha256_bytes(ba), "SEM_BASE (aditivo conhecido)",
+                                              "sim (so atual-a)" if copiado else f"NAO (> {a.limite_bytes} B: so sha256)"]))
+                    n += 1
                 for nome in nomes:
                     bb, ba = (db / nome).read_bytes(), (da / nome).read_bytes()
                     copiado = len(bb) <= a.limite_bytes and len(ba) <= a.limite_bytes

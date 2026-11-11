@@ -1,0 +1,14 @@
+# rotulo/execucao/arquivo | bytes | linhas | sha256 | linhas_com_n_colunas_diferente_do_cabecalho | copiado
+TM-p24/e000/tendermint-4v-t0.csv | 49570 | 348 | 4fdec9d3153b23fe529b77af105f5ac316ab2673dcfd743bb3c6933165c51b57 | 0 | sim
+TM-p24/e066/tendermint-4v-t0.csv | 49570 | 348 | 41a81e1783f82675478e23c8038a91e750f4a8c08557bb33eed0e6f9654e9e23 | 0 | sim
+TM-p48/e000/tendermint-4v-t0.csv | 49570 | 348 | 4fdec9d3153b23fe529b77af105f5ac316ab2673dcfd743bb3c6933165c51b57 | 0 | sim
+TM-p48/e004/tendermint-4v-t0.csv | 49570 | 348 | 51ab5b2ffc6344c12fa29fd4ea91c9d5406d3a2994b5754f84ededd37605d3f6 | 0 | sim
+TM-p48/e117/tendermint-4v-t0.csv | 49570 | 348 | 08a89e7103b866e61e38adc03275cf02c309f8dc7d2b3b67d6b21b6e046a7986 | 0 | sim
+TM-p48/e242/tendermint-4v-t0.csv | 50105 | 349 | 720576ece4682ac6871fcfa4015c616657758074092a9b1eb58bed60ae5f227c | 46 | sim
+TM-p48-ctrl/e000/tendermint-4v-t0.csv | 49570 | 348 | 4fdec9d3153b23fe529b77af105f5ac316ab2673dcfd743bb3c6933165c51b57 | 0 | sim
+TM-p48-ctrl/e279/tendermint-4v-t0.csv | 49570 | 348 | 510dddef7c9df07873453fc39f54aa7903e2b066fbcc353f15a3817b39cfc1b3 | 2 | sim
+TM-p120/e000/tendermint-4v-t0.csv | 49570 | 348 | 4fdec9d3153b23fe529b77af105f5ac316ab2673dcfd743bb3c6933165c51b57 | 0 | sim
+TM-p120/e1054/tendermint-4v-t0.csv | 49570 | 348 | bc7033fa83fe96148e721ed547a22b795dc2e9ac105034ecb24dc4f44980fd9e | 0 | sim
+TM-p120/e1148/tendermint-4v-t0.csv | 49570 | 348 | 0cde9f51eaabb37af1b2339fdb89d2ebc42a31453f4e104bc70fd60ff3a9cbe4 | 0 | sim
+HS-p12/e000/hotstuff-4v-t0.csv | 27357 | 194 | d1471481814b7197514f7f62054be5bf2b114057b0764f1bd2d743e983cfdd56 | 0 | sim
+HS-p12/e186/hotstuff-4v-t0.csv | 29065 | 216 | 836399d1c7eeeda953ca2aabc33cf2249ac67baf133601fdf99ed668a3d121f8 | 77 | sim

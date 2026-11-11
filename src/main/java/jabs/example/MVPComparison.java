@@ -6,6 +6,7 @@ import jabs.consensus.algorithm.tendermint.TendermintTimeouts;
 import jabs.consensus.config.HotStuffConsensusConfig;
 import jabs.consensus.config.TendermintConsensusConfig;
 import jabs.ledgerdata.DoubleSpendTracker;
+import jabs.metrics.CbRedeMedida;
 import jabs.metrics.SimulationMetrics;
 import jabs.scenario.AbstractScenario;
 import jabs.scenario.DAGsperNetworkScenario;
@@ -73,6 +74,11 @@ public class MVPComparison {
             }
         }
         int hotStuffByzantineCount = resolveByzantineCount(protocolList, hotStuffAttack, cli, validatorsList);
+        // HS-CB-fase2 (B2, decisao D4): HOTSTUFF e TENDERMINT na MESMA execucao exigem lote e tx-size iguais; senao falha
+        // alto (ou, com --allow-fixture-mismatch=true, segue deixando rastro no stdout e no cabecalho '#' dos CSV).
+        // Vazio (e nada novo alocado) quando so um dos dois protocolos roda ou quando os valores coincidem.
+        java.util.List<String> fixtureLines = fixtureGuard(hotStuffConfig, tendermintConfig,
+                cli.get(ALLOW_FIXTURE_MISMATCH));
         int trials = Integer.parseInt(cli.getOrDefault("trials", "5"));
         double defaultDuration = Double.parseDouble(cli.getOrDefault("duration", "600"));
         long baseSeed = Long.parseLong(cli.getOrDefault("seed", "12345"));
@@ -118,7 +124,13 @@ public class MVPComparison {
         }
 
         // Initialize CSV file with header
-        initializeCSV(csvOut, nodesMode, sizingLines, attackLines(hotStuffAttack, hotStuffByzantineCount));
+        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount),
+                fixtureLines));
+        // HS-CB-fase2 (parte A): colunas ADITIVAS de C_B (soma da rede e estatisticas) so para HOTSTUFF/TENDERMINT, num
+        // SEGUNDO arquivo (mvp-results-cb.csv, ao lado do mvp-results.csv). Sem esses protocolos o arquivo nem e criado:
+        // a saida dos demais e byte a byte a de antes (mvp-results.csv nunca muda).
+        String cbCsv = cbCsvPath(csvOut);
+        boolean cbCsvStarted = false;
 
         for (int validators : validatorsList) {
             System.out.println("\n╔═══════════════════════════════════════╗");
@@ -130,6 +142,8 @@ public class MVPComparison {
                 
                 // Create accumulator for this protocol/validators combination
                 MetricsAccumulator acc = new MetricsAccumulator();
+                // So HOTSTUFF/TENDERMINT: os demais nao carregam classe nova (nao desloca identityHashCode, ADR-0012)
+                CbRedeMedida.Pool cbPool = hasCbRede(protocol) ? new CbRedeMedida.Pool() : null;
                 double protocolDuration = protocolDurations.get(protocol);
                 
                 // Run all trials for this protocol/validators combination
@@ -155,6 +169,10 @@ public class MVPComparison {
                             metrics.getAverageTransactionConfirmationLatency()
                         );
                         
+                        if (cbPool != null && metrics.getCbRede() != null) {
+                            cbPool.add(metrics.getCbRede());
+                        }
+
                         System.out.println("      ✓ completed");
                     } catch (Exception e) {
                         System.out.println("      ✗ failed: " + e.getMessage());
@@ -165,6 +183,13 @@ public class MVPComparison {
                 // After all trials for this protocol/validators, write to CSV
                 System.out.println("    → Writing results for " + protocol + " (n=" + validators + ") to CSV");
                 writeSingleResultToCSV(csvOut, protocol, validators, trials, acc);
+                if (hasCbRede(protocol)) {
+                    if (!cbCsvStarted) {
+                        initializeCbCSV(cbCsv, fixtureLines);
+                        cbCsvStarted = true;
+                    }
+                    appendCbCSV(cbCsv, protocol, validators, trials, cbPool);
+                }
             }
         }
 
@@ -185,7 +210,7 @@ public class MVPComparison {
             "hs-view-timeout", "hs-max-future-view-horizon", "hs-batch-size", "hs-tx-size",
             "hs-individual-signature-size", "hs-aggregated-signature-size", "hs-aggregated-share-size",
             "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding",
-            "attack", "byzantine-count"};
+            "attack", "byzantine-count", "allow-fixture-mismatch"};
 
     /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
     private static boolean loadRecordOn = false;
@@ -470,6 +495,68 @@ public class MVPComparison {
         return count;
     }
 
+    /** Concatena linhas '#' sem alocar quando uma das listas e vazia (o caminho sem trava devolve a lista original). */
+    static java.util.List<String> joinLines(java.util.List<String> a, java.util.List<String> b) {
+        if (b.isEmpty()) {
+            return a;
+        }
+        if (a.isEmpty()) {
+            return b;
+        }
+        java.util.List<String> out = new java.util.ArrayList<>(a);
+        out.addAll(b);
+        return out;
+    }
+
+    /** Flag de override da trava de fixture (HS-CB-fase2, B2). Valor aceito: {@code true} ou {@code false}. */
+    static final String ALLOW_FIXTURE_MISMATCH = "allow-fixture-mismatch";
+
+    /**
+     * Trava de fixture (HS-CB-fase2, B2; decisao D4). HOTSTUFF e TENDERMINT rodando na MESMA execucao com lote
+     * ({@code *-batch-size}) ou tamanho de transacao ({@code *-tx-size}) diferentes comparam cargas diferentes sob o
+     * mesmo rotulo de C_B: falha alto. Com {@code --allow-fixture-mismatch=true} segue, mas o rastro vai para o stdout
+     * e para o cabecalho '#' de {@code mvp-results.csv} e {@code mvp-results-cb.csv} (devolvido em {@code fixtureLines}).
+     *
+     * <p>Devolve lista vazia, sem alocar nada, quando so um dos dois protocolos roda (config nula) ou quando os valores
+     * coincidem: a saida desses casos e byte a byte a de antes. A trava compara; NAO escolhe valor (a fixture
+     * canonica vive em {@code src/test/resources/fixture/fixture-canonica.properties}, fora do codigo de producao).
+     * Lote e tx-size igual NAO e calibracao: a definicao de lote/tx-size da pesquisa segue a definir com o humano.
+     */
+    static java.util.List<String> fixtureGuard(HotStuffConsensusConfig hs, TendermintConsensusConfig tm,
+            String allowFlag) {
+        if (hs == null || tm == null) {
+            return java.util.Collections.emptyList();
+        }
+        boolean allow = parseAllowFixtureMismatch(allowFlag);
+        if (hs.getBatchSize() == tm.getBatchSize() && hs.getTxSizeBytes() == tm.getTxSizeBytes()) {
+            return java.util.Collections.emptyList();
+        }
+        String diff = new StringBuilder("HOTSTUFF batch=").append(hs.getBatchSize()).append(" tx-size=")
+                .append(hs.getTxSizeBytes()).append(" x TENDERMINT batch=").append(tm.getBatchSize())
+                .append(" tx-size=").append(tm.getTxSizeBytes()).toString();
+        if (!allow) {
+            throw new IllegalArgumentException("trava de fixture: HOTSTUFF e TENDERMINT na mesma execucao exigem o mesmo lote e "
+                    + "tx-size (" + diff + "). O valor canonico de lote/tx-size da pesquisa e a definir com o humano; use "
+                    + "iguais (fixture canonica: src/test/resources/fixture/fixture-canonica.properties) ou, SO para "
+                    + "diagnostico, --" + ALLOW_FIXTURE_MISMATCH + "=true (fica registrado no stdout e no cabecalho '#' dos CSV)");
+        }
+        String linha = new StringBuilder("fixture-mismatch AUTORIZADO por --").append(ALLOW_FIXTURE_MISMATCH)
+                .append("=true: ").append(diff).append(" (C_B de HOTSTUFF e TENDERMINT NAO comparaveis entre si)").toString();
+        System.out.println("AVISO: " + linha);
+        return java.util.List.of("# " + linha);
+    }
+
+    /** {@code null} = false; {@code true}/{@code false} exatos; qualquer outro valor falha alto. */
+    static boolean parseAllowFixtureMismatch(String valor) {
+        if (valor == null || valor.equals("false")) {
+            return false;
+        }
+        if (valor.equals("true")) {
+            return true;
+        }
+        throw new IllegalArgumentException("--" + ALLOW_FIXTURE_MISMATCH + " aceita 'true' ou 'false' (recebido '" + valor + "')");
+    }
+
     /** Linhas '#' do CSV agregado que declaram o ataque; vazio sem ataque (o CSV honesto fica byte a byte o de sempre). */
     static java.util.List<String> attackLines(ByzantineConfig.AttackType attack, int count) {
         if (noAttack(attack)) {
@@ -711,6 +798,43 @@ public class MVPComparison {
         }
     }
 
+    /** {@code .../mvp-results.csv} -&gt; {@code .../mvp-results-cb.csv} (sufixo antes da extensao; sem extensao, anexa). */
+    static String cbCsvPath(String csvOut) {
+        return csvOut.endsWith(".csv") ? csvOut.substring(0, csvOut.length() - 4) + "-cb.csv" : csvOut + "-cb.csv";
+    }
+
+    /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): so HOTSTUFF e TENDERMINT. Os demais: nao medido. */
+    static boolean hasCbRede(String protocol) {
+        String p = normalizeProtocol(protocol);
+        return "HOTSTUFF".equals(p) || "TENDERMINT".equals(p);
+    }
+
+    private static void initializeCbCSV(String path, java.util.List<String> fixtureLines) throws IOException {
+        try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(path))) {
+            for (String c : CbRedeMedida.CSV_COMMENTS) {
+                bw.write(c);
+                bw.write('\n');
+            }
+            for (String c : fixtureLines) {
+                bw.write(c);
+                bw.write('\n');
+            }
+            bw.write(CbRedeMedida.CSV_HEADER);
+            bw.write('\n');
+        }
+    }
+
+    /** Uma linha por (protocolo, n); sem trial medido, tudo -1 (nao medido), nunca zero. */
+    private static void appendCbCSV(String path, String protocol, int n, int trials, CbRedeMedida.Pool pool)
+            throws IOException {
+        try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(path),
+                java.nio.file.StandardOpenOption.APPEND)) {
+            bw.write(pool.trials() == 0 ? CbRedeMedida.csvLineNotMeasured(protocol, n, trials)
+                    : CbRedeMedida.csvLine(protocol, n, trials, pool));
+            bw.write('\n');
+        }
+    }
+
     /**
      * Write a single result line to CSV (append mode)
      */
@@ -894,6 +1018,7 @@ public class MVPComparison {
         System.out.println("Running Tendermint scenario (" + numNodes + " validators, seed=" + seed + ") ...");
         scenario.run();
         SimulationMetrics metrics = scenario.getMetrics();
+        metrics.setCbRede(CbRedeMedida.medir(scenario.getNetwork().getAllNodes(), metrics)); // HS-CB-fase2
         printScenarioFinilizedMetrics(metrics);
         return metrics;
     }
@@ -920,6 +1045,7 @@ public class MVPComparison {
         System.out.println("Running HotStuff scenario (" + numNodes + " validators, seed=" + seed + ") ...");
         scenario.run();
         SimulationMetrics metrics = scenario.getMetrics();
+        metrics.setCbRede(CbRedeMedida.medir(scenario.getNetwork().getAllNodes(), metrics)); // HS-CB-fase2
         if (metrics.getBlockCount() == 0) {
             throw new IllegalStateException("HOTSTUFF finalizou 0 blocos em " + duration
                     + " s: Tb e C_B nao medidos (nao serao registrados como zero)");

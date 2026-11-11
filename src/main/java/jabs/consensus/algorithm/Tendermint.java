@@ -13,6 +13,7 @@ import jabs.ledgerdata.BlockFactory;
 import jabs.ledgerdata.SingleParentBlock;
 import jabs.ledgerdata.Tx;
 import jabs.ledgerdata.tendermint.TendermintBlock;
+import jabs.metrics.NetworkHeightLedger;
 import jabs.network.message.Packet;
 import jabs.network.message.TendermintProposalMessage;
 import jabs.network.message.TendermintVoteMessage;
@@ -105,6 +106,9 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
     private final HashMap<B, Long> consensusTraffic = new HashMap<>();
     private final HashSet<B> locallyFinalized = new HashSet<>();
     private long unattributedTraffic = 0L;
+    // HS-CB-fase2 (parte A): acumulador POR ALTURA, SEM corte local e nunca zerado, independente dos contadores acima
+    // (chave long; ver NetworkHeightLedger). Nao altera o C_B do primeiro no a finalizar.
+    private final NetworkHeightLedger heightLedger = new NetworkHeightLedger();
 
     /** Chave do bloco alternativo (B) fabricado para o equivocador: (altura, round, bloco real A). */
     private record AlternativeKey(long height, int round, TendermintBlock real) { }
@@ -427,6 +431,7 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
 
     public void addBlockTraffic(B block, long bytes) {
         requireTraffic(block, bytes);
+        heightLedger.addBlockPacket(block.getHeight(), bytes); // sem corte local (HS-CB-fase2)
         if (locallyFinalized.contains(block)) {
             return;
         }
@@ -435,6 +440,7 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
 
     public void addConsensusMessageTraffic(B block, long bytes) {
         requireTraffic(block, bytes);
+        heightLedger.addConsensusBytes(block.getHeight(), bytes); // sem corte local (HS-CB-fase2)
         if (locallyFinalized.contains(block)) {
             return;
         }
@@ -477,11 +483,17 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
                 throw new IllegalArgumentException("bytes deve ser >= 0: " + packetBytes);
             }
             unattributedTraffic += packetBytes;
+            heightLedger.addUnattributed(packetBytes); // (ii) provisoria; contador que take nao zera
             return;
         }
         B block = castBlock(message.getBlock());
         addBlockTraffic(block, packetBytes);
         addConsensusMessageTraffic(block, packetBytes);
+    }
+
+    /** HS-CB-fase2 (parte A): acumulador por altura deste no (sem corte local, nunca zerado); o protocolo nao o le. */
+    public NetworkHeightLedger getHeightLedger() {
+        return heightLedger;
     }
 
     public long getUnattributedTraffic() {
@@ -499,6 +511,7 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
             throw new IllegalArgumentException("block obrigatorio");
         }
         locallyFinalized.add(block);
+        heightLedger.markFinalized(block.getHeight()); // so rotula (i) no acumulador por altura; o corte nao muda
     }
 
     public boolean isLocallyFinalized(B block) {

@@ -596,6 +596,26 @@ public class SimulationMetrics {
     public int getDoubleSpendSuccesses() { return doubleSpendSuccesses; }
     public List<Long> getBlockFinalizationTimes() { return blockFinalizationTimes; }
     public List<Long> getBlockTraffics() { return blockTraffics; }
+
+    // ===== HS-CB-fase2 (parte A): C_B do primeiro no por altura e SOMA DA REDE =====
+    // Aditivo: nao altera recordBlockTraffic nem os acumuladores acima. Chave int (altura); TreeMap por valor.
+    private final TreeMap<Integer, Long> firstNodeCbByHeight = new TreeMap<>();
+    private CbRedeMedida.Result cbRede;
+
+    /**
+     * C_B_total do primeiro no a finalizar a altura (o mesmo valor entregue a {@link #recordBlockTraffic}), guardado
+     * POR ALTURA para as estatisticas de {@link CbRedeMedida}. Uma vez por altura (o logger ja filtra duplicatas).
+     */
+    public void recordFirstNodeCb(int height, long trafficBytes) {
+        firstNodeCbByHeight.put(height, trafficBytes);
+    }
+
+    /** Altura -&gt; C_B do primeiro no a finalizar (ordem crescente de altura). */
+    public Map<Integer, Long> getFirstNodeCbByHeight() { return firstNodeCbByHeight; }
+
+    /** Soma da rede por bloco desta corrida; {@code null} = nao medido (protocolo diferente de HOTSTUFF/TENDERMINT). */
+    public CbRedeMedida.Result getCbRede() { return cbRede; }
+    public void setCbRede(CbRedeMedida.Result cbRede) { this.cbRede = cbRede; }
     public List<Long> getConfirmationLatencies() { return confirmationLatencies; }
     
     // ===== HYBRID NETWORK METRICS =====

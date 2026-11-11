@@ -1,0 +1,52 @@
+semente=2 timeout=900s por execucao; 32 execucoes, no maximo 4 JVM simultaneas
+flags extras (nos dois lados, so no protocolo indicado): TENDERMINT: --tm-propose-timeout=1.0 --tm-propose-delta=0.5 --tm-prevote-timeout=1.0 --tm-prevote-delta=0.5 --tm-precommit-timeout=1.0 --tm-precommit-delta=0.5 --tm-batch-size=20 --tm-tx-size=512 --tm-signature-size=64 --tm-proposer-signature-size=80 --tm-message-overhead=10
+
+== ARQ n=10 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (34 linhas) 
+   atual    a x b                : IDENTICO (34 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (34 linhas) 
+
+== AMBIFY n=10 duracao=60s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (6 linhas) 
+   atual    a x b                : IDENTICO (6 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (6 linhas) 
+
+== MCO2 n=50 duracao=600s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (15 linhas) 
+   atual    a x b                : IDENTICO (15 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (15 linhas) 
+
+== OFFSET n=40 duracao=20000s semente=2
+   execucoes (rc, segundos): base-a=0,5s, base-b=0,4s, atual-a=0,4s, atual-b=0,4s
+   baseline a x b (pre-existente?): IDENTICO (16 linhas) 
+   atual    a x b                : IDENTICO (16 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (16 linhas) 
+
+== EARTH n=40 duracao=20000s semente=2
+   execucoes (rc, segundos): base-a=0,3s, base-b=0,4s, atual-a=0,4s, atual-b=0,4s
+   baseline a x b (pre-existente?): IDENTICO (35 linhas) 
+   atual    a x b                : IDENTICO (35 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (35 linhas) 
+
+== DAGSPER n=10 duracao=600s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (19 linhas) 
+   atual    a x b                : IDENTICO (19 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (19 linhas) 
+
+== TENDERMINT n=4 duracao=20s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (339 linhas) 
+   atual    a x b                : IDENTICO (339 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (339 linhas) 
+   aditivo mvp-results-cb.csv atual a x b (sem base): IDENTICO (1 linhas) 
+
+== TENDERMINT n=7 duracao=20s semente=2
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (319 linhas) 
+   atual    a x b                : IDENTICO (319 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (319 linhas) 
+   aditivo mvp-results-cb.csv atual a x b (sem base): IDENTICO (1 linhas) 

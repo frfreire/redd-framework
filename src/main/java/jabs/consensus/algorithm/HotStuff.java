@@ -23,6 +23,7 @@ import jabs.ledgerdata.hotstuff.HotStuffBlockWithTx;
 import jabs.ledgerdata.hotstuff.HotStuffQcMessage;
 import jabs.ledgerdata.hotstuff.HotStuffQuorumCertificate;
 import jabs.ledgerdata.hotstuff.HotStuffVote;
+import jabs.metrics.NetworkHeightLedger;
 import jabs.network.message.HotStuffProposalMessage;
 import jabs.network.message.HotStuffQcNetworkMessage;
 import jabs.network.message.Packet;
@@ -209,6 +210,9 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
     private final HashSet<B> locallyFinalized = new HashSet<>();
     // NEW_VIEW sem QC: nao nomeia bloco; contado a parte (ver javadoc da classe). Total == consenso.
     private long unattributedTraffic = 0L;
+    // HS-CB-fase2 (parte A): acumulador POR ALTURA, SEM corte local e nunca zerado, alimentado nos mesmos pontos dos
+    // contadores acima mas independente deles (chave long; ver NetworkHeightLedger). Nao altera o C_B do 1o no.
+    private final NetworkHeightLedger heightLedger = new NetworkHeightLedger();
 
     // ---- D3a-2a-2c-2a: lado da REPLICA do caminho honesto ----
     private final ViewLeaders leaders;
@@ -309,6 +313,7 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
      */
     public void addBlockTraffic(B block, long bytes) {
         requireTraffic(block, bytes);
+        heightLedger.addBlockPacket(block.getHeight(), bytes); // sem corte local (HS-CB-fase2); antes do corte abaixo
         if (locallyFinalized.contains(block)) {
             return; // corte: depois da finalizacao local o pacote nao entra mais (convencao PBFT)
         }
@@ -321,6 +326,7 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
      */
     public void addConsensusMessageTraffic(B block, long bytes) {
         requireTraffic(block, bytes);
+        heightLedger.addConsensusBytes(block.getHeight(), bytes); // sem corte local (HS-CB-fase2)
         if (locallyFinalized.contains(block)) {
             return; // mesmo corte de addBlockTraffic
         }
@@ -378,7 +384,16 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
                 throw new IllegalArgumentException("bytes deve ser >= 0: " + packetBytes);
             }
             unattributedTraffic += packetBytes;
+            heightLedger.addUnattributed(packetBytes); // (ii) provisoria; contador que take nao zera
         }
+    }
+
+    /**
+     * HS-CB-fase2 (parte A): acumulador por altura deste no (sem corte local, nunca zerado), lido por
+     * {@code jabs.metrics.CbRedeMedida} para a SOMA DA REDE por bloco. O protocolo nao o le.
+     */
+    public NetworkHeightLedger getHeightLedger() {
+        return heightLedger;
     }
 
     /** Bytes de mensagens sem bloco (NEW_VIEW sem QC) recebidos por este no desde o ultimo take. */
@@ -399,6 +414,7 @@ public class HotStuff<B extends SingleParentBlock<B>, T extends Tx<T>> extends A
             throw new IllegalArgumentException("block obrigatorio");
         }
         locallyFinalized.add(block);
+        heightLedger.markFinalized(block.getHeight()); // so rotula (i) no acumulador por altura; o corte nao muda
     }
 
     public boolean isLocallyFinalized(B block) {

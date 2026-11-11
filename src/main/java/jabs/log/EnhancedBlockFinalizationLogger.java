@@ -140,6 +140,7 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             // Collect Metric 2: Network traffic for finalization (Cb)
             long traffic = finalizationEvent.getTrafficUntilFinalization();
             metrics.recordBlockTraffic(traffic);
+            metrics.recordFirstNodeCb(height, traffic); // HS-CB-fase2: mesmo valor, guardado por altura (aditivo)
             
             metrics.recordBlockGenerated();
             
