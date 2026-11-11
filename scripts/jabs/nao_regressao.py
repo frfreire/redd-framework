@@ -51,7 +51,7 @@ Tendermint use `checar-determinismo.py` (atual x atual, mesma semente), que exig
 Exemplo (valor SOMENTE DE EXEMPLO, NAO e valor de pesquisa; --foo-exemplo nao existe, so ilustra a forma):
   nao_regressao.py --base B --atual A --casos MCO2:10:60,AMBIFY:10:60 \
       --extra-flag-protocolo MCO2:--foo-exemplo=1
-HOTSTUFF (D3a-2a-2c-4) tambem e RECUSADO aqui (saida 2, antes de qualquer JVM): a baseline 45eb3e7 nao tem
+HOTSTUFF (D3a-2a-2c-4) tambem e RECUSADO aqui por padrao (saida 2, antes de qualquer JVM): a baseline 45eb3e7 nao tem
 `case HOTSTUFF` no MVPComparison (o harness engoliria "Unknown protocol" por trial e o caso viraria SEM_DADOS ou
 falso verde). O que este script prova para HOTSTUFF e o contrario: que os OUTROS protocolos nao mudaram com a
 chegada do HOTSTUFF; para exercitar o proprio HotStuff use `checar-determinismo.py` com as 11 flags --hs-*.
@@ -59,6 +59,10 @@ chegada do HOTSTUFF; para exercitar o proprio HotStuff use `checar-determinismo.
 tem `case TENDERMINT` no MVPComparison). Sem a liberacao a recusa acima continua. Se a baseline NAO tiver o caso,
 o MVPComparison dela engole "Unknown protocol" e o caso sai SEM_DADOS (saida 2): nunca um falso IDENTICO.
 As flags --tm-* entram por `--extra-flag-protocolo TENDERMINT:--tm-...=valor`, iguais nos quatro lados.
+
+`--baseline-tem HOTSTUFF` (D3a-2a-2d-2) libera o HOTSTUFF do mesmo modo, para baseline que o tenha (40ac8ab tem `case
+HOTSTUFF` desde 6bc9fad). As 11 flags --hs-* entram por `--extra-flag-protocolo HOTSTUFF:--hs-...=valor`, iguais nos
+quatro lados; sao FIXTURE, nunca calibracao. Caso HOTSTUFF cujo CSV so tenha cabecalho sai SEM_DADOS (saida 2).
 
 Opcoes da JVM: `--jvm-flag=-XX:...` (repetivel) vai antes de `-cp` nas QUATRO execucoes. Serve para provar
 Casper/Parlia/Nakamoto, cuja saida depende da sequencia de System.identityHashCode (ADR-0012/0013, N1): use
@@ -111,7 +115,7 @@ def parse_extras_protocolo(itens, protos_dos_casos, liberados=()):
         chave = flag.split("=", 1)[0]
         if proto == "TENDERMINT" and proto not in {x.upper() for x in liberados}:
             raise ValueError(recusa_tendermint())
-        if proto == "HOTSTUFF":
+        if proto == "HOTSTUFF" and proto not in {x.upper() for x in liberados}:
             raise ValueError(recusa_hotstuff())
         if chave in FLAGS_RESERVADAS:
             raise ValueError(f"--extra-flag-protocolo {item!r} redefine {chave}, que este script ja monta")
@@ -131,9 +135,10 @@ def recusa_tendermint():
 
 
 def recusa_hotstuff():
-    return ("HOTSTUFF nao e suportado em nao_regressao.py: a baseline (45eb3e7) nao tem `case HOTSTUFF` no "
-            "MVPComparison, entao nao existe comparacao base x atual. Use scripts/jabs/checar-determinismo.py "
-            "(atual x atual, mesma semente) com as 11 flags --hs-* via --extra-flag.")
+    return ("HOTSTUFF nao e suportado em nao_regressao.py sem `--baseline-tem HOTSTUFF`: uma baseline anterior a 6bc9fad "
+            "nao tem `case HOTSTUFF` no MVPComparison, entao nao existe comparacao base x atual. Use "
+            "scripts/jabs/checar-determinismo.py (atual x atual, mesma semente) com as 11 flags --hs-* via --extra-flag, "
+            "ou passe uma baseline que o tenha (ex.: 40ac8ab) com `--baseline-tem HOTSTUFF`.")
 
 
 def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax, extras=(), jvm=()):
@@ -209,6 +214,7 @@ def selftest():
     assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), []) == antigo
     assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), (), ["-XX:hashCode=2"])[:3] == ["java", "-XX:hashCode=2", "-cp"]
     assert parse_extras_protocolo(["TENDERMINT:--tm-batch-size=1"], ["TENDERMINT"], ["TENDERMINT"]) == {"TENDERMINT": ["--tm-batch-size=1"]}
+    assert parse_extras_protocolo(["HOTSTUFF:--hs-batch-size=1"], ["HOTSTUFF"], ["hotstuff"]) == {"HOTSTUFF": ["--hs-batch-size=1"]}
     assert parse_extras_protocolo([], ["MCO2"]) == {}
     ok = parse_extras_protocolo(["mco2:--foo=1", "MCO2:--bar=2"], ["MCO2", "AMBIFY"])
     assert ok == {"MCO2": ["--foo=1", "--bar=2"]}, ok
@@ -238,26 +244,27 @@ def main():
     ap.add_argument("--extra-flag-protocolo", dest="extra_proto", action="append", default=[],
                     metavar="PROTO:--CHAVE=VALOR",
                     help="flag repassada ao MVPComparison so nos casos de PROTO, nos dois lados (repetivel). "
-                         "TENDERMINT e HOTSTUFF sao recusados (a baseline nao os tem; use checar-determinismo.py).")
+                         "TENDERMINT e HOTSTUFF so passam com --baseline-tem (a baseline precisa te-los).")
     ap.add_argument("--jvm-flag", dest="jvm_flag", action="append", default=[], metavar="-XX:OPCAO",
                     help="opcao da JVM, repassada nas quatro execucoes (repetivel; use --jvm-flag=-XX:hashCode=2)")
     ap.add_argument("--baseline-tem", dest="baseline_tem", action="append", default=[], metavar="PROTO",
-                    help="libera PROTO (so TENDERMINT) quando a baseline de --base ja o tem; ver o cabecalho")
+                    help="libera PROTO (TENDERMINT ou HOTSTUFF) quando a baseline de --base ja o tem; ver o cabecalho")
     ap.add_argument("--selftest", action="store_true", help="autoteste sem JVM e sai")
     a = ap.parse_args()
     for b in a.baseline_tem:
-        if b.strip().upper() != "TENDERMINT":
-            print(f"ERRO: --baseline-tem so aceita TENDERMINT (recebido {b!r}); HOTSTUFF nao tem baseline")
+        if b.strip().upper() not in ("TENDERMINT", "HOTSTUFF"):
+            print(f"ERRO: --baseline-tem so aceita TENDERMINT ou HOTSTUFF (recebido {b!r})")
             return 2
     for j in a.jvm_flag:
         if not j.startswith("-X"):
             print(f"ERRO: --jvm-flag invalido {j!r}: use opcao da JVM comecando com -X")
             return 2
     protos = [c.split(":")[0] for c in a.casos.split(",")]
-    if any(p.strip().upper() == "TENDERMINT" for p in protos) and not a.baseline_tem:
+    liberados = {b.strip().upper() for b in a.baseline_tem}
+    if any(p.strip().upper() == "TENDERMINT" for p in protos) and "TENDERMINT" not in liberados:
         print(f"ERRO: {recusa_tendermint()}")
         return 2
-    if any(p.strip().upper() == "HOTSTUFF" for p in protos):
+    if any(p.strip().upper() == "HOTSTUFF" for p in protos) and "HOTSTUFF" not in liberados:
         print(f"ERRO: {recusa_hotstuff()}")
         return 2
     try:

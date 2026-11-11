@@ -1,0 +1,1 @@
+IDENTICO: 2 arquivo(s), 9 linha(s) comparadas (colunas *hash* ignoradas)

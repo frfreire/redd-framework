@@ -1,0 +1,11 @@
+base_commit=40ac8ab54abe1ee55fe5e3281034a4550077525e
+git diff 40ac8ab -- src scripts | sha256sum = be9dc5347fae6fd9c23f1b5add691bb9c00856d156611073c3f8a3874fd1d1c1  (55387 bytes, 869 linhas)
+arquivos rastreados modificados (entram no hash acima):
+  scripts/jabs/arquivar-nao-regressao.py
+  scripts/jabs/checar-determinismo.py
+  scripts/jabs/nao_regressao.py
+  src/main/java/jabs/config/ByzantineConfig.java
+  src/main/java/jabs/example/MVPComparison.java
+  src/test/java/jabs/example/MVPComparisonHotStuffTest.java
+arquivos NAO rastreados em src/ e scripts/ (nao entram no hash acima), com sha256 (os que estao sob o diretorio de evidencia sao listados em TABELA.txt, nao aqui):
+  ca1d8a8fa92b2f17fb2027e04427ef1b87be6b63f6a6ad6141c855dfe7cf66f3  scripts/jabs/nao_regressao_sweep.py

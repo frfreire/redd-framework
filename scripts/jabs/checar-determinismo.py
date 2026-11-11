@@ -37,6 +37,23 @@ neste script, a JVM nao inicia se faltar flag. Exemplo (valores SOMENTE DE EXEMP
       --extra-flag=--hs-aggregated-share-size=96 --extra-flag=--hs-message-overhead=10 \
       --extra-flag=--hs-signature-mode=INDIVIDUAL --extra-flag=--hs-leader-policy=ROTATING \
       --extra-flag=--hs-voter-encoding=BITMAP
+
+HOTSTUFF COM ATAQUE (D3a-2a-2d-2). O MVPComparison aceita `--attack=EQUIVOCATION` (unico ataque do HotStuff; SILENT,
+WITHHOLD, DOUBLE_SIGN e desconhecidos falham alto) com `--byzantine-count=f` (inteiro >= 1, sem padrao; a regra de
+fracao -> contagem e o universo do sorteio sao a definir com o humano: ADR-0015 B-33/Q34, B-37/Q30). Este script
+repassa as duas por --extra-flag, nas DUAS execucoes, junto com as 11 flags --hs-* (TODAS obrigatorias: o script
+recusa antes da JVM se faltar alguma). Se `--attack` ativo vier sem `--byzantine-count`, ou com ele invalido, o script
+tambem recusa antes da JVM. Comando exato que funciona (fixture, NAO e calibracao; n=4 com f=1):
+  python3 scripts/jabs/checar-determinismo.py --jabs . --protocolo HOTSTUFF --validadores 4 --duracao 30 --semente 1 \
+      --extra-flag=--hs-view-timeout=10.0 --extra-flag=--hs-max-future-view-horizon=1000 \
+      --extra-flag=--hs-batch-size=20 --extra-flag=--hs-tx-size=512 \
+      --extra-flag=--hs-individual-signature-size=64 --extra-flag=--hs-aggregated-signature-size=96 \
+      --extra-flag=--hs-aggregated-share-size=96 --extra-flag=--hs-message-overhead=10 \
+      --extra-flag=--hs-signature-mode=INDIVIDUAL --extra-flag=--hs-leader-policy=ROTATING \
+      --extra-flag=--hs-voter-encoding=BITMAP \
+      --extra-flag=--attack=EQUIVOCATION --extra-flag=--byzantine-count=1
+Para n=7 troque `--validadores 7` (e, p.ex., `--byzantine-count=2`). A comparacao cobre o CSV por bloco (colunas *hash*
+ignoradas) E o CSV agregado mvp-results.csv (linhas '#' ignoradas).
 Autoteste sem JVM: `checar-determinismo.py --selftest`.
 """
 import argparse
@@ -99,7 +116,8 @@ def flags_hs_do_java(jabs: Path):
     ini = src.find("parseHotStuffConfigIfRequested(java.util.List<String> protocols")
     if ini < 0:
         raise ValueError(f"parseHotStuffConfigIfRequested nao encontrado em {jabs / MVP_COMPARISON}")
-    corpo = src[ini:src.find("static void rejectAttackForHotStuff", ini)]
+    fim = src.find("\n    }\n", ini)  # fim do metodo (corpo termina em `.build();` + `}` na coluna 4)
+    corpo = src[ini:fim if fim > 0 else len(src)]
     return ["--" + m for m in re.findall(r'required(?:Double|Int|Long|Enum)\(cli,\s*"(hs-[a-z-]+)"', corpo)]
 
 
@@ -156,6 +174,27 @@ def hs_faltantes(proto, extras):
         return []
     mapa = validar_extras(extras)
     return [f for f in HS_FLAGS_OBRIGATORIAS if not mapa.get(f, "").strip()]
+
+
+def hs_ataque_invalido(proto, extras, validadores):
+    """Mensagem de erro (ou None) para --attack/--byzantine-count passados por --extra-flag com HOTSTUFF. Espelha
+    MVPComparison.resolveHotStuffAttack/resolveByzantineCount so para falhar ANTES da JVM; a verdade e o Java."""
+    if not any(p.strip().upper() == "HOTSTUFF" for p in str(proto).split(",")):
+        return None
+    mapa = validar_extras(extras)
+    ataque = mapa.get("--attack")
+    contagem = mapa.get("--byzantine-count")
+    if ataque is None or ataque.strip().lower() in ("none", "nenhum"):
+        if contagem is not None and contagem.strip() != "0":
+            return f"--byzantine-count={contagem} sem ataque ativo seria ignorado em silencio"
+        return None
+    if ataque.strip().upper() != "EQUIVOCATION":
+        return f"HOTSTUFF so implementa EQUIVOCATION (recebido {ataque!r})"
+    if contagem is None or not contagem.strip().lstrip("+").isdigit() or int(contagem) < 1:
+        return "--attack=EQUIVOCATION exige --byzantine-count=f (inteiro >= 1, sem valor padrao)"
+    if int(contagem) > validadores:
+        return f"--byzantine-count={contagem} maior que n={validadores}"
+    return None
 
 
 def montar_cmd(cp, proto, n, dur, semente, trials, saida, extras=()):
@@ -253,6 +292,18 @@ def selftest():
             pass
         else:
             raise AssertionError("conferir_hs_com_java deveria falhar sem a checagem de hs-leader-policy")
+    # 4d) ataque HOTSTUFF: so EQUIVOCATION, contagem inteira >= 1 e <= n; fora do HOTSTUFF nada e exigido
+    assert hs_ataque_invalido("ARQ", ["--attack=SILENT"], 4) is None
+    assert hs_ataque_invalido("HOTSTUFF", [], 4) is None
+    assert hs_ataque_invalido("HOTSTUFF", ["--attack=none"], 4) is None
+    assert hs_ataque_invalido("HOTSTUFF", ["--attack=EQUIVOCATION", "--byzantine-count=1"], 4) is None
+    assert hs_ataque_invalido("hotstuff", ["--attack=equivocation", "--byzantine-count=2"], 7) is None
+    for ex in (["--attack=EQUIVOCATION"], ["--attack=EQUIVOCATION", "--byzantine-count=0"],
+               ["--attack=EQUIVOCATION", "--byzantine-count=1.5"], ["--attack=EQUIVOCATION", "--byzantine-count=5"],
+               ["--attack=SILENT", "--byzantine-count=1"], ["--attack=WITHHOLD", "--byzantine-count=1"],
+               ["--attack=DOUBLE_SIGN", "--byzantine-count=1"], ["--attack=x", "--byzantine-count=1"],
+               ["--byzantine-count=1"], ["--attack=none", "--byzantine-count=1"]):
+        assert hs_ataque_invalido("HOTSTUFF", ex, 4), ex
     # 5) validacao
     for ruim in ("tm-batch-size=1", "--sem-valor", "--seed=2", "--tm-batch-size=1,--tm-batch-size=2"):
         try:
@@ -295,6 +346,14 @@ def main():
         print(f"ERRO: protocolo HOTSTUFF exige {len(faltam_hs)} flag(s) --hs-* sem valor padrao "
               f"(MVPComparison.parseHotStuffConfigIfRequested; ADR-0015, valores a definir com o humano). "
               f"Faltam: {', '.join(faltam_hs)}. Passe cada uma como --extra-flag=--hs-...=valor. A JVM nao foi iniciada.")
+        return 2
+    try:
+        ruim = hs_ataque_invalido(a.protocolo, a.extra_flag, a.validadores)
+    except ValueError as e:
+        print(f"ERRO: {e}")
+        return 2
+    if ruim:
+        print(f"ERRO: ataque HOTSTUFF invalido: {ruim}. A JVM nao foi iniciada.")
         return 2
     jabs = Path(a.jabs).resolve()
     if hs_faltantes(a.protocolo, []):  # protocolo inclui HOTSTUFF: a lista do script tem de bater com o Java

@@ -89,8 +89,10 @@ def main():
                 if not da.is_dir():
                     print(f"ERRO: {da} ausente")
                     return 2
-                nomes = sorted(p.name for p in db.glob("*.csv"))
-                if nomes != sorted(p.name for p in da.glob("*.csv")):
+                # rglob: casos do nao_regressao.py tem os CSV na raiz da pasta (nome simples, como antes); os do
+                # nao_regressao_sweep.py (D3a-2a-2d-2) tem tambem tmp/<TIPO>/*.csv (nome relativo, subpasta preservada)
+                nomes = sorted(str(p.relative_to(db)) for p in db.rglob("*.csv"))
+                if nomes != sorted(str(p.relative_to(da)) for p in da.rglob("*.csv")):
                     print(f"ERRO: {caso}: conjuntos de CSV diferem")
                     return 2
                 for nome in nomes:
@@ -98,9 +100,9 @@ def main():
                     copiado = len(bb) <= a.limite_bytes and len(ba) <= a.limite_bytes
                     if copiado:
                         for lado, dados in (("base-a", bb), ("atual-a", ba)):
-                            alvo = destino / s / g / caso / lado
-                            alvo.mkdir(parents=True, exist_ok=True)
-                            (alvo / nome).write_bytes(dados)
+                            alvo = destino / s / g / caso / lado / nome
+                            alvo.parent.mkdir(parents=True, exist_ok=True)
+                            alvo.write_bytes(dados)
                     tabela.append(" | ".join([f"{s}/{g}/{caso}/{nome}", str(len(bb)), str(linhas(bb)), str(len(ba)),
                                               str(linhas(ba)), sha256_bytes(bb), sha256_bytes(ba),
                                               "IGUAL" if bb == ba else "DIFERE",

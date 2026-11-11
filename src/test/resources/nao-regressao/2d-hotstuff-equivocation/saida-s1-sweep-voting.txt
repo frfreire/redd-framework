@@ -1,0 +1,8 @@
+ByzantineSweep type=VOTING n=10 max-byz=3 trials=2 duration=60 attack=EQUIVOCATION semente=1 jvm=(nenhuma)
+   base-a: rc=0 4s  cmd=java -cp jabs.example.ByzantineSweep --type=VOTING --validators=10 --max-byz=3 --trials=2 --duration=60 --attack=EQUIVOCATION --seed=1 --out=/tmp/opencode/nr-2d/final3/s1/sweep-voting-novo/VOTING-10n-fmax3-2t-60s-base-a/s.csv  (classpath omitido: /tmp/opencode/base-40ac8ab/target/classes + target/cp.txt)
+   base-b: rc=0 4s  cmd=java -cp jabs.example.ByzantineSweep --type=VOTING --validators=10 --max-byz=3 --trials=2 --duration=60 --attack=EQUIVOCATION --seed=1 --out=/tmp/opencode/nr-2d/final3/s1/sweep-voting-novo/VOTING-10n-fmax3-2t-60s-base-b/s.csv  (classpath omitido: /tmp/opencode/base-40ac8ab/target/classes + target/cp.txt)
+   atual-a: rc=0 4s  cmd=java -cp jabs.example.ByzantineSweep --type=VOTING --validators=10 --max-byz=3 --trials=2 --duration=60 --attack=EQUIVOCATION --seed=1 --out=/tmp/opencode/nr-2d/final3/s1/sweep-voting-novo/VOTING-10n-fmax3-2t-60s-atual-a/s.csv  (classpath omitido: /home/fabricio.freire/Projetos/redd-framework/target/classes + target/cp.txt)
+   atual-b: rc=0 4s  cmd=java -cp jabs.example.ByzantineSweep --type=VOTING --validators=10 --max-byz=3 --trials=2 --duration=60 --attack=EQUIVOCATION --seed=1 --out=/tmp/opencode/nr-2d/final3/s1/sweep-voting-novo/VOTING-10n-fmax3-2t-60s-atual-b/s.csv  (classpath omitido: /home/fabricio.freire/Projetos/redd-framework/target/classes + target/cp.txt)
+   baseline a x b (pre-existente?): IDENTICO (154 linhas de dados, todos os CSV da pasta) 
+   atual    a x b                : IDENTICO (154 linhas de dados, todos os CSV da pasta) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (154 linhas de dados, todos os CSV da pasta) 

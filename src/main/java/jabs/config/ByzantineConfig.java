@@ -1,5 +1,7 @@
 package jabs.config;
 
+import jabs.simulator.randengine.RandomnessEngine;
+
 import java.util.*;
 
 /**
@@ -121,6 +123,53 @@ public class ByzantineConfig {
             int validatorId = random.nextInt(totalValidators);
             byzantineValidatorIds.add(validatorId);
         }
+    }
+
+    /**
+     * Sal XOR-ado a semente do cenario para obter a semente do fluxo DEDICADO do sorteio bizantino de
+     * {@link #withExactCount}. Constante fixa (nao e parametro de pesquisa): so separa o fluxo do sorteio do fluxo
+     * da simulacao, que usa a semente "crua" no {@code RandomnessEngine} do cenario.
+     */
+    public static final long BYZANTINE_STREAM_SALT = 0x425A414E54494E45L;
+
+    /**
+     * Fluxo de aleatoriedade DEDICADO ao sorteio bizantino: um {@link RandomnessEngine} proprio, semeado por
+     * {@code seed ^ BYZANTINE_STREAM_SALT}. E independente do engine do cenario (rede, blocos, transacoes): criar e
+     * consumir este fluxo NAO desloca a sequencia da simulacao, entao a saida sem ataque segue identica e a mesma
+     * semente produz a mesma simulacao para qualquer {@code f}.
+     */
+    public static RandomnessEngine byzantineStream(long seed) {
+        return new RandomnessEngine(seed ^ BYZANTINE_STREAM_SALT);
+    }
+
+    /**
+     * Config com EXATAMENTE {@code count} bizantinos entre {@code totalValidators}, para o caminho do HOTSTUFF
+     * (ADR-0015 B-37/B-38). Sorteio: {@code nextInt(totalValidators)} no {@link #byzantineStream(long)} da semente
+     * ate o conjunto ter {@code count} ids; para a mesma semente o conjunto de {@code f} e prefixo do de {@code f+1}
+     * (aninhado entre valores de f) e a mesma semente da o mesmo conjunto. NAO usa {@code java.util.Random} e NAO e
+     * o laco do construtor por percentual (que segue intacto, com {@code java.util.Random}, para nao mudar o
+     * conjunto de ARQ/Parlia/Casper): os dois caminhos NAO produzem o mesmo conjunto para a mesma semente.
+     *
+     * <p>A regra de arredondamento de fracao para contagem (ADR-0015 B-33/Q34) segue {@code a definir com o humano}
+     * e nao e decidida aqui; o universo do sorteio (todos os nos x so validadores, B-37/Q30) tambem: aqui e
+     * {@code [0, totalValidators)}.
+     *
+     * @throws IllegalArgumentException se {@code totalValidators < 1}, {@code count} fora de [0, totalValidators]
+     *                                  ou o nome do ataque for invalido
+     */
+    public static ByzantineConfig withExactCount(int totalValidators, int count, String attackType, long randomSeed) {
+        if (totalValidators < 1) {
+            throw new IllegalArgumentException("totalValidators deve ser >= 1: " + totalValidators);
+        }
+        if (count < 0 || count > totalValidators) {
+            throw new IllegalArgumentException("contagem bizantina fora de [0, " + totalValidators + "]: " + count);
+        }
+        RandomnessEngine stream = byzantineStream(randomSeed);
+        Set<Integer> ids = new HashSet<>();
+        while (ids.size() < count) {
+            ids.add(stream.nextInt(totalValidators));
+        }
+        return new ByzantineConfig(totalValidators, ids, attackType, randomSeed);
     }
     
     /**

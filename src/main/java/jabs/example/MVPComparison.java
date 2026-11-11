@@ -60,14 +60,19 @@ public class MVPComparison {
                 tendermintConfig.validateFor(validators);
             }
         }
-        // HotStuff (D3a-2a-2c-4): todas as flags --hs-* sao obrigatorias e sem padrao; n < 4 e ataque falham ANTES de criar saida.
-        rejectAttackForHotStuff(protocolList, cli);
+        // HotStuff (D3a-2a-2c-4): todas as flags --hs-* sao obrigatorias e sem padrao; n < 4 e ataque invalido falham
+        // ANTES de criar saida. D3a-2a-2d-2: so EQUIVOCATION e aceito, com --byzantine-count explicito.
+        // null = nenhum ataque pedido E o enum AttackType NAO foi tocado: tocar o enum aqui, na thread principal e antes
+        // da simulacao, desloca a sequencia de identityHashCode e muda a saida de Parlia/Casper/Nakamoto/MCO2/AMBIFY/
+        // OFFSET/EARTH sem -XX:hashCode=2 (medido em D3a-2a-2d-2; ADR-0012/0013). Ver attackForMain.
+        ByzantineConfig.AttackType hotStuffAttack = attackForMain(protocolList, cli);
         HotStuffConsensusConfig hotStuffConfig = parseHotStuffConfigIfRequested(protocolList, cli);
         if (hotStuffConfig != null) {
             for (int validators : validatorsList) {
                 hotStuffConfig.validateFor(validators);
             }
         }
+        int hotStuffByzantineCount = resolveByzantineCount(protocolList, hotStuffAttack, cli, validatorsList);
         int trials = Integer.parseInt(cli.getOrDefault("trials", "5"));
         double defaultDuration = Double.parseDouble(cli.getOrDefault("duration", "600"));
         long baseSeed = Long.parseLong(cli.getOrDefault("seed", "12345"));
@@ -113,7 +118,7 @@ public class MVPComparison {
         }
 
         // Initialize CSV file with header
-        initializeCSV(csvOut, nodesMode, sizingLines);
+        initializeCSV(csvOut, nodesMode, sizingLines, attackLines(hotStuffAttack, hotStuffByzantineCount));
 
         for (int validators : validatorsList) {
             System.out.println("\n╔═══════════════════════════════════════╗");
@@ -133,9 +138,15 @@ public class MVPComparison {
                     System.out.println("    Trial " + (trial + 1) + "/" + trials + " (seed=" + runSeed + ")");
 
                     try {
+                        // so com ataque ativo (que so passa na validacao com TODOS os protocolos HOTSTUFF): sorteio por
+                        // ByzantineConfig.withExactCount com a semente do trial, em fluxo RandomnessEngine DEDICADO (ADR-0015 B-37/B-38)
+                        ByzantineConfig hotStuffByzantine = noAttack(hotStuffAttack) ? null
+                                : ByzantineConfig.withExactCount(validators, hotStuffByzantineCount,
+                                        hotStuffAttack.name(), runSeed);
                         SimulationMetrics metrics = runProtocol(protocol, validators, runSeed, protocolDuration,
                             outputRoot + "/" + protocol.toLowerCase() + "-" + validators + "v-t" + trial + ".csv",
-                            enableTransactions, txInterval, nodesMode, tendermintConfig, hotStuffConfig);
+                            enableTransactions, txInterval, nodesMode, tendermintConfig, hotStuffConfig,
+                            hotStuffByzantine);
                         
                         // Accumulate metrics
                         acc.addTrial(
@@ -173,7 +184,8 @@ public class MVPComparison {
             "tm-signature-size", "tm-proposer-signature-size",
             "hs-view-timeout", "hs-max-future-view-horizon", "hs-batch-size", "hs-tx-size",
             "hs-individual-signature-size", "hs-aggregated-signature-size", "hs-aggregated-share-size",
-            "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding"};
+            "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding",
+            "attack", "byzantine-count"};
 
     /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
     private static boolean loadRecordOn = false;
@@ -336,24 +348,136 @@ public class MVPComparison {
     }
 
     /**
-     * O HotStuff so tem o caminho honesto (o ataque EQUIVOCATION e a tarefa 2d). O {@code MVPComparison} nao tem
-     * parametro de ataque; se alguem passar {@code --attack=X} junto com HOTSTUFF, so {@code none}/{@code nenhum} e
-     * aceito (a flag e ignorada pelos demais protocolos, mas aqui um ataque pedido e ignorado em silencio mudaria o
-     * significado do resultado).
+     * Ataque pedido por {@code --attack} (D3a-2a-2d-2). Ausente, {@code none} ou {@code nenhum} (sem distincao de caixa)
+     * = {@code NONE}. Com HOTSTUFF so {@code EQUIVOCATION} (em qualquer caixa) e aceito; {@code SILENT}, {@code WITHHOLD},
+     * {@code DOUBLE_SIGN} e nome desconhecido falham alto, ANTES de criar saida. Nao ha ataque padrao.
+     *
+     * <p>Sem HOTSTUFF em {@code --protocols} a flag segue ignorada, como na baseline (o {@code MVPComparison} nunca a
+     * leu). Com HOTSTUFF MISTURADO a outro protocolo e ataque ativo, falha alto: os demais protocolos nao leem
+     * {@code --attack} aqui e rodariam honestos sob o mesmo rotulo (ataque ignorado em silencio mudaria o resultado).
      */
-    static void rejectAttackForHotStuff(java.util.List<String> protocols, java.util.Map<String, String> cli) {
+    /**
+     * Leitura de {@code --attack} para o {@code main}: devolve {@code null} (sem tocar o enum {@code AttackType}) quando
+     * a flag esta ausente ou nenhum protocolo e HOTSTUFF; so com a flag E HOTSTUFF delega a
+     * {@link #resolveHotStuffAttack}. Motivo: a primeira execucao de {@code ByzantineConfig.AttackType.NONE} inicializa o
+     * enum e consome identityHashCode na thread principal; antes da D3a-2a-2d-2 isso so acontecia dentro do cenario,
+     * e a saida dos protocolos sensiveis a hash de identidade (sem {@code -XX:hashCode=2}) dependia dessa posicao.
+     */
+    static ByzantineConfig.AttackType attackForMain(java.util.List<String> protocols, java.util.Map<String, String> cli) {
         String attack = cli.get("attack");
         if (attack == null) {
-            return;
+            return null;
         }
+        boolean temHotStuff = false;
+        for (String protocol : protocols) {
+            temHotStuff |= isHotStuff(protocol);
+        }
+        if (!temHotStuff) {
+            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+            return null;
+        }
+        return resolveHotStuffAttack(protocols, cli);
+    }
+
+    /** {@code true} para {@code null} (nao pedido) e para {@code NONE}; a comparacao com o enum so roda se nao for null. */
+    static boolean noAttack(ByzantineConfig.AttackType attack) {
+        return attack == null || attack == ByzantineConfig.AttackType.NONE;
+    }
+
+    static ByzantineConfig.AttackType resolveHotStuffAttack(java.util.List<String> protocols,
+            java.util.Map<String, String> cli) {
+        String attack = cli.get("attack");
+        if (attack == null) {
+            return ByzantineConfig.AttackType.NONE;
+        }
+        boolean temHotStuff = false;
+        boolean temOutro = false;
         for (String protocol : protocols) {
             if (isHotStuff(protocol)) {
-                if (attack.equalsIgnoreCase("none") || attack.equalsIgnoreCase("nenhum")) {
-                    return;
-                }
-                throw new IllegalArgumentException("ataque " + attack + " ainda nao implementado para HOTSTUFF (2d)");
+                temHotStuff = true;
+            } else {
+                temOutro = true;
             }
         }
+        if (!temHotStuff) {
+            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+            return ByzantineConfig.AttackType.NONE;
+        }
+        String nome = attack.trim();
+        if (nome.equalsIgnoreCase("none") || nome.equalsIgnoreCase("nenhum")) {
+            return ByzantineConfig.AttackType.NONE;
+        }
+        ByzantineConfig.AttackType tipo;
+        try {
+            tipo = ByzantineConfig.AttackType.valueOf(nome.toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("ataque desconhecido '" + attack + "' para HOTSTUFF. Validos: "
+                    + ByzantineConfig.validAttackNames() + " (so EQUIVOCATION implementado; none/nenhum = sem ataque)", e);
+        }
+        if (tipo == ByzantineConfig.AttackType.NONE) {
+            return tipo;
+        }
+        if (tipo != ByzantineConfig.AttackType.EQUIVOCATION) {
+            throw new IllegalArgumentException("ataque " + tipo + " nao implementado para HOTSTUFF (so EQUIVOCATION)");
+        }
+        if (temOutro) {
+            throw new IllegalArgumentException("--attack=" + tipo + " so e aceito com --protocols contendo apenas HOTSTUFF: "
+                    + "os demais protocolos nao leem --attack no MVPComparison e rodariam sem ataque (use ByzantineSweep)");
+        }
+        return tipo;
+    }
+
+    /**
+     * Quantidade de bizantinos de {@code --byzantine-count} (inteiro, sem padrao): obrigatoria e {@code >= 1} com ataque
+     * ativo; sem ataque, a flag so e aceita se for {@code 0} (contagem sem ataque seria ignorada em silencio). Cada
+     * {@code n} de {@code validators} precisa ter {@code count <= n}. Fracao NAO e aceita: a regra de arredondamento de
+     * fracao para contagem e o universo do sorteio sao {@code a definir com o humano} (ADR-0015 B-33/Q34, B-37/Q30).
+     * Falha antes de criar saida. Devolve 0 sem ataque.
+     */
+    static int resolveByzantineCount(java.util.List<String> protocols, ByzantineConfig.AttackType attack,
+            java.util.Map<String, String> cli, java.util.List<Integer> validators) {
+        String bruto = cli.get("byzantine-count");
+        if (noAttack(attack)) {
+            boolean temHotStuff = false;
+            for (String protocol : protocols) {
+                temHotStuff |= isHotStuff(protocol);
+            }
+            // sem HOTSTUFF o MVPComparison nunca leu esta flag: ignorada como na baseline
+            if (temHotStuff && bruto != null && !"0".equals(bruto.trim())) {
+                throw new IllegalArgumentException("--byzantine-count=" + bruto + " sem ataque ativo (--attack="
+                        + cli.get("attack") + "): a contagem seria ignorada em silencio");
+            }
+            return 0;
+        }
+        if (bruto == null || bruto.isBlank()) {
+            throw new IllegalArgumentException("--attack=" + attack + " exige --byzantine-count=f (inteiro >= 1, sem valor "
+                    + "padrao; a definir com o humano: ADR-0015 B-33/Q34)");
+        }
+        int count;
+        try {
+            count = Integer.parseInt(bruto.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--byzantine-count invalido (inteiro esperado, fracao nao aceita): " + bruto, e);
+        }
+        if (count < 1) {
+            throw new IllegalArgumentException("--byzantine-count deve ser >= 1 com ataque ativo: " + count);
+        }
+        for (int n : validators) {
+            if (count > n) {
+                throw new IllegalArgumentException("--byzantine-count=" + count + " maior que n=" + n);
+            }
+        }
+        return count;
+    }
+
+    /** Linhas '#' do CSV agregado que declaram o ataque; vazio sem ataque (o CSV honesto fica byte a byte o de sempre). */
+    static java.util.List<String> attackLines(ByzantineConfig.AttackType attack, int count) {
+        if (noAttack(attack)) {
+            return java.util.Collections.emptyList();
+        }
+        return java.util.List.of(new StringBuilder("# attack=").append(attack).append(" byzantine_count=").append(count)
+                .append(" (HOTSTUFF; sorteio RandomnessEngine dedicado (semente do trial ^ sal) em [0,n), nao o laco do ARQ; coluna n = validadores;")
+                .append(" particao, abrangencia e coordenacao PROVISORIAS: ADR-0015 Q28)").toString());
     }
 
     /** Liga o registro de carga neste cenario, se ligado por linha de comando. Desligado: retorna sem fazer nada. */
@@ -566,7 +690,7 @@ public class MVPComparison {
      * Initialize CSV file with header
      */
     private static void initializeCSV(String csvPath, boolean nodesMode,
-            java.util.List<String> sizingLines) throws IOException {
+            java.util.List<String> sizingLines, java.util.List<String> attackLines) throws IOException {
         try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(csvPath))) {
             // Modo legacy: o CSV e BYTE A BYTE o da baseline 325f4e3 (so o cabecalho, sem linhas '#'); o
             // dimensionamento do modo legacy ja sai no stdout ("n-semantics=", "Network sizing:").
@@ -578,6 +702,10 @@ public class MVPComparison {
                 for (String line : sizingLines) {
                     bw.write(new StringBuilder("# ").append(line).append('\n').toString());
                 }
+            }
+            for (String line : attackLines) {
+                bw.write(line);
+                bw.write('\n');
             }
             bw.write("project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std\n");
         }
@@ -609,6 +737,15 @@ public class MVPComparison {
             double duration, String outputPath, boolean enableTx, double txInterval,
             boolean nodesMode, TendermintConsensusConfig tendermintConfig,
             HotStuffConsensusConfig hotStuffConfig) throws Exception {
+        return runProtocol(protocol, validators, seed, duration, outputPath, enableTx, txInterval, nodesMode,
+                tendermintConfig, hotStuffConfig, null);
+    }
+
+    /** {@code hotStuffByzantine}: so o HOTSTUFF o le ({@code null} = sem ataque, o caminho de sempre). */
+    static SimulationMetrics runProtocol(String protocol, int validators, long seed,
+            double duration, String outputPath, boolean enableTx, double txInterval,
+            boolean nodesMode, TendermintConsensusConfig tendermintConfig,
+            HotStuffConsensusConfig hotStuffConfig, ByzantineConfig hotStuffByzantine) throws Exception {
         
         switch (normalizeProtocol(protocol)) {
             case "EARTH":
@@ -628,7 +765,7 @@ public class MVPComparison {
             case "TENDERMINT":
                 return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig);
             case "HOTSTUFF":
-                return runHotStuffScenario(validators, seed, duration, outputPath, hotStuffConfig);
+                return runHotStuffScenario(validators, seed, duration, outputPath, hotStuffConfig, hotStuffByzantine);
             default:
                 throw new IllegalArgumentException("Unknown protocol: " + protocol);
         }
@@ -768,12 +905,16 @@ public class MVPComparison {
      * nao finalizou bloco ou se nenhuma transacao foi confirmada (Tt nao medido).
      */
     private static SimulationMetrics runHotStuffScenario(int numNodes, long seed, double duration,
-            String outputPath, HotStuffConsensusConfig config) throws IOException {
+            String outputPath, HotStuffConsensusConfig config, ByzantineConfig byzantine) throws IOException {
         if (config == null) {
             throw new IllegalArgumentException("protocolo HOTSTUFF exige flags --hs-* (sem valor padrao)");
         }
-        HotStuffLANScenario scenario = new HotStuffLANScenario(
-                "HotStuff - " + numNodes + " validators", seed, numNodes, duration, config);
+        // Sem ataque: nome e construtor de sempre (saida identica). Com ataque: o nome declara ataque e contagem.
+        HotStuffLANScenario scenario = byzantine == null
+                ? new HotStuffLANScenario("HotStuff - " + numNodes + " validators", seed, numNodes, duration, config)
+                : new HotStuffLANScenario("HotStuff - " + numNodes + " validators, " + byzantine.getAttackType()
+                        + " f=" + byzantine.getByzantineCount(), seed, numNodes, duration, config,
+                        java.util.Set.of(), byzantine);
         scenario.addMetricsLogger(outputPath);
         attachLoadRecorder(scenario, "HOTSTUFF", seed, outputPath);
         System.out.println("Running HotStuff scenario (" + numNodes + " validators, seed=" + seed + ") ...");
