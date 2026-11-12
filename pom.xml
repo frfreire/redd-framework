@@ -74,6 +74,33 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- fixado: o padrao do Maven 3.8 (2.12.4) nao resolve offline; 3.3.1 + provider junit-platform estao no cache local (repo nexus) -->
         <version>3.3.1</version>
+        <configuration>
+          <!-- ADR-0012 (M1a-1, rodada 3): ligar o registro de carga FALHA ALTO sem -XX:hashCode=2 (GarantiaHashCode). As classes que
+               ativam o registro DENTRO da JVM do surefire rodam na execucao "hash2" abaixo, com a mesma condicao das baterias.
+               O resto da suite NAO leva a flag: com hashCode=2 todo objeto tem o mesmo hash e os HashMap chaveados por identidade
+               degeneram (PBFTPrepareEquivocationNaoRegressaoTest foi de 31 s para mais de 3 min), alem de mudar o ambiente dos demais. -->
+          <excludes>
+            <exclude>**/LinkLoadRecorderTest.java</exclude>
+            <exclude>**/GarantiaHashCodeTest.java</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>hash2</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <argLine>-XX:+UnlockExperimentalVMOptions -XX:hashCode=2</argLine>
+              <excludes combine.self="override"/>
+              <includes>
+                <include>**/LinkLoadRecorderTest.java</include>
+                <include>**/GarantiaHashCodeTest.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

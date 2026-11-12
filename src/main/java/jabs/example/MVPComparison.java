@@ -37,6 +37,9 @@ import java.nio.file.Paths;
 public class MVPComparison {
 
     public static void main(String[] args) throws IOException {
+        // ADR-0012 (M1a-1, rodada 4): com o registro ligado, a verificacao de hashCode=2 vem ANTES de qualquer escrita
+        // (banner, aviso de flag, arquivo): na falha a unica saida e a excecao GARANTIA INVALIDA.
+        exigirGarantiaAntesDeQualquerSaida(args);
         System.out.println("╔════════════════════════════════════════════════════════╗");
         System.out.println("║   MVP: Arq-REDD+ vs others - Multiple Trials Harness   ║");
         System.out.println("║   Date: 2026-03-05                                     ║");
@@ -217,6 +220,25 @@ public class MVPComparison {
     private static double loadRecordT0 = 0.0;
 
     /**
+     * Pre-varredura de {@code args} (sem escrever nada e sem {@code parseArgs}, que pode avisar no stderr): se o valor
+     * final de {@code --load-record} (mesma regra de {@code parseArgs}: a ultima ocorrencia vence) for exatamente
+     * {@code true}, chama {@code GarantiaHashCode.exigir()}. Qualquer outro caso (ausente, {@code false}, invalido)
+     * nao toca em nada: o desligado nem carrega {@code GarantiaHashCode}, e o valor invalido segue falhando em
+     * {@link #configureLoadRecord}.
+     */
+    static void exigirGarantiaAntesDeQualquerSaida(String[] args) {
+        String valor = null;
+        for (String arg : args) {
+            if (arg.startsWith("--load-record=")) {
+                valor = arg.substring("--load-record=".length());
+            }
+        }
+        if ("true".equals(valor)) {
+            jabs.log.GarantiaHashCode.exigir();
+        }
+    }
+
+    /**
      * Interpreta {@code --load-record} e {@code --load-record-t0}. Ambos ausentes = desligado (nada carregado).
      * Qualquer um presente delega a {@code LinkLoadRecorder.parseWindowStart}, que FALHA ALTO se o registro for
      * ligado sem t0, se t0 vier sem o registro ligado ou se algum valor for invalido.
@@ -228,6 +250,10 @@ public class MVPComparison {
         }
         Double t0 = jabs.log.LinkLoadRecorder.parseWindowStart(recordFlag, t0Flag);
         if (t0 != null) {
+            // Garantia de nao regressao so vale com -XX:hashCode=2: falha alto ANTES de qualquer simulacao (sem opt-out).
+            // So no caminho ligado; desligado nao carrega GarantiaHashCode nem consulta a JVM.
+            jabs.log.GarantiaHashCode.exigir();
+            System.out.println("[reprodutibilidade] registro de carga ligado: " + jabs.log.GarantiaHashCode.linhaReprodutibilidade());
             loadRecordOn = true;
             loadRecordT0 = t0;
         }

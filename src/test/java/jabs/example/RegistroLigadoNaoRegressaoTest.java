@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,28 +27,56 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * que a execucao sem registro produz tem de sair identicos byte a byte; o ligado so pode ACRESCENTAR
  * {@code *-nos.csv} e {@code *-corrida.csv}.
  *
- * <p><b>Por que {@code hashCode=2}.</b> Ligar o registro carrega classes novas (LinkLoadRecorder, LinkLoadCounters,
- * Result, PriorityQueue$Itr) e cada carga de classe na thread principal avanca a sequencia de
- * {@code System.identityHashCode}. Nos protocolos que iteram colecoes hash chaveadas por objeto sem hashCode (Casper,
- * Parlia, Nakamoto: debito 5 do ADR-0006) isso muda o resultado; no modo de hash constante nao muda. Sem a flag a
- * diferenca existe e nao e causada pela logica da instrumentacao (ver o relatorio da rodada 2 da M1a-1).
+ * <h2>ESCOPO DA GARANTIA (decisao humana de 12/11, M1a-1 rodada 2)</h2>
+ * A garantia "ligar o registro nao altera a saida" vale <b>somente com {@code -XX:+UnlockExperimentalVMOptions
+ * -XX:hashCode=2} fixado na JVM da execucao</b>, que e a condicao de reprodutibilidade das baterias. Ela
+ * <b>NAO</b> e afirmada para uma JVM com o hashCode padrao (identidade por endereco/PRNG de thread): la, ligar o
+ * registro carrega classes novas e desloca a sequencia de {@code System.identityHashCode}, o que muda a saida dos
+ * protocolos que iteram colecoes hash chaveadas por objeto sem {@code hashCode} (Casper, Parlia, Nakamoto: debito 5
+ * do ADR-0006). Esse deslocamento e do codigo ja existente, nao da logica do registro (que nao chama
+ * {@code hashCode}/{@code identityHashCode}, nao usa colecao hash nem {@code RandomnessEngine}), mas por isso uma
+ * execucao com hash padrao <b>nao e reproduzivel</b> nem com o registro desligado, e nao ha o que comparar. O teste
+ * propositalmente NAO foi tornado independente da ordem de hash.
  *
- * <p><b>Pre-condicao verificada, nao presumida:</b> o teste exige que a coluna {@code BlockHashCode} do CSV seja
- * constante (valor 1). Se a JVM ignorar a flag, a pre-condicao falha em vez de o teste passar ou falhar por engano.
+ * <p>Onde a garantia e invocada (uma bateria que liga o registro) a mesma flag e obrigatoria. O mecanismo que ja
+ * existe para isso e {@code scripts/jabs/nao_regressao.py --jvm-flag=-XX:+UnlockExperimentalVMOptions
+ * --jvm-flag=-XX:hashCode=2} (e {@code nr_hscb_fase2.py}); {@code scripts/jabs/checar-determinismo.py} NAO fixa o
+ * hashCode e portanto nao exercita esta garantia.
+ *
+ * <h2>Como a condicao e imposta (nao so dita)</h2>
+ * <ol>
+ *   <li>{@link #hashCodeFixadoNaJvmDasExecucoes()}: antes de qualquer comparacao, consulta a JVM filha com a MESMA
+ *       lista de flags do teste ({@code -XX:+PrintFlagsFinal}), exige {@code hashCode = 2} efetivo e falha com a
+ *       mensagem "GARANTIA INVALIDA" caso contrario. Tambem escreve em stdout o {@code java -version} e o valor
+ *       efetivo de {@code hashCode} (registro de reprodutibilidade no log do surefire).</li>
+ *   <li>Em cada caso, a coluna {@code BlockHashCode} do CSV tem de ser constante (valor 1): prova, na saida real,
+ *       que a flag valeu na execucao comparada.</li>
+ * </ol>
+ * Nenhuma saida EXISTENTE do simulador foi alterada para isso (o cabecalho dos CSV existentes nao ganha campo novo).
+ * Rodada 3: alem desta verificacao no teste, a condicao e IMPOSTA em execucao real: ligar o registro numa JVM sem
+ * {@code hashCode=2} falha alto ({@code GarantiaHashCode}, provado em {@code GarantiaHashCodeTest}); os dois arquivos
+ * NOVOS do registro ganham uma linha {@code # JVM:} com o valor efetivo e a versao do Java.
  */
 class RegistroLigadoNaoRegressaoTest {
     @TempDir
     Path tmp;
+
+    /** Flags de JVM que fixam o hash de identidade; as MESMAS na consulta de pre-condicao e nas execucoes. */
+    private static final List<String> FLAGS_HASH = List.of("-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2");
+
+    private static String java() {
+        return Path.of(System.getProperty("java.home"), "bin", "java").toString();
+    }
 
     private static String classpath() {
         return System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
     }
 
     private void rodar(Path out, String proto, String n, boolean ligado) throws Exception {
-        String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
-        List<String> cmd = new ArrayList<>(List.of(java, "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2", "-cp",
-                classpath(), "jabs.example.MVPComparison", "--protocols=" + proto, "--validators=" + n, "--trials=1",
-                "--duration=60", "--seed=1", "--output=" + out));
+        List<String> cmd = new ArrayList<>(List.of(java()));
+        cmd.addAll(FLAGS_HASH);
+        cmd.addAll(List.of("-cp", classpath(), "jabs.example.MVPComparison", "--protocols=" + proto,
+                "--validators=" + n, "--trials=1", "--duration=60", "--seed=1", "--output=" + out));
         if (ligado) {
             cmd.add("--load-record=true");
             cmd.add("--load-record-t0=10");
@@ -89,12 +119,55 @@ class RegistroLigadoNaoRegressaoTest {
                     assertTrue(col >= 0, caso + ": sem coluna BlockHashCode");
                     continue;
                 }
-                assertEquals("1", v[col], caso + ": -XX:hashCode=2 nao esta efetivo (BlockHashCode deveria ser 1)");
+                assertEquals("1", v[col], caso + ": GARANTIA INVALIDA: -XX:hashCode=2 nao esta efetivo na execucao"
+                        + " (BlockHashCode deveria ser 1). A garantia 'ligar o registro nao altera a saida' so vale com o"
+                        + " hashCode fixado (ver o javadoc desta classe)");
                 linhas++;
             }
             totalLinhas += linhas;
         }
         return totalLinhas;
+    }
+
+    /**
+     * Valor efetivo de {@code hashCode} num trecho de {@code -XX:+PrintFlagsFinal}, ou {@code null} se a linha nao
+     * existe. Formato: {@code "     int hashCode   = 2   {experimental} {command line}"}.
+     */
+    static Integer hashCodeEfetivo(String printFlagsFinal) {
+        Matcher m = Pattern.compile("(?m)^\\s*\\w+\\s+hashCode\\s*=\\s*(-?\\d+)").matcher(printFlagsFinal);
+        return m.find() ? Integer.valueOf(m.group(1)) : null;
+    }
+
+    @Test
+    void analisadorDoHashCodeEfetivoDistingueFixadoDeNaoFixado() {
+        assertEquals(2, hashCodeEfetivo("     int hashCode                                  = 2                                {experimental} {command line}\n"));
+        assertEquals(5, hashCodeEfetivo("x\n     intx hashCode = 5 {experimental} {default}\n"));
+        assertEquals(null, hashCodeEfetivo("     int hashCodeFoo = 2\n     int other = 2\n"));
+        assertEquals(null, hashCodeEfetivo(""));
+    }
+
+    /**
+     * Pre-condicao imposta: a JVM que executa as comparacoes tem {@code hashCode=2} efetivo. Falha com mensagem
+     * clara, e registra {@code java -version} e o valor efetivo no stdout (reprodutibilidade).
+     */
+    @Test
+    void hashCodeFixadoNaJvmDasExecucoes() throws Exception {
+        List<String> cmd = new ArrayList<>(List.of(java()));
+        cmd.addAll(FLAGS_HASH);
+        cmd.addAll(List.of("-XX:+PrintFlagsFinal", "-version"));
+        Path so = tmp.resolve("flags-finais.txt");
+        Process p = new ProcessBuilder(cmd).redirectErrorStream(true).redirectOutput(so.toFile()).start();
+        assertTrue(p.waitFor(60, TimeUnit.SECONDS), "JVM filha de consulta estourou 60 s: " + cmd);
+        String saida = Files.readString(so, StandardCharsets.UTF_8);
+        assertEquals(0, p.exitValue(), "JVM filha rejeitou as flags " + FLAGS_HASH + ": " + saida);
+        Integer efetivo = hashCodeEfetivo(saida);
+        assertEquals(Integer.valueOf(2), efetivo, "GARANTIA INVALIDA: a JVM das execucoes nao tem -XX:hashCode=2 efetivo"
+                + " (efetivo=" + efetivo + "). 'Ligar o registro nao altera a saida' so vale com o hashCode fixado, que e a"
+                + " condicao de reprodutibilidade das baterias (ver o javadoc desta classe; nas baterias use"
+                + " scripts/jabs/nao_regressao.py --jvm-flag=-XX:+UnlockExperimentalVMOptions --jvm-flag=-XX:hashCode=2)");
+        String versao = saida.lines().filter(l -> l.contains("version") || l.startsWith("OpenJDK") || l.startsWith("Java("))
+                .filter(l -> !l.contains("hashCode")).collect(Collectors.joining(" | "));
+        System.out.println("[reprodutibilidade] flags=" + FLAGS_HASH + " hashCode_efetivo=" + efetivo + " java=" + versao);
     }
 
     @Test

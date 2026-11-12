@@ -25,6 +25,24 @@ import java.util.Locale;
  * Node/Packet/Block/Message, no {@code RandomnessEngine}, no new simulator event (RM-08). This class only READS the
  * event queue (snapshot at t0, residual scan) and never schedules anything.
  *
+ * <p><b>Scope of the non-regression guarantee (human decision 12/11, M1a-1 round 2).</b> "Turning the record on
+ * does not change any existing output" holds <b>only with {@code -XX:+UnlockExperimentalVMOptions
+ * -XX:hashCode=2} fixed on the JVM of the run</b>, which is the reproducibility condition of the batteries. It is
+ * NOT claimed for a JVM with the default identity hash: loading this class (and {@link LinkLoadCounters}, {@link Result},
+ * {@code PriorityQueue$Itr}) advances the main thread's {@code System.identityHashCode} sequence, and protocols that
+ * iterate hash collections keyed by objects without {@code hashCode} (Casper, Parlia, Nakamoto; ADR-0006 debt 5) change
+ * output with it. That shift comes from pre-existing code, not from this class's logic, and such a run is not
+ * reproducible even with the record off. Enforcement (round 3): turning the record on FAILS LOUD
+ * ("GARANTIA INVALIDA ... passe -XX:+UnlockExperimentalVMOptions -XX:hashCode=2", {@link GarantiaHashCode}) if the
+ * running JVM does not report {@code hashCode=2}, both at {@code MVPComparison --load-record=true} (before any
+ * simulation) and in {@link #initialLog()} (any scenario that attaches this logger). There is no opt-out. With the
+ * record off nothing is checked and {@link GarantiaHashCode} is not even loaded. The effective value and the JVM
+ * identification are written as a {@code # JVM:} comment line in the two NEW files (existing outputs are untouched).
+ * {@code RegistroLigadoNaoRegressaoTest} additionally requires the {@code BlockHashCode} CSV column to be constant.
+ * For batteries use
+ * {@code scripts/jabs/nao_regressao.py --jvm-flag=-XX:+UnlockExperimentalVMOptions --jvm-flag=-XX:hashCode=2};
+ * {@code scripts/jabs/checar-determinismo.py} does not fix the hash code and therefore does not exercise this guarantee.
+ *
  * <p><b>Window.</b> {@code t0} comes from the caller (no embedded value, no embedded transient). The counters are
  * snapshotted before the first event whose time is {@code >= t0} (so everything executed strictly before t0 is
  * excluded and events at exactly t0 are inside) and subtracted at the end. {@code t1} is the simulation time of the
@@ -74,6 +92,9 @@ public class LinkLoadRecorder extends AbstractLogger {
     private long inFlight0;
 
     private Result result;
+
+    /** Reproducibility line (effective hashCode + JVM identification) captured in {@link #initialLog()}. */
+    private String jvmLine;
 
     /**
      * @param prefix   path prefix of the output files ({@code <prefix>-nos.csv}, {@code <prefix>-corrida.csv})
@@ -140,6 +161,10 @@ public class LinkLoadRecorder extends AbstractLogger {
 
     @Override
     public void initialLog() {
+        // Round 3: the non-regression guarantee holds only with a fixed identity hash. Fail loud BEFORE touching any
+        // node; there is no opt-out. (This logger exists only when the record is on.)
+        GarantiaHashCode.exigir();
+        jvmLine = GarantiaHashCode.linhaReprodutibilidade();
         List<?> nodes = scenario.getNetwork().getAllNodes();
         int n = nodes.size();
         if (n == 0) {
@@ -260,6 +285,7 @@ public class LinkLoadRecorder extends AbstractLogger {
                 .append(" (nodes in the built network); window W=[WindowStart_s, WindowEnd_s]=[")
                 .append(fmt(r.t0)).append(", ").append(fmt(r.t1)).append("] s (t0 explicit on the command line;"
                         + " t1 = time of the last executed event; counters snapshotted at t0 and subtracted)\n")
+                .append("# JVM: ").append(jvmLine).append('\n')
                 .toString();
         String granularity = "# Granularity: PER NODE over W. SentBytes = sum of packet.getSize() of packets whose"
                 + " transmission on the node uplink ended (left the send queue; packets to self that pass the queue"

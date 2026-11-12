@@ -68,6 +68,10 @@ Opcoes da JVM: `--jvm-flag=-XX:...` (repetivel) vai antes de `-cp` nas QUATRO ex
 Casper/Parlia/Nakamoto, cuja saida depende da sequencia de System.identityHashCode (ADR-0012/0013, N1): use
 `--jvm-flag=-XX:+UnlockExperimentalVMOptions --jvm-flag=-XX:hashCode=2` nos dois lados. Sem `--jvm-flag` o comando
 e identico ao das versoes anteriores.
+EXCECAO (ADR-0012, M1a-1 rodada 3): se algum caso liga o registro de carga (`--extra-flag-protocolo
+PROTO:--load-record=true`), `--jvm-flag=-XX:+UnlockExperimentalVMOptions` e `--jvm-flag=-XX:hashCode=2` passam a ser
+OBRIGATORIOS e o script recusa (saida 2, antes de iniciar qualquer JVM) sem eles; a garantia "ligar o registro nao altera
+a saida" so vale com o hash de identidade fixado e o proprio MVPComparison tambem falha alto sem a flag.
 Autoteste sem JVM: `nao_regressao.py --selftest`.
 """
 import argparse
@@ -99,6 +103,21 @@ def montar_cmd(cp, proto, n, dur, semente, saida, extras=(), jvm=()):
     return ["java", *jvm, "-cp", cp, "jabs.example.MVPComparison", f"--protocols={proto}",
             f"--validators={n}", "--trials=1", f"--duration={dur}", f"--seed={semente}", f"--output={saida}",
             *extras]
+
+
+def erro_registro_sem_hashcode(extras_por_proto, jvm):
+    """Mensagem de erro (ou None). Se algum caso liga o registro de carga (--load-record=true), as flags de JVM que
+    fixam o hash de identidade sao obrigatorias (a garantia de nao regressao so vale com elas). Funcao pura."""
+    liga = sorted(p for p, fl in extras_por_proto.items() if "--load-record=true" in fl)
+    if not liga:
+        return None
+    faltam = [f for f in ("-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2") if f not in jvm]
+    if not faltam:
+        return None
+    return (f"GARANTIA INVALIDA: o(s) caso(s) {', '.join(liga)} ligam o registro de carga (--load-record=true), cuja "
+            f"garantia de nao regressao so vale com o hash de identidade fixado. Faltam: "
+            f"{' '.join('--jvm-flag=' + f for f in faltam)} (passe --jvm-flag=-XX:+UnlockExperimentalVMOptions "
+            f"--jvm-flag=-XX:hashCode=2). Nenhuma JVM foi iniciada.")
 
 
 def parse_extras_protocolo(itens, protos_dos_casos, liberados=()):
@@ -275,6 +294,18 @@ def selftest():
         except ValueError:
             continue
         raise AssertionError(f"deveria rejeitar {ruim!r}")
+    # registro de carga ligado exige as flags de hash (ADR-0012, M1a-1 rodada 3)
+    h2 = ["-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"]
+    lig = {"ARQ": ["--load-record=true", "--load-record-t0=10"]}
+    assert erro_registro_sem_hashcode({}, []) is None  # sem registro: comando e exigencias inalterados
+    assert erro_registro_sem_hashcode({"MCO2": ["--foo=1"]}, []) is None
+    assert erro_registro_sem_hashcode({"ARQ": ["--load-record=false"]}, []) is None
+    assert erro_registro_sem_hashcode(lig, h2) is None
+    for ruim in ([], ["-XX:hashCode=2"], ["-XX:+UnlockExperimentalVMOptions"], ["-XX:hashCode=5", "-XX:+UnlockExperimentalVMOptions"]):
+        m = erro_registro_sem_hashcode(lig, ruim)
+        assert m and m.startswith("GARANTIA INVALIDA"), (ruim, m)
+    assert "--jvm-flag=-XX:hashCode=2" in erro_registro_sem_hashcode(lig, [])
+    assert "Faltam: --jvm-flag=-XX:hashCode=2 (" in erro_registro_sem_hashcode(lig, ["-XX:+UnlockExperimentalVMOptions"])
     selftest_aditivo()
     print("SELFTEST OK")
     return 0
@@ -381,6 +412,10 @@ def main():
         extras = parse_extras_protocolo(a.extra_proto, protos, a.baseline_tem)
     except ValueError as e:
         print(f"ERRO: {e}")
+        return 2
+    e_hash = erro_registro_sem_hashcode(extras, a.jvm_flag)
+    if e_hash:
+        print(f"ERRO: {e_hash}")
         return 2
     base, atual, out = Path(a.base).resolve(), Path(a.atual).resolve(), Path(a.saida)
     for r in (base, atual):
