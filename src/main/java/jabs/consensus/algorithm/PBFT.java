@@ -30,11 +30,27 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     // pre-condicao passa a valer. Mapa voter -> voto (duplicata do mesmo no nao conta duas vezes, como nos mapas
     // de votos efetivos). LinkedHashMap: reavaliacao em ordem de chegada, deterministica. Os HashMap de blocos so
     // sofrem get/put/remove por chave, nunca iteracao. Memoria: um voto por (bloco, no); as entradas de um bloco
-    // sao liberadas ao reavalia-las e ao finalizar. Blocos que nunca recebem PRE_PREPARE (voto bizantino) ficam
-    // retidos ate o fim da simulacao: custo aceito, pois view change nao esta implementado (TODO abaixo).
+    // sao liberadas ao reavalia-las e ao finalizar.
+    // PBFT-prepare-equivocation (rodada 2, criterio 3): o bloco B fabricado pelo PREPARE equivocado
+    // (PBFTConflictingBlock) nunca recebe PRE_PREPARE: nenhum primario o propoe e nenhum caminho do codigo o envia.
+    // Reter PREPAREs dele nao muda NENHUMA saida (a pre-condicao de fase nunca valeria) e so consome memoria; por isso
+    // o PREPARE de PBFTConflictingBlock sem PRE_PREPARE aceito NAO e retido, e seu trafego nao abre entrada nos mapas
+    // blockTraffic/consensusTraffic (B nunca finaliza, logo nunca seria lido nem removido); os BYTES dele entram num
+    // contador agregado (conflictingTotalBytes, ver livro de recebimento abaixo): medidos, sem retencao. A tentativa de liberar B
+    // "quando o irmao A finaliza" foi medida e e INSUFICIENTE: com PRE_PREPARE equivocado, o A de B vive em ramo que
+    // este no nunca finaliza (centenas de B retidos em 60 s).
+    // LIMITE RESIDUAL (nao e teto geral; ver tarefa PARIDADE-teto-retencao-pbft-tendermint): PREPAREs de blocos NAO
+    // conflitantes que nunca recebem PRE_PREPARE (mecanismo preexistente, nao introduzido por esta mudanca) continuam
+    // retidos ate o fim; idem pendingCommits e o alreadySeenVotes do no (que ja tem teto proprio de 50000 votos,
+    // preexistente). O B do PREPARE equivocado NAO e retido por A (rodada 4, criterio 8): ver alternativeFor.
     private final HashMap<B, LinkedHashMap<Node, PBFTBlockVote<B>>> pendingPrepares = new HashMap<>();
     private final HashMap<B, LinkedHashMap<Node, PBFTBlockVote<B>>> pendingCommits = new HashMap<>();
     private final HashSet<B> committedBlocks = new HashSet<>();
+    // PBFT-prepare-equivocation (rodada 4, criterio 8): este no NAO guarda o bloco B conflitante fabricado para o
+    // PREPARE equivocado de cada A. Antes havia um mapa A -> B que so era podado quando A finalizava neste no; uma
+    // sequencia de A que nunca finalizam o fazia crescer sem limite. B e FUNCAO PURA de (A, este no)
+    // (PBFTConflictingBlock com equals/hashCode por valor), entao recria-lo a cada PREPARE equivocado da o mesmo
+    // objeto logico sem estado: retencao A -> B = 0, sem teto e sem politica de descarte para declarar.
     private int currentViewNumber = 0;
     // ADR-0006 (tarefa 2). Quorum teorico de Castro & Liskov: com n >= 3f+1, f = floor((n-1)/3) e quorum = 2f+1.
     // Antes: (n/3)*2+1 com comparacao estrita '>', que exigia 2f+2 votos quando n = 3f+1 (n=4 exigia 4; n=7 exigia 6).
@@ -95,7 +111,10 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
 
     /**
      * Ataques com ramo proprio no PBFT (auditoria A.1): SILENT, WITHHOLD, EQUIVOCATION e DOUBLE_SIGN.
-     * Cobertura parcial declarada: PREPARE nao tem ramo; DOUBLE_SIGN so existe no COMMIT.
+     * Cobertura declarada: EQUIVOCATION cobre PRE_PREPARE do primario, PREPARE e COMMIT (PBFT-prepare-equivocation,
+     * ADR-0015 B-35 / Q28, lacuna L3 da auditoria; igual ao Tendermint: proposta e cada fase de voto). SILENT,
+     * WITHHOLD e DOUBLE_SIGN NAO tem ramo no PREPARE (nao ampliado: a decisao do humano e so a abrangencia do
+     * EQUIVOCATION); DOUBLE_SIGN so existe no COMMIT.
      */
     @Override
     protected java.util.Set<jabs.config.ByzantineConfig.AttackType> supportedAttacks() {
@@ -150,28 +169,98 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
         return committedBlocks.contains(block);
     }
 
+    // PBFT-prepare-equivocation (rodada 3, criterio 1). LIVRO DE RECEBIMENTO por no, tamanho constante (6 long): todo
+    // byte de voto PBFT entregue pela rede a este no cai em EXATAMENTE UMA destas tres categorias, de modo que
+    //   bytes entregues = atribuido + posterior + conflitante      (separado para C_B_total e para C_B_consenso)
+    //  - atribuido: somado a um bloco que ainda pode finalizar (aberto em blockTraffic ou ja lido por um
+    //    BlockFinalizationEvent). E o unico que chega a coluna TrafficUntilFinalization / TrafficConsensus...;
+    //  - posterior: chegou depois da finalizacao local do bloco (corte da metrica "ate a finalizacao"; ja era
+    //    descartado, agora e contado);
+    //  - conflitante: pacote cujo voto nomeia um PBFTConflictingBlock (B do PREPARE equivocado). B nunca finaliza,
+    //    logo nenhum evento o leria: abrir entrada por B em blockTraffic/consensusTraffic seria retencao eterna
+    //    (rodada 2). O byte e MEDIDO e entra neste contador agregado, sem chave por bloco: memoria O(1) em B.
+    // Por que NAO e somado ao C_B de nenhum evento: B nao e A; atribuir ao A irmao seria por palpite (a regra do
+    // Tendermint/HotStuff para voto nil) e mudaria colunas/saida. O contador e lido por getConflictingBlockTraffic
+    // e fecha o livro em getAccountedVoteBytes, sem tocar CSV nem cabecalho.
+    private long attributedTotalBytes;
+    private long attributedConsensusBytes;
+    private long afterFinalizationTotalBytes;
+    private long afterFinalizationConsensusBytes;
+    private long conflictingTotalBytes;
+    private long conflictingConsensusBytes;
+
     /**
      * Acumula C_B_total (bytes recebidos por este no, incluindo a carga do bloco no PRE_PREPARE).
      * Chamado por {@link jabs.network.node.nodes.PeerBlockchainNode#processIncomingPacket} com
-     * {@code packet.getSize()}. Pacotes que chegam depois da finalizacao local do bloco nao entram:
-     * a metrica e "ate a finalizacao" e isso evita acumulo sem fim para blocos ja finalizados.
+     * {@code packet.getSize()}. Pacotes que chegam depois da finalizacao local do bloco nao entram no C_B do
+     * bloco (a metrica e "ate a finalizacao" e isso evita acumulo sem fim), mas vao ao contador agregado
+     * "posterior"; pacotes de bloco conflitante vao ao contador agregado "conflitante". Nenhum byte some.
      */
     public void addBlockTraffic(B block, long bytes) {
-        if (committedBlocks.contains(block)) {
+        if (block instanceof PBFTConflictingBlock) {
+            conflictingTotalBytes += bytes;
             return;
         }
+        if (committedBlocks.contains(block)) {
+            afterFinalizationTotalBytes += bytes;
+            return;
+        }
+        attributedTotalBytes += bytes;
         blockTraffic.put(block, blockTraffic.getOrDefault(block, 0L) + bytes);
     }
 
     /**
      * Acumula C_B_consenso (bytes recebidos por este no que pertencem so ao protocolo de votos,
-     * sem a carga do bloco carregada no PRE_PREPARE). Mesma regra de corte de {@link #addBlockTraffic}.
+     * sem a carga do bloco carregada no PRE_PREPARE). Mesma regra de destino de {@link #addBlockTraffic}.
      */
     public void addConsensusMessageTraffic(B block, long bytes) {
-        if (committedBlocks.contains(block)) {
+        if (block instanceof PBFTConflictingBlock) {
+            conflictingConsensusBytes += bytes;
             return;
         }
+        if (committedBlocks.contains(block)) {
+            afterFinalizationConsensusBytes += bytes;
+            return;
+        }
+        attributedConsensusBytes += bytes;
         consensusTraffic.put(block, consensusTraffic.getOrDefault(block, 0L) + bytes);
+    }
+
+    /** Bytes (pacote inteiro) de votos que nomeiam um bloco conflitante (PREPARE equivocado) recebidos por este no. */
+    public long getConflictingBlockTraffic() {
+        return conflictingTotalBytes;
+    }
+
+    /** Parte "consenso" (igual ao pacote, pois PREPARE/COMMIT sao 100% protocolo) do trafego de bloco conflitante. */
+    public long getConflictingBlockConsensusTraffic() {
+        return conflictingConsensusBytes;
+    }
+
+    /** Bytes recebidos depois da finalizacao local do bloco que nomeiam (corte "ate a finalizacao"). */
+    public long getAfterFinalizationTraffic() {
+        return afterFinalizationTotalBytes;
+    }
+
+    /** Bytes atribuidos a blocos que podem finalizar (abertos ou ja lidos por um BlockFinalizationEvent). */
+    public long getAttributedTraffic() {
+        return attributedTotalBytes;
+    }
+
+    /**
+     * Fecha o livro: atribuido + posterior + conflitante = bytes de voto PBFT entregues a este no pela rede.
+     * Versao C_B_total; {@link #getAccountedConsensusBytes()} e a de C_B_consenso.
+     */
+    public long getAccountedVoteBytes() {
+        return attributedTotalBytes + afterFinalizationTotalBytes + conflictingTotalBytes;
+    }
+
+    public long getAccountedConsensusBytes() {
+        return attributedConsensusBytes + afterFinalizationConsensusBytes + conflictingConsensusBytes;
+    }
+
+    /** Entradas abertas nos mapas por bloco (blockTraffic): nunca inclui bloco conflitante. */
+    public int getOpenTrafficEntryCount() {
+        return blockTraffic.size() + consensusTraffic.size();
     }
 
     /** C_B_total acumulado por este no para o bloco (0 se nada foi recebido). */
@@ -196,11 +285,17 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                     if (this.localBlockTree.getLocalBlock(block).isConnectedToGenesis) {
                         boolean firstAcceptance = acceptedPrePrepares.add(block);
                         this.pbftPhase = PBFTPhase.PREPARING;
-                        this.peerBlockchainNode.broadcastMessage(
-                                new VoteMessage(
-                                        new PBFTPrepareVote<>(this.peerBlockchainNode, blockVote.getBlock())
-                                )
-                        );
+                        if (isPrepareEquivocator()) {
+                            // PBFT-prepare-equivocation (ADR-0015 B-35): PREPARE equivocado. Sem catch: falha de envio
+                            // ou rede sem destinatarios honestos disjuntos propaga (criterio 4).
+                            broadcastPrepareEquivocation(block);
+                        } else {
+                            this.peerBlockchainNode.broadcastMessage(
+                                    new VoteMessage(
+                                            new PBFTPrepareVote<>(this.peerBlockchainNode, blockVote.getBlock())
+                                    )
+                            );
+                        }
                         if (firstAcceptance) {
                             // PREPAREs que chegaram antes do PRE_PREPARE sao reavaliados agora, sem perder voto.
                             LinkedHashMap<Node, PBFTBlockVote<B>> early = pendingPrepares.remove(block);
@@ -215,6 +310,8 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                 case PREPARE:
                     if (acceptedPrePrepares.contains(block)) {
                         countPrepare(blockVote, block);
+                    } else if (block instanceof PBFTConflictingBlock) {
+                        // Bloco fabricado pelo ataque, nunca proposto: seu PREPARE nunca poderia ser contado; nao retem.
                     } else {
                         pendingPrepares.computeIfAbsent(block, k -> new LinkedHashMap<>())
                                 .put(blockVote.getVoter(), blockVote);
@@ -247,6 +344,17 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                 }
             }
         }
+    }
+
+    /** Blocos CONFLITANTES (B do PREPARE equivocado) com PREPARE retido neste no: deve ser sempre 0. */
+    public int getPendingConflictingPrepareBlockCount() {
+        int c = 0;
+        for (B b : pendingPrepares.keySet()) { // so conta; nao decide comportamento
+            if (b instanceof PBFTConflictingBlock) {
+                c++;
+            }
+        }
+        return c;
     }
 
     /**
@@ -283,7 +391,7 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                         this.currentViewNumber += 1;
                         this.currentMainChainHead = block;
                         updateChain();
-        
+
                         // Fire BlockFinalizationEvent for metrics collection
                         if (this.peerBlockchainNode != null && this.peerBlockchainNode.getSimulator() != null) {
                             // Clear vote maps for finalized block to prevent memory leaks
@@ -368,7 +476,7 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     }
 
     /**
-     * EQUIVOCATION (PRE_PREPARE do primario ou COMMIT): envia DOIS votos conflitantes (sobre dois blocos distintos
+     * EQUIVOCATION (PRE_PREPARE do primario ou COMMIT; o PREPARE tem {@link #broadcastPrepareEquivocation}): envia DOIS votos conflitantes (sobre dois blocos distintos
      * amostrados) a metades disjuntas dos vizinhos: indices [0, half) recebem o bloco A e [half, n) o bloco B,
      * com {@code half = max(1, n/2)}. Semantica identica a anterior; a diferenca e que NADA e engolido: nenhum
      * {@code catch}, entao falha de envio, de cast ou de amostragem propaga e derruba a simulacao em vez de
@@ -395,6 +503,55 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
             this.peerBlockchainNode.getNodeNetworkInterface().addToUpLinkQueue(
                     new jabs.network.message.Packet(this.peerBlockchainNode, nb, new VoteMessage(vote)));
         }
+    }
+
+    /**
+     * Este no e bizantino E o ataque configurado e EQUIVOCATION. Sem config: falso, sem efeito colateral (nao toca
+     * o enum AttackType: comparacao por nome, como os demais ramos do PBFT, para o caminho honesto nao mudar).
+     */
+    private boolean isPrepareEquivocator() {
+        return isByzantineValidator(this.peerBlockchainNode.nodeID)
+                && "EQUIVOCATION".equals(getByzantineAttackType());
+    }
+
+    /**
+     * PREPARE equivocado (PBFT-prepare-equivocation; ADR-0015 B-35, lacuna L3): o PREPARE do bloco real A (aquele cujo
+     * PRE_PREPARE este no aceitou) vai aos vizinhos [0, half) e um PREPARE de um bloco conflitante B aos demais, com a
+     * MESMA particao ({@code half = max(1, n/2)}), a MESMA pre-condicao ({@link #requireEquivocationSplit}) e o mesmo
+     * envio (um pacote por vizinho, {@code addToUpLinkQueue}) que PRE_PREPARE e COMMIT equivocados. Mesma forma do
+     * Tendermint (A real a uma metade, B alternativo a outra). Sem catch: falha propaga (criterio 4).
+     * B vem de {@link #alternativeFor} (uma vez por broadcast: as duas metades veem cada uma um bloco so); nao consome
+     * aleatoriedade e nao fica guardado.
+     */
+    private void broadcastPrepareEquivocation(B block) {
+        java.util.List<Node> neighbors = this.peerBlockchainNode.getP2pConnections().getNeighbors();
+        int half = requireEquivocationSplit(neighbors, "PREPARE");
+        B alternative = alternativeFor(block);
+        for (int i = 0; i < neighbors.size(); i++) {
+            Vote vote = new PBFTPrepareVote<>(this.peerBlockchainNode, i < half ? block : alternative);
+            this.peerBlockchainNode.getNodeNetworkInterface().addToUpLinkQueue(
+                    new jabs.network.message.Packet(this.peerBlockchainNode, neighbors.get(i), new VoteMessage(vote)));
+        }
+    }
+
+    /**
+     * Bloco B conflitante com {@code real}: mesmo pai, altura, tamanho e instante de criacao, identidade e hash
+     * distintos, sem transacoes. Nao consome aleatoriedade e NAO e guardado: {@link PBFTConflictingBlock} e funcao pura
+     * de (real, este no) com equals/hashCode por valor, entao chamar de novo para o mesmo A devolve um bloco igual
+     * (equals) e a retencao por A deixa de existir. Falha alto se nao ha pai (genesis).
+     */
+    @SuppressWarnings("unchecked")
+    private B alternativeFor(B real) {
+        if (real.getParents().isEmpty() || real.getParents().get(0) == null) {
+            throw new IllegalStateException("EQUIVOCATION em PREPARE (no " + this.peerBlockchainNode.nodeID
+                    + "): bloco real sem pai (genesis?) na altura " + real.getHeight()
+                    + "; nao ha como fabricar o conflito");
+        }
+        PBFTBlock alternative = new PBFTConflictingBlock((PBFTBlock) real, (PBFTNode) this.peerBlockchainNode);
+        if (alternative == real) {
+            throw new IllegalStateException("EQUIVOCATION em PREPARE: bloco alternativo nao e distinto do real");
+        }
+        return (B) alternative;
     }
 
     /**

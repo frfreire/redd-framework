@@ -1,0 +1,13 @@
+base_commit=423ffbe17c41eb9c761203b9fb62f6269e57fe7d   (estado ao fim da RODADA 4; gerado por: python3 scripts/jabs/estado-arvore.py)
+git diff 423ffbe -- src scripts | sha256sum = c3a7fbd7c8d4ef1c415b29df8e6ff1235f08ab722f058d378c9ad3b4d2262e93  (30715 bytes, 464 linhas)
+arquivos rastreados modificados (entram no hash acima):
+  src/main/java/jabs/consensus/algorithm/PBFT.java
+  src/main/java/jabs/log/LinkLoadRecorder.java                    (NAO e desta tarefa: edicao de documentacao da M1a por outro agente)
+  src/test/java/jabs/consensus/algorithm/PBFTEquivocationTest.java
+  src/test/java/jabs/example/RegistroLigadoNaoRegressaoTest.java  (NAO e desta tarefa: idem, M1a)
+arquivos NAO rastreados em src/ e scripts/ (nao entram no hash acima; sem src/test/resources), com sha256:
+  062b93ba61d5e3318fe5110721524d70a3b007e9c32378f90573ac9cf28f1efc  scripts/jabs/estado-arvore.py
+  e5f990fe3e3b2bb207b297f3615691f5b7bf8833f8b82177a7eb53fa822a84b8  scripts/jabs/mutar-pbft-prepare-equivocation.py
+  d4144385b5609e9244171e009fb531963155f5269c66091eaddae2a1000cfd30  src/main/java/jabs/ledgerdata/pbft/PBFTConflictingBlock.java
+  60f258b84543cc79faf354dbe5475c64cd19d101254a3a2333de76a56f2b7352  src/test/java/jabs/consensus/algorithm/PBFTPrepareEquivocationNaoRegressaoTest.java
+  161bcfaf100eec4a714b98f90281d0ba78a9e2b063ba883d086b6e6e1922b772  src/test/java/jabs/consensus/algorithm/PBFTPrepareEquivocationTest.java

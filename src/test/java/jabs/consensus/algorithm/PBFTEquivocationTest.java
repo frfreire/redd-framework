@@ -224,9 +224,9 @@ class PBFTEquivocationTest {
         Alvo a = novaRede(1, "EQUIVOCATION", Set.of(0));
         PBFTNode r = a.r();
         PBFTBlock b = BlockFactory.samplePBFTBlockWithTx(a.sim(), a.rng(), r, PBFT_GENESIS_BLOCK, 5);
-        entrega(a, r, new PBFTPrePrepareVote<>(r, b));
+        // PBFT-prepare-equivocation: a falha alto agora ocorre ja ao aceitar o PRE_PREPARE (o PREPARE equivoca primeiro)
         IllegalStateException e = assertThrows(IllegalStateException.class,
-                () -> entrega(a, r, new PBFTPrepareVote<>(r, b)));
+                () -> entrega(a, r, new PBFTPrePrepareVote<>(r, b)));
         assertTrue(e.getMessage().contains("EQUIVOCATION") && e.getMessage().contains("2 vizinhos"), e.getMessage());
     }
 
@@ -236,10 +236,8 @@ class PBFTEquivocationTest {
         int n = 4;
         Alvo a = novaRede(n, "EQUIVOCATION", Set.of(R, 2, 3));
         PBFTBlock b = novoBloco(a);
-        prePrepare(a, b);
-        prepares(a, b, PBFT.quorumSize(n) - 1);
-        IllegalStateException e = assertThrows(IllegalStateException.class,
-                () -> prepares(a, b, PBFT.quorumSize(n)));
+        // PBFT-prepare-equivocation: a pre-condicao e checada no PREPARE (ao aceitar o PRE_PREPARE), antes do COMMIT
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> prePrepare(a, b));
         assertTrue(e.getMessage().contains("destinatario honesto") && e.getMessage().contains("2a=0"),
                 e.getMessage());
         assertFalse(a.r().getConsensusAlgorithm().isByzantineValidator(0), "controle: o no 0 e honesto");

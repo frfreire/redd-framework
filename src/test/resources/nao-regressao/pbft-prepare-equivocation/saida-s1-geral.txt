@@ -1,0 +1,27 @@
+$ python3 scripts/jabs/nao_regressao.py --base /tmp/opencode/pbft-prep/base --atual . --semente 1 --timeout 900 --paralelo 4 --saida /tmp/opencode/pbft-prep/nr/s1/geral --casos ARQ:4:60,ARQ:7:60,ARQ:10:60,ARQ:13:60
+semente=1 timeout=900s por execucao; 16 execucoes, no maximo 4 JVM simultaneas
+
+== ARQ n=4 duracao=60s semente=1
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (37 linhas) 
+   atual    a x b                : IDENTICO (37 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (37 linhas) 
+
+== ARQ n=7 duracao=60s semente=1
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (38 linhas) 
+   atual    a x b                : IDENTICO (38 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (38 linhas) 
+
+== ARQ n=10 duracao=60s semente=1
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (28 linhas) 
+   atual    a x b                : IDENTICO (28 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (28 linhas) 
+
+== ARQ n=13 duracao=60s semente=1
+   execucoes (rc, segundos): base-a=0,1s, base-b=0,1s, atual-a=0,1s, atual-b=0,1s
+   baseline a x b (pre-existente?): IDENTICO (25 linhas) 
+   atual    a x b                : IDENTICO (25 linhas) 
+   baseline a x atual a (REGRESSAO?): IDENTICO (25 linhas) 
+rc=0
