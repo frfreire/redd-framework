@@ -1,0 +1,270 @@
+{
+ "nivel": "IC95 bilateral, 2,5 % por cauda",
+ "n_min_maximo_como_limite_superior": {
+  "p99,9": {
+   "r=1-q": 0.001,
+   "N_min": 3688
+  },
+  "p99,98": {
+   "r=1-q": 0.0002,
+   "N_min": 18443
+  },
+  "p99,99": {
+   "r=1-q": 0.0001,
+   "N_min": 36887
+  },
+  "p99,995": {
+   "r=1-q": 5e-05,
+   "N_min": 73776
+  },
+  "p99,999": {
+   "r=1-q": 1e-05,
+   "N_min": 368887
+  }
+ },
+ "exemplos_N": {
+  "21600": {
+   "p99,9": {
+    "e_sup": 12,
+    "posto_sup": 21588,
+    "excedentes_esperados": 21.6
+   },
+   "p99,98": {
+    "e_sup": 0,
+    "posto_sup": 21600,
+    "excedentes_esperados": 4.32
+   },
+   "p99,99": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 2.16
+   },
+   "p99,995": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 1.08
+   },
+   "p99,999": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 0.21600000000000003
+   }
+  },
+  "43200": {
+   "p99,9": {
+    "e_sup": 30,
+    "posto_sup": 43170,
+    "excedentes_esperados": 43.2
+   },
+   "p99,98": {
+    "e_sup": 2,
+    "posto_sup": 43198,
+    "excedentes_esperados": 8.64
+   },
+   "p99,99": {
+    "e_sup": 0,
+    "posto_sup": 43200,
+    "excedentes_esperados": 4.32
+   },
+   "p99,995": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 2.16
+   },
+   "p99,999": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 0.43200000000000005
+   }
+  },
+  "86400": {
+   "p99,9": {
+    "e_sup": 68,
+    "posto_sup": 86332,
+    "excedentes_esperados": 86.4
+   },
+   "p99,98": {
+    "e_sup": 9,
+    "posto_sup": 86391,
+    "excedentes_esperados": 17.28
+   },
+   "p99,99": {
+    "e_sup": 2,
+    "posto_sup": 86398,
+    "excedentes_esperados": 8.64
+   },
+   "p99,995": {
+    "e_sup": 0,
+    "posto_sup": 86400,
+    "excedentes_esperados": 4.32
+   },
+   "p99,999": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 0.8640000000000001
+   }
+  },
+  "200000": {
+   "p99,9": {
+    "e_sup": 172,
+    "posto_sup": 199828,
+    "excedentes_esperados": 200.0
+   },
+   "p99,98": {
+    "e_sup": 27,
+    "posto_sup": 199973,
+    "excedentes_esperados": 40.0
+   },
+   "p99,99": {
+    "e_sup": 11,
+    "posto_sup": 199989,
+    "excedentes_esperados": 20.0
+   },
+   "p99,995": {
+    "e_sup": 3,
+    "posto_sup": 199997,
+    "excedentes_esperados": 10.0
+   },
+   "p99,999": {
+    "e_sup": -1,
+    "posto_sup": null,
+    "excedentes_esperados": 2.0
+   }
+  },
+  "368887": {
+   "p99,9": {
+    "e_sup": 331,
+    "posto_sup": 368556,
+    "excedentes_esperados": 368.887
+   },
+   "p99,98": {
+    "e_sup": 56,
+    "posto_sup": 368831,
+    "excedentes_esperados": 73.7774
+   },
+   "p99,99": {
+    "e_sup": 24,
+    "posto_sup": 368863,
+    "excedentes_esperados": 36.8887
+   },
+   "p99,995": {
+    "e_sup": 10,
+    "posto_sup": 368877,
+    "excedentes_esperados": 18.44435
+   },
+   "p99,999": {
+    "e_sup": 0,
+    "posto_sup": 368887,
+    "excedentes_esperados": 3.68887
+   }
+  },
+  "368888": {
+   "p99,9": {
+    "e_sup": 331,
+    "posto_sup": 368557,
+    "excedentes_esperados": 368.88800000000003
+   },
+   "p99,98": {
+    "e_sup": 56,
+    "posto_sup": 368832,
+    "excedentes_esperados": 73.7776
+   },
+   "p99,99": {
+    "e_sup": 24,
+    "posto_sup": 368864,
+    "excedentes_esperados": 36.8888
+   },
+   "p99,995": {
+    "e_sup": 10,
+    "posto_sup": 368878,
+    "excedentes_esperados": 18.4444
+   },
+   "p99,999": {
+    "e_sup": 0,
+    "posto_sup": 368888,
+    "excedentes_esperados": 3.68888
+   }
+  },
+  "400000": {
+   "p99,9": {
+    "e_sup": 360,
+    "posto_sup": 399640,
+    "excedentes_esperados": 400.0
+   },
+   "p99,98": {
+    "e_sup": 62,
+    "posto_sup": 399938,
+    "excedentes_esperados": 80.0
+   },
+   "p99,99": {
+    "e_sup": 27,
+    "posto_sup": 399973,
+    "excedentes_esperados": 40.0
+   },
+   "p99,995": {
+    "e_sup": 11,
+    "posto_sup": 399989,
+    "excedentes_esperados": 20.0
+   },
+   "p99,999": {
+    "e_sup": 0,
+    "posto_sup": 400000,
+    "excedentes_esperados": 4.0
+   }
+  },
+  "410000": {
+   "p99,9": {
+    "e_sup": 370,
+    "posto_sup": 409630,
+    "excedentes_esperados": 410.0
+   },
+   "p99,98": {
+    "e_sup": 64,
+    "posto_sup": 409936,
+    "excedentes_esperados": 82.0
+   },
+   "p99,99": {
+    "e_sup": 28,
+    "posto_sup": 409972,
+    "excedentes_esperados": 41.0
+   },
+   "p99,995": {
+    "e_sup": 11,
+    "posto_sup": 409989,
+    "excedentes_esperados": 20.5
+   },
+   "p99,999": {
+    "e_sup": 0,
+    "posto_sup": 410000,
+    "excedentes_esperados": 4.1000000000000005
+   }
+  },
+  "600000": {
+   "p99,9": {
+    "e_sup": 551,
+    "posto_sup": 599449,
+    "excedentes_esperados": 600.0
+   },
+   "p99,98": {
+    "e_sup": 98,
+    "posto_sup": 599902,
+    "excedentes_esperados": 120.0
+   },
+   "p99,99": {
+    "e_sup": 44,
+    "posto_sup": 599956,
+    "excedentes_esperados": 60.0
+   },
+   "p99,995": {
+    "e_sup": 19,
+    "posto_sup": 599981,
+    "excedentes_esperados": 30.0
+   },
+   "p99,999": {
+    "e_sup": 1,
+    "posto_sup": 599999,
+    "excedentes_esperados": 6.000000000000001
+   }
+  }
+ }
+}
