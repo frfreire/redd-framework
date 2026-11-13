@@ -21,6 +21,25 @@ public abstract class Tx<T extends Tx<T>> extends Data {
      */
     protected String payloadHash;
     
+    /**
+     * Ids de sequencia desta transacao, um por {@link TxSequencer} que ja a viu (em geral um so; mais de um so se a
+     * mesma instancia for compartilhada entre simulacoes, p.ex. uma transacao estatica de genesis). Comparacao por
+     * referencia ({@code ==}) do sequenciador: nenhum {@code hashCode}.
+     */
+    private SequenceEntry sequenceChain;
+
+    private static final class SequenceEntry {
+        final TxSequencer owner;
+        final long id;
+        final SequenceEntry next;
+
+        SequenceEntry(TxSequencer owner, long id, SequenceEntry next) {
+            this.owner = owner;
+            this.id = id;
+            this.next = next;
+        }
+    }
+
     protected Tx(int size, int hashSize) {
         super(size, hashSize);
         this.transactionType = TransactionType.PUBLIC;
@@ -86,5 +105,20 @@ public abstract class Tx<T extends Tx<T>> extends Data {
         }
         return payloadHash;
     }
-}
 
+    /**
+     * Id desta transacao no sequenciador dado (atribui o proximo na primeira vez). Visivel so ao pacote: o ponto de
+     * entrada e {@link TxSequencer#idOf(Tx)}. {@code synchronized} porque uma instancia estatica compartilhada pode
+     * ser vista por simulacoes em threads diferentes.
+     */
+    synchronized long sequenceIn(TxSequencer owner) {
+        for (SequenceEntry e = sequenceChain; e != null; e = e.next) {
+            if (e.owner == owner) {
+                return e.id;
+            }
+        }
+        long id = owner.take();
+        sequenceChain = new SequenceEntry(owner, id, sequenceChain);
+        return id;
+    }
+}

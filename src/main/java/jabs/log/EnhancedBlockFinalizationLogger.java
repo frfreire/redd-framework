@@ -2,6 +2,7 @@ package jabs.log;
 
 import jabs.ledgerdata.Block;
 import jabs.ledgerdata.Tx;
+import jabs.ledgerdata.TxSequencer;
 import jabs.ledgerdata.DoubleSpendTracker;
 import jabs.ledgerdata.TransactionSubmissionRegistry;
 import jabs.network.node.nodes.Node;
@@ -31,8 +32,14 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
     private final DoubleSpendTracker doubleSpendTracker;
     private final TransactionSubmissionRegistry transactionRegistry;
     
+    // Chave estavel por valor das transacoes DESTA simulacao: id sequencial (Long) por instancia de logger, nunca
+    // estatico (duas simulacoes na mesma JVM numeram do zero e de forma independente). Substitui o Hash da transacao
+    // (sem hashCode/equals: identidade) como chave de confirmedTransactionIds, blockTransactions e
+    // DoubleSpendTracker.txToBlockHeights; com -XX:hashCode=2 o Hash cai todo no mesmo balde e o custo vira O(n^2) por bloco.
+    private final TxSequencer txSequencer = new TxSequencer();
+
     // Track finalized blocks by height for double-spend detection
-    private final Map<Integer, Set<Object>> blockTransactions; // height -> set of tx ids
+    private final Map<Integer, Set<Object>> blockTransactions; // height -> set of tx ids (Long, ver txSequencer)
     
     // Track all proposed blocks
     private final Map<Integer, Set<Object>> blocksByHeight;   // height -> set of block ids
@@ -146,17 +153,22 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             
             // Collect Metric 5: Double-spending (Pdv)
             // Extract and track transactions from this finalized block
-            Set<Object> txIds = extractTransactionsFromBlock(block);
+            Map<Object, Object> txIds = extractTransactionsFromBlock(block);
             
             if (!txIds.isEmpty()) {
-                blockTransactions.put(block.getHeight(), txIds);
+                blockTransactions.put(block.getHeight(), new LinkedHashSet<Object>(txIds.keySet()));
                 double finalizationTimestamp = this.scenario.getSimulator().getSimulationTime();
                 int confirmedCount = 0;
                 int registeredCount = 0;
                 int fallbackCount = 0;
                 int skippedDuplicates = 0;
                 
-                for (Object txId : txIds) {
+                for (Map.Entry<Object, Object> txEntry : txIds.entrySet()) {
+                    // txId: chave por valor (id sequencial desta simulacao); registryKey: a chave ORIGINAL (Hash da
+                    // transacao), usada so para achar o instante de submissao que BitcoinNode/EthereumNode registram
+                    // com tx.getHash() (a semantica do Tt nao muda).
+                    Object txId = txEntry.getKey();
+                    Object registryKey = txEntry.getValue();
                     // Skip if this transaction was already confirmed (avoid duplicate measurements)
                     if (confirmedTransactionIds.contains(txId)) {
                         skippedDuplicates++;
@@ -165,7 +177,7 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
                     confirmedTransactionIds.add(txId);
                     
                     // Collect Metric 3: Transaction confirmation latency (Tt)
-                    Double submissionTime = transactionRegistry.getSubmissionTime(txId);
+                    Double submissionTime = transactionRegistry.getSubmissionTime(registryKey);
                     if (submissionTime != null) {
                         // If we registered the submission time, use it
                         double confirmationLatency = finalizationTimestamp - submissionTime;
@@ -323,15 +335,20 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
     }
     
     /**
-     * Extract transaction IDs from a block using reflection
+     * Extract the transactions of a block using reflection.
      * Attempts to find and invoke getTxs() or getTransactions() or equivalent method
      * Falls back to reflection on private fields if needed
-     * 
+     *
+     * <p>A chave do mapa devolvido e o id sequencial por valor ({@link Long}) da transacao nesta simulacao
+     * ({@link TxSequencer}); o valor e a chave original ({@link #getTxId}), so para consultar o registro de submissao.
+     * A ordem e a de iteracao da colecao do bloco. Item que nao e {@link Tx} (colecao nao tipada ou ramo de campos)
+     * nao tem id sequencial: a chave continua a original, como antes (comportamento preservado).
+     *
      * @param block The block to extract transactions from
-     * @return Set of transaction IDs (using hash as ID)
+     * @return map chave de contagem/duplicidade -> chave original
      */
-    private Set<Object> extractTransactionsFromBlock(Block block) {
-        Set<Object> txIds = new HashSet<>();
+    private Map<Object, Object> extractTransactionsFromBlock(Block block) {
+        Map<Object, Object> txIds = new LinkedHashMap<>();
         
         try {
             Class<?> blockClass = block.getClass();
@@ -357,7 +374,7 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
                     Collection<?> txCollection = (Collection<?>) result;
                     for (Object tx : txCollection) {
                         if (tx != null) {
-                            txIds.add(getTxId(tx));
+                            addTx(txIds, tx);
                         }
                     }
                 }
@@ -370,7 +387,7 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
                         if (fieldValue instanceof Collection) {
                             for (Object item : (Collection<?>) fieldValue) {
                                 if (item != null && item.getClass().getSimpleName().contains("Tx")) {
-                                    txIds.add(getTxId(item));
+                                    addTx(txIds, item);
                                 }
                             }
                         }
@@ -383,10 +400,22 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
         
         return txIds;
     }
+
+    /** Acrescenta {@code tx} ao mapa com o id sequencial desta simulacao (ou, se nao for {@link Tx}, a chave original). */
+    private void addTx(Map<Object, Object> txIds, Object tx) {
+        Object original = getTxId(tx);
+        if (tx instanceof Tx) {
+            txIds.put(txSequencer.idOf((Tx<?>) tx), original);
+        } else {
+            // sem id sequencial possivel: a chave continua a original, como antes (um Long nunca e igual a ela)
+            txIds.put(original, original);
+        }
+    }
     
     /**
-     * Extract a unique ID from a transaction object
-     * Uses hash code or attempts to call getId()/getHash()
+     * Chave ORIGINAL da transacao: o resultado de getHash() (o {@code Hash}, comparado por identidade) ou o hashCode do
+     * objeto. Ja NAO e a chave de contagem/duplicidade (essa e o id sequencial por valor); serve so para achar, no
+     * {@link TransactionSubmissionRegistry}, o instante de submissao registrado por {@code BitcoinNode}/{@code EthereumNode}.
      */
     private Object getTxId(Object tx) {
         try {
