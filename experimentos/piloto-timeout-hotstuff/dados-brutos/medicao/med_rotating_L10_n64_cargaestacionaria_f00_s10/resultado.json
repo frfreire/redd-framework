@@ -1,0 +1,14 @@
+{
+ "id": "med_rotating_L10_n64_cargaestacionaria_f00_s10",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 7.42,
+ "tempo_parede_observador_s": 7.07,
+ "max_rss_mb": 517.0,
+ "csv_mvp": "hotstuff-64v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "77cf6a7cada2dd00d7f771cec4a75f8f",
+ "blocos_mvp": 1135,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "77cf6a7cada2dd00d7f771cec4a75f8f",
+ "blocos_obs": 1135
+}

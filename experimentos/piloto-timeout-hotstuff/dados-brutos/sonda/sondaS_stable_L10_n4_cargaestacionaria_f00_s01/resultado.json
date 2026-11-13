@@ -1,0 +1,14 @@
+{
+ "id": "sondaS_stable_L10_n4_cargaestacionaria_f00_s01",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 1.1,
+ "tempo_parede_observador_s": 0.58,
+ "max_rss_mb": 167.3,
+ "csv_mvp": "hotstuff-4v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "87a310937a02ee295c58a185a0713905",
+ "blocos_mvp": 764,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "87a310937a02ee295c58a185a0713905",
+ "blocos_obs": 764
+}

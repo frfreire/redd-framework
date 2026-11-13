@@ -1,0 +1,33 @@
+{
+ "id": "atq_stable_lider_bizantino_n64_f01_s0304",
+ "protocolo": "HOTSTUFF",
+ "n": 64,
+ "carga": "estacionaria",
+ "byzantinos": 1,
+ "semente": 96649,
+ "replicacao": 304,
+ "duracao_s": 600.0,
+ "simulador_commit": "9f305ddb678d5a456daee6cf7390daedc83d1876",
+ "gerado_em": "2026-11-12T22:54:23+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 2.065,
+  "L": 100,
+  "leader_policy": "STABLE",
+  "attack": "EQUIVOCATION"
+ },
+ "grupo": "STABLE_LIDER_BIZANTINO_n64_f1",
+ "estrato": "LIDER_BIZANTINO",
+ "conjunto_bizantino_sorteado": [
+  0
+ ],
+ "m_do_timeout": "3",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/config/selecao-ataque.json"
+}

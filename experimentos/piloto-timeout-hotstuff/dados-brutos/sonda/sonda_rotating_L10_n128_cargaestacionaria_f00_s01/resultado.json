@@ -1,0 +1,14 @@
+{
+ "id": "sonda_rotating_L10_n128_cargaestacionaria_f00_s01",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 5.89,
+ "tempo_parede_observador_s": 3.58,
+ "max_rss_mb": 501.2,
+ "csv_mvp": "hotstuff-128v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "b70e30649df594b67cd2971914c41fd8",
+ "blocos_mvp": 861,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "b70e30649df594b67cd2971914c41fd8",
+ "blocos_obs": 861
+}

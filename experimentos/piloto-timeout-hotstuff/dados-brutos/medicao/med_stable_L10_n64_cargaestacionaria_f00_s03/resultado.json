@@ -1,0 +1,14 @@
+{
+ "id": "med_stable_L10_n64_cargaestacionaria_f00_s03",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 6.65,
+ "tempo_parede_observador_s": 6.62,
+ "max_rss_mb": 501.0,
+ "csv_mvp": "hotstuff-64v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "d4d7f0fb51647e395941e9b19274177c",
+ "blocos_mvp": 1135,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "d4d7f0fb51647e395941e9b19274177c",
+ "blocos_obs": 1135
+}

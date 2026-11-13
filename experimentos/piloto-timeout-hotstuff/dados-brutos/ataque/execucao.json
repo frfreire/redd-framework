@@ -1,0 +1,453 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/piloto-timeout-hotstuff/celulas/ataque",
+   "n_esperadas": 88,
+   "executadas_agora": [
+    {
+     "id": "atq_stable_lider_bizantino_n4_f01_s0001",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n4_f01_s0003",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n4_f01_s0008",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n4_f01_s0023",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_honesto_n4_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 9.7
+    },
+    {
+     "id": "atq_stable_lider_honesto_n4_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 9.4
+    },
+    {
+     "id": "atq_stable_lider_honesto_n4_f01_s0005",
+     "rc": 0,
+     "tempo_parede_s": 10.2
+    },
+    {
+     "id": "atq_stable_lider_honesto_n4_f01_s0006",
+     "rc": 0,
+     "tempo_parede_s": 8.9
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n4_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 3.9
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n4_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 3.7
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n4_f01_s0008",
+     "rc": 0,
+     "tempo_parede_s": 4.1
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n4_f01_s0023",
+     "rc": 0,
+     "tempo_parede_s": 4.1
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n4_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 4.3
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n4_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 4.5
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n4_f01_s0005",
+     "rc": 0,
+     "tempo_parede_s": 4.2
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n4_f01_s0006",
+     "rc": 0,
+     "tempo_parede_s": 4.1
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f01_s0035",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f01_s0047",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f01_s0065",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f01_s0075",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 19.9
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 21.2
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 18.6
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 15.9
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n16_f01_s0035",
+     "rc": 0,
+     "tempo_parede_s": 11.8
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n16_f01_s0047",
+     "rc": 0,
+     "tempo_parede_s": 15.1
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n16_f01_s0065",
+     "rc": 0,
+     "tempo_parede_s": 15.1
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n16_f01_s0075",
+     "rc": 0,
+     "tempo_parede_s": 14.1
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n16_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 16.3
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n16_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 13.4
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n16_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 13.0
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n16_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 14.3
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f05_s0001",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f05_s0004",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f05_s0008",
+     "rc": 1,
+     "tempo_parede_s": 1.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n16_f05_s0010",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f05_s0002",
+     "rc": 0,
+     "tempo_parede_s": 19.9
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f05_s0003",
+     "rc": 0,
+     "tempo_parede_s": 17.4
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f05_s0005",
+     "rc": 0,
+     "tempo_parede_s": 21.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n16_f05_s0006",
+     "rc": 0,
+     "tempo_parede_s": 19.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f01_s0010",
+     "rc": 1,
+     "tempo_parede_s": 1.2
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f01_s0068",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f01_s0304",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f01_s0333",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 23.2
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 20.6
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 20.6
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 20.1
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n64_f01_s0010",
+     "rc": 0,
+     "tempo_parede_s": 19.6
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n64_f01_s0068",
+     "rc": 0,
+     "tempo_parede_s": 17.6
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n64_f01_s0304",
+     "rc": 0,
+     "tempo_parede_s": 19.4
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n64_f01_s0333",
+     "rc": 0,
+     "tempo_parede_s": 19.3
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n64_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 18.9
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n64_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 19.3
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n64_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 19.4
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n64_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 17.6
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f21_s0001",
+     "rc": 1,
+     "tempo_parede_s": 2.3
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f21_s0002",
+     "rc": 1,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f21_s0003",
+     "rc": 1,
+     "tempo_parede_s": 1.5
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n64_f21_s0007",
+     "rc": 1,
+     "tempo_parede_s": 1.7
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f21_s0004",
+     "rc": 0,
+     "tempo_parede_s": 41.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f21_s0005",
+     "rc": 0,
+     "tempo_parede_s": 39.5
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f21_s0006",
+     "rc": 0,
+     "tempo_parede_s": 40.3
+    },
+    {
+     "id": "atq_stable_lider_honesto_n64_f21_s0008",
+     "rc": 0,
+     "tempo_parede_s": 39.2
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f01_s0068",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f01_s0106",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f01_s0320",
+     "rc": 1,
+     "tempo_parede_s": 0.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f01_s0327",
+     "rc": 1,
+     "tempo_parede_s": 1.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 10.3
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 10.3
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 10.8
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 10.4
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n128_f01_s0068",
+     "rc": 0,
+     "tempo_parede_s": 10.8
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n128_f01_s0106",
+     "rc": 0,
+     "tempo_parede_s": 10.8
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n128_f01_s0320",
+     "rc": 0,
+     "tempo_parede_s": 12.1
+    },
+    {
+     "id": "atq_rotating_lider_bizantino_n128_f01_s0327",
+     "rc": 0,
+     "tempo_parede_s": 10.4
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n128_f01_s0001",
+     "rc": 0,
+     "tempo_parede_s": 10.1
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n128_f01_s0002",
+     "rc": 0,
+     "tempo_parede_s": 10.3
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n128_f01_s0003",
+     "rc": 0,
+     "tempo_parede_s": 10.1
+    },
+    {
+     "id": "atq_rotating_lider_honesto_n128_f01_s0004",
+     "rc": 0,
+     "tempo_parede_s": 9.7
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f42_s0001",
+     "rc": 1,
+     "tempo_parede_s": 3.0
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f42_s0005",
+     "rc": 1,
+     "tempo_parede_s": 3.3
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f42_s0006",
+     "rc": 1,
+     "tempo_parede_s": 3.8
+    },
+    {
+     "id": "atq_stable_lider_bizantino_n128_f42_s0007",
+     "rc": 1,
+     "tempo_parede_s": 3.8
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f42_s0002",
+     "rc": 0,
+     "tempo_parede_s": 43.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f42_s0003",
+     "rc": 0,
+     "tempo_parede_s": 43.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f42_s0004",
+     "rc": 0,
+     "tempo_parede_s": 43.0
+    },
+    {
+     "id": "atq_stable_lider_honesto_n128_f42_s0010",
+     "rc": 0,
+     "tempo_parede_s": 42.7
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 154.7
+  }
+ ]
+}

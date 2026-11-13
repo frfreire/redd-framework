@@ -1,0 +1,14 @@
+{
+ "id": "sensovh100_rotating_L100_n16_cargaestacionaria_f00_s03",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 4.95,
+ "tempo_parede_observador_s": 4.25,
+ "max_rss_mb": 562.6,
+ "csv_mvp": "hotstuff-16v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "119cd19e0b98f0535667630cff6a9a5e",
+ "blocos_mvp": 2206,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "119cd19e0b98f0535667630cff6a9a5e",
+ "blocos_obs": 2206
+}

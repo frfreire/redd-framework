@@ -1,0 +1,184 @@
+{
+ "picos": {
+  "4": {
+   "D_max": 0.31426633271036053,
+   "conjunto": "medicao",
+   "celula": "med_rotating_L100_n4_cargaestacionaria_f00_s04",
+   "altura": 1299,
+   "vizinhanca": {
+    "1297": {
+     "Rmax_s": 0.1787,
+     "Fmin_s": 215.4712,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0204,
+     "Rmax_node": 0,
+     "Rmin_s": 0.1391
+    },
+    "1298": {
+     "Rmax_s": 0.1782,
+     "Fmin_s": 215.6331,
+     "espalhamento_Fmax_menos_Fmin_s": 0.019,
+     "Rmax_node": 1,
+     "Rmin_s": 0.1426
+    },
+    "1299": {
+     "Rmax_s": 0.3143,
+     "Fmin_s": 215.792,
+     "espalhamento_Fmax_menos_Fmin_s": 0.1743,
+     "Rmax_node": 0,
+     "Rmin_s": 0.1411
+    },
+    "1300": {
+     "Rmax_s": 0.2014,
+     "Fmin_s": 215.9739,
+     "espalhamento_Fmax_menos_Fmin_s": 0.029,
+     "Rmax_node": 3,
+     "Rmin_s": 0.0075
+    },
+    "1301": {
+     "Rmax_s": 0.1769,
+     "Fmin_s": 216.1334,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0233,
+     "Rmax_node": 0,
+     "Rmin_s": 0.1305
+    }
+   }
+  },
+  "16": {
+   "D_max": 0.6856348418983487,
+   "conjunto": "verificacao",
+   "celula": "ver_m3_rotating_L100_n16_cargaestacionaria_f00_s07",
+   "altura": 692,
+   "vizinhanca": {
+    "690": {
+     "Rmax_s": 0.2235,
+     "Fmin_s": 143.3366,
+     "espalhamento_Fmax_menos_Fmin_s": 0.027,
+     "Rmax_node": 1,
+     "Rmin_s": 0.1855
+    },
+    "691": {
+     "Rmax_s": 0.2212,
+     "Fmin_s": 143.5408,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0259,
+     "Rmax_node": 2,
+     "Rmin_s": 0.1862
+    },
+    "692": {
+     "Rmax_s": 0.6856,
+     "Fmin_s": 143.7505,
+     "espalhamento_Fmax_menos_Fmin_s": 0.4939,
+     "Rmax_node": 12,
+     "Rmin_s": 0.1918
+    },
+    "693": {
+     "Rmax_s": 0.2293,
+     "Fmin_s": 143.9626,
+     "espalhamento_Fmax_menos_Fmin_s": 0.2818,
+     "Rmax_node": 2,
+     "Rmin_s": 0.0
+    },
+    "694": {
+     "Rmax_s": 0.2358,
+     "Fmin_s": 144.1796,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0648,
+     "Rmax_node": 5,
+     "Rmin_s": 0.0
+    }
+   }
+  },
+  "64": {
+   "D_max": 0.894528889519691,
+   "conjunto": "medicao",
+   "celula": "med_rotating_L100_n64_cargaestacionaria_f00_s06",
+   "altura": 175,
+   "vizinhanca": {
+    "173": {
+     "Rmax_s": 0.4606,
+     "Fmin_s": 73.4902,
+     "espalhamento_Fmax_menos_Fmin_s": 0.055,
+     "Rmax_node": 58,
+     "Rmin_s": 0.4001
+    },
+    "174": {
+     "Rmax_s": 0.4487,
+     "Fmin_s": 73.9165,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0387,
+     "Rmax_node": 45,
+     "Rmin_s": 0.391
+    },
+    "175": {
+     "Rmax_s": 0.8945,
+     "Fmin_s": 74.3391,
+     "espalhamento_Fmax_menos_Fmin_s": 0.4983,
+     "Rmax_node": 53,
+     "Rmin_s": 0.4015
+    },
+    "176": {
+     "Rmax_s": 0.4493,
+     "Fmin_s": 74.7676,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0697,
+     "Rmax_node": 47,
+     "Rmin_s": 0.0
+    },
+    "177": {
+     "Rmax_s": 0.4634,
+     "Fmin_s": 75.1942,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0636,
+     "Rmax_node": 19,
+     "Rmin_s": 0.3823
+    }
+   }
+  },
+  "128": {
+   "D_max": 1.196960365120276,
+   "conjunto": "verificacao",
+   "celula": "ver_m3_rotating_L100_n128_cargaestacionaria_f00_s06",
+   "altura": 1206,
+   "vizinhanca": {
+    "1204": {
+     "Rmax_s": 0.8684,
+     "Fmin_s": 982.673,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0837,
+     "Rmax_node": 51,
+     "Rmin_s": 0.7598
+    },
+    "1205": {
+     "Rmax_s": 0.869,
+     "Fmin_s": 983.491,
+     "espalhamento_Fmax_menos_Fmin_s": 0.0877,
+     "Rmax_node": 52,
+     "Rmin_s": 0.7542
+    },
+    "1206": {
+     "Rmax_s": 1.197,
+     "Fmin_s": 984.3057,
+     "espalhamento_Fmax_menos_Fmin_s": 0.4448,
+     "Rmax_node": 30,
+     "Rmin_s": 0.7621
+    },
+    "1207": {
+     "Rmax_s": 0.869,
+     "Fmin_s": 985.1221,
+     "espalhamento_Fmax_menos_Fmin_s": 0.088,
+     "Rmax_node": 54,
+     "Rmin_s": 0.4596
+    },
+    "1208": {
+     "Rmax_s": 0.8695,
+     "Fmin_s": 985.9397,
+     "espalhamento_Fmax_menos_Fmin_s": 0.1042,
+     "Rmax_node": 55,
+     "Rmin_s": 0.7668
+    }
+   }
+  }
+ },
+ "estratos": {
+  "celulas_conferidas": 88,
+  "por_estrato": {
+   "LIDER_BIZANTINO": 44,
+   "LIDER_HONESTO": 44
+  },
+  "tudo_consistente": true
+ }
+}

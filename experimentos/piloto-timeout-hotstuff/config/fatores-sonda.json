@@ -1,0 +1,3 @@
+{"n":[4,16,64,128],"politicas":["ROTATING"],"L":[10,100,500],"sementes":1,"semente_base":12345,
+ "duracao_s":{"4":120,"16":120,"64":120,"128":300},"view_timeout_s":60,"attack":null,"prefixo":"sonda",
+ "variante_fixa":{"max_future_view_horizon":1000,"s_tx":512,"sig_individual_B":64,"sig_agregada_B":96,"share_agregada_B":96,"overhead_msg_B":10,"signature_mode":"INDIVIDUAL","voter_encoding":"BITMAP"}}

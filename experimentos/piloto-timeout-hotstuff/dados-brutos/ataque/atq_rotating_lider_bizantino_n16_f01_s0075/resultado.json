@@ -1,0 +1,14 @@
+{
+ "id": "atq_rotating_lider_bizantino_n16_f01_s0075",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 6.63,
+ "tempo_parede_observador_s": 7.4,
+ "max_rss_mb": 532.2,
+ "csv_mvp": "hotstuff-16v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "f21da8f51ed3903af634bfea7158e5b6",
+ "blocos_mvp": 2115,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "f21da8f51ed3903af634bfea7158e5b6",
+ "blocos_obs": 2115
+}

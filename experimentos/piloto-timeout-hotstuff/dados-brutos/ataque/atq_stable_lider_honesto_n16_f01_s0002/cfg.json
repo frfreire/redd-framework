@@ -1,0 +1,33 @@
+{
+ "id": "atq_stable_lider_honesto_n16_f01_s0002",
+ "protocolo": "HOTSTUFF",
+ "n": 16,
+ "carga": "estacionaria",
+ "byzantinos": 1,
+ "semente": 48347,
+ "replicacao": 2,
+ "duracao_s": 600.0,
+ "simulador_commit": "9f305ddb678d5a456daee6cf7390daedc83d1876",
+ "gerado_em": "2026-11-12T22:54:23+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 1.09,
+  "L": 100,
+  "leader_policy": "STABLE",
+  "attack": "EQUIVOCATION"
+ },
+ "grupo": "STABLE_LIDER_HONESTO_n16_f1",
+ "estrato": "LIDER_HONESTO",
+ "conjunto_bizantino_sorteado": [
+  8
+ ],
+ "m_do_timeout": "3",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/config/selecao-ataque.json"
+}

@@ -1,0 +1,28 @@
+{
+ "id": "sens_m3T100_rotating_L10_n64_cargaestacionaria_f00_s04",
+ "protocolo": "HOTSTUFF",
+ "n": 64,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 86349,
+ "replicacao": 4,
+ "duracao_s": 245,
+ "simulador_commit": "9f305ddb678d5a456daee6cf7390daedc83d1876",
+ "gerado_em": "2026-11-12T22:27:29+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 2.065,
+  "L": 10,
+  "leader_policy": "ROTATING",
+  "attack": null
+ },
+ "grupo": "ROTATING_L10_n64",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/config/fatores-sens-T100m3-L10.json"
+}

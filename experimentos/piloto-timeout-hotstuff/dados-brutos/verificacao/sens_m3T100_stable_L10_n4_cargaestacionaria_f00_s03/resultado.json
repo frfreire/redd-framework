@@ -1,0 +1,14 @@
+{
+ "id": "sens_m3T100_stable_L10_n4_cargaestacionaria_f00_s03",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 0.83,
+ "tempo_parede_observador_s": 1.85,
+ "max_rss_mb": 173.1,
+ "csv_mvp": "hotstuff-4v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "076a39bedcb0573cdfa29b247ce3bd13",
+ "blocos_mvp": 1121,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "076a39bedcb0573cdfa29b247ce3bd13",
+ "blocos_obs": 1121
+}

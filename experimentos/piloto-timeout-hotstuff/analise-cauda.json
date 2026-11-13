@@ -1,0 +1,214 @@
+{
+ "hipotese": {
+  "xm_s": 0.016,
+  "alfa": 5.0,
+  "k_pacotes_por_replica": 4,
+  "fonte": "LAN100MNetworkStats: scale=(shape-1)/shape*0.02, shape=5"
+ },
+ "por_n": {
+  "4": {
+   "N_visoes": 43272,
+   "D_media": 0.18654385675934657,
+   "D_max": 0.31426633271036053,
+   "tabela": [
+    {
+     "excesso_e_s": 0.05,
+     "limiar_s": 0.2365,
+     "observado": 65,
+     "teorico_esperado": 2323.15
+    },
+    {
+     "excesso_e_s": 0.1,
+     "limiar_s": 0.2865,
+     "observado": 4,
+     "teorico_esperado": 72.6
+    },
+    {
+     "excesso_e_s": 0.15,
+     "limiar_s": 0.3365,
+     "observado": 0,
+     "teorico_esperado": 9.56
+    },
+    {
+     "excesso_e_s": 0.2,
+     "limiar_s": 0.3865,
+     "observado": 0,
+     "teorico_esperado": 2.27
+    },
+    {
+     "excesso_e_s": 0.3,
+     "limiar_s": 0.4865,
+     "observado": 0,
+     "teorico_esperado": 0.3
+    },
+    {
+     "excesso_e_s": 0.45,
+     "limiar_s": 0.6365,
+     "observado": 0,
+     "teorico_esperado": 0.04
+    },
+    {
+     "excesso_e_s": 0.6,
+     "limiar_s": 0.7865,
+     "observado": 0,
+     "teorico_esperado": 0.01
+    }
+   ],
+   "T_m3": 0.918,
+   "excesso_T_menos_media_s": 0.7314561432406534
+  },
+  "16": {
+   "N_visoes": 43263,
+   "D_media": 0.23007687423832232,
+   "D_max": 0.6856348418983487,
+   "tabela": [
+    {
+     "excesso_e_s": 0.05,
+     "limiar_s": 0.2801,
+     "observado": 152,
+     "teorico_esperado": 9290.66
+    },
+    {
+     "excesso_e_s": 0.1,
+     "limiar_s": 0.3301,
+     "observado": 21,
+     "teorico_esperado": 290.33
+    },
+    {
+     "excesso_e_s": 0.15,
+     "limiar_s": 0.3801,
+     "observado": 6,
+     "teorico_esperado": 38.23
+    },
+    {
+     "excesso_e_s": 0.2,
+     "limiar_s": 0.4301,
+     "observado": 4,
+     "teorico_esperado": 9.07
+    },
+    {
+     "excesso_e_s": 0.3,
+     "limiar_s": 0.5301,
+     "observado": 1,
+     "teorico_esperado": 1.19
+    },
+    {
+     "excesso_e_s": 0.45,
+     "limiar_s": 0.6801,
+     "observado": 1,
+     "teorico_esperado": 0.16
+    },
+    {
+     "excesso_e_s": 0.6,
+     "limiar_s": 0.8301,
+     "observado": 0,
+     "teorico_esperado": 0.04
+    }
+   ],
+   "T_m3": 1.09,
+   "excesso_T_menos_media_s": 0.8599231257616777
+  },
+  "64": {
+   "N_visoes": 43258,
+   "D_media": 0.45662463258524194,
+   "D_max": 0.894528889519691,
+   "tabela": [
+    {
+     "excesso_e_s": 0.05,
+     "limiar_s": 0.5066,
+     "observado": 321,
+     "teorico_esperado": 37158.34
+    },
+    {
+     "excesso_e_s": 0.1,
+     "limiar_s": 0.5566,
+     "observado": 46,
+     "teorico_esperado": 1161.2
+    },
+    {
+     "excesso_e_s": 0.15,
+     "limiar_s": 0.6066,
+     "observado": 14,
+     "teorico_esperado": 152.91
+    },
+    {
+     "excesso_e_s": 0.2,
+     "limiar_s": 0.6566,
+     "observado": 4,
+     "teorico_esperado": 36.29
+    },
+    {
+     "excesso_e_s": 0.3,
+     "limiar_s": 0.7566,
+     "observado": 1,
+     "teorico_esperado": 4.78
+    },
+    {
+     "excesso_e_s": 0.45,
+     "limiar_s": 0.9066,
+     "observado": 0,
+     "teorico_esperado": 0.63
+    },
+    {
+     "excesso_e_s": 0.6,
+     "limiar_s": 1.0566,
+     "observado": 0,
+     "teorico_esperado": 0.15
+    }
+   ],
+   "T_m3": 2.065,
+   "excesso_T_menos_media_s": 1.608375367414758
+  },
+  "128": {
+   "N_visoes": 43260,
+   "D_media": 0.8680645892867758,
+   "D_max": 1.196960365120276,
+   "tabela": [
+    {
+     "excesso_e_s": 0.05,
+     "limiar_s": 0.9181,
+     "observado": 291,
+     "teorico_esperado": 74320.11
+    },
+    {
+     "excesso_e_s": 0.1,
+     "limiar_s": 0.9681,
+     "observado": 49,
+     "teorico_esperado": 2322.5
+    },
+    {
+     "excesso_e_s": 0.15,
+     "limiar_s": 1.0181,
+     "observado": 18,
+     "teorico_esperado": 305.84
+    },
+    {
+     "excesso_e_s": 0.2,
+     "limiar_s": 1.0681,
+     "observado": 7,
+     "teorico_esperado": 72.58
+    },
+    {
+     "excesso_e_s": 0.3,
+     "limiar_s": 1.1681,
+     "observado": 2,
+     "teorico_esperado": 9.56
+    },
+    {
+     "excesso_e_s": 0.45,
+     "limiar_s": 1.3181,
+     "observado": 0,
+     "teorico_esperado": 1.26
+    },
+    {
+     "excesso_e_s": 0.6,
+     "limiar_s": 1.4681,
+     "observado": 0,
+     "teorico_esperado": 0.3
+    }
+   ],
+   "T_m3": 3.396,
+   "excesso_T_menos_media_s": 2.527935410713224
+  }
+ }
+}

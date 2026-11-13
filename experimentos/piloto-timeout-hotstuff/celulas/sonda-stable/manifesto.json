@@ -1,0 +1,54 @@
+{
+ "n_celulas": 12,
+ "celulas": [
+  "sondaS_stable_L10_n4_cargaestacionaria_f00_s01",
+  "sondaS_stable_L10_n16_cargaestacionaria_f00_s01",
+  "sondaS_stable_L10_n64_cargaestacionaria_f00_s01",
+  "sondaS_stable_L10_n128_cargaestacionaria_f00_s01",
+  "sondaS_stable_L100_n4_cargaestacionaria_f00_s01",
+  "sondaS_stable_L100_n16_cargaestacionaria_f00_s01",
+  "sondaS_stable_L100_n64_cargaestacionaria_f00_s01",
+  "sondaS_stable_L100_n128_cargaestacionaria_f00_s01",
+  "sondaS_stable_L500_n4_cargaestacionaria_f00_s01",
+  "sondaS_stable_L500_n16_cargaestacionaria_f00_s01",
+  "sondaS_stable_L500_n64_cargaestacionaria_f00_s01",
+  "sondaS_stable_L500_n128_cargaestacionaria_f00_s01"
+ ],
+ "fatores": {
+  "n": [
+   4,
+   16,
+   64,
+   128
+  ],
+  "politicas": [
+   "STABLE"
+  ],
+  "L": [
+   10,
+   100,
+   500
+  ],
+  "sementes": 1,
+  "semente_base": 12345,
+  "duracao_s": {
+   "4": 120,
+   "16": 120,
+   "64": 120,
+   "128": 300
+  },
+  "view_timeout_s": 60,
+  "attack": null,
+  "prefixo": "sondaS",
+  "variante_fixa": {
+   "max_future_view_horizon": 1000,
+   "s_tx": 512,
+   "sig_individual_B": 64,
+   "sig_agregada_B": 96,
+   "share_agregada_B": 96,
+   "overhead_msg_B": 10,
+   "signature_mode": "INDIVIDUAL",
+   "voter_encoding": "BITMAP"
+  }
+ }
+}

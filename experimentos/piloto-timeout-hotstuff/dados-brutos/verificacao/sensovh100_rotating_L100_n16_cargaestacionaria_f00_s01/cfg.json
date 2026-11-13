@@ -1,0 +1,28 @@
+{
+ "id": "sensovh100_rotating_L100_n16_cargaestacionaria_f00_s01",
+ "protocolo": "HOTSTUFF",
+ "n": 16,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 28346,
+ "replicacao": 1,
+ "duracao_s": 460,
+ "simulador_commit": "9f305ddb678d5a456daee6cf7390daedc83d1876",
+ "gerado_em": "2026-11-12T23:02:21+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 100,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 60,
+  "L": 100,
+  "leader_policy": "ROTATING",
+  "attack": null
+ },
+ "grupo": "ROTATING_L100_n16",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/config/fatores-sens-overhead100.json"
+}

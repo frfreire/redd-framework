@@ -1,0 +1,28 @@
+{
+ "id": "sens_m3T100_stable_L10_n4_cargaestacionaria_f00_s08",
+ "protocolo": "HOTSTUFF",
+ "n": 4,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 26353,
+ "replicacao": 8,
+ "duracao_s": 176,
+ "simulador_commit": "9f305ddb678d5a456daee6cf7390daedc83d1876",
+ "gerado_em": "2026-11-12T22:27:29+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 0.918,
+  "L": 10,
+  "leader_policy": "STABLE",
+  "attack": null
+ },
+ "grupo": "STABLE_L10_n4",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/config/fatores-sens-T100m3-L10.json"
+}

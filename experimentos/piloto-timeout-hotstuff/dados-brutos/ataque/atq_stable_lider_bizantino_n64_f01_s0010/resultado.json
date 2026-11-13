@@ -1,0 +1,14 @@
+{
+ "id": "atq_stable_lider_bizantino_n64_f01_s0010",
+ "rc_mvp": 1,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 0.77,
+ "tempo_parede_observador_s": 0.34,
+ "max_rss_mb": 177.1,
+ "csv_mvp": "hotstuff-64v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "c818a134a975299bbacbe90f62900a9e",
+ "blocos_mvp": 0,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "c818a134a975299bbacbe90f62900a9e",
+ "blocos_obs": 0
+}

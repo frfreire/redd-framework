@@ -1,0 +1,14 @@
+{
+ "id": "med_rotating_L500_n16_cargaestacionaria_f00_s04",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 4.17,
+ "tempo_parede_observador_s": 4.17,
+ "max_rss_mb": 610.0,
+ "csv_mvp": "hotstuff-16v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "8b72490b71294df7a23189852c8622df",
+ "blocos_mvp": 1135,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "8b72490b71294df7a23189852c8622df",
+ "blocos_obs": 1135
+}

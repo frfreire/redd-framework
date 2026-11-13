@@ -1,0 +1,142 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/piloto-timeout-hotstuff/celulas/sonda",
+   "n_esperadas": 12,
+   "executadas_agora": [
+    {
+     "id": "sonda_rotating_L10_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 1.7
+    },
+    {
+     "id": "sonda_rotating_L10_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "sonda_rotating_L10_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    },
+    {
+     "id": "sonda_rotating_L10_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 9.5
+    },
+    {
+     "id": "sonda_rotating_L100_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.2
+    },
+    {
+     "id": "sonda_rotating_L100_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "sonda_rotating_L100_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "sonda_rotating_L100_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.2
+    },
+    {
+     "id": "sonda_rotating_L500_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 3.4
+    },
+    {
+     "id": "sonda_rotating_L500_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.8
+    },
+    {
+     "id": "sonda_rotating_L500_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.2
+    },
+    {
+     "id": "sonda_rotating_L500_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.6
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 9.5
+  },
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/piloto-timeout-hotstuff/celulas/sonda-stable",
+   "n_esperadas": 12,
+   "executadas_agora": [
+    {
+     "id": "sondaS_stable_L10_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 1.7
+    },
+    {
+     "id": "sondaS_stable_L10_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.0
+    },
+    {
+     "id": "sondaS_stable_L10_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 4.8
+    },
+    {
+     "id": "sondaS_stable_L10_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 9.8
+    },
+    {
+     "id": "sondaS_stable_L100_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.2
+    },
+    {
+     "id": "sondaS_stable_L100_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "sondaS_stable_L100_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "sondaS_stable_L100_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    },
+    {
+     "id": "sondaS_stable_L500_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 3.5
+    },
+    {
+     "id": "sondaS_stable_L500_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.5
+    },
+    {
+     "id": "sondaS_stable_L500_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.4
+    },
+    {
+     "id": "sondaS_stable_L500_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.3
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 9.8
+  }
+ ]
+}

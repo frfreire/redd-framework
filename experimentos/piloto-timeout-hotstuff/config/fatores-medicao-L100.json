@@ -1,0 +1,36 @@
+{
+ "n": [
+  4,
+  16,
+  64,
+  128
+ ],
+ "politicas": [
+  "ROTATING",
+  "STABLE"
+ ],
+ "L": [
+  100
+ ],
+ "sementes": 10,
+ "semente_base": 12345,
+ "duracao_s": {
+  "4": 368,
+  "16": 460,
+  "64": 941,
+  "128": 1807
+ },
+ "view_timeout_s": 60,
+ "attack": null,
+ "prefixo": "med",
+ "variante_fixa": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP"
+ }
+}

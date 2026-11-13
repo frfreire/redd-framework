@@ -1,0 +1,14 @@
+{
+ "id": "atq_rotating_lider_honesto_n4_f01_s0004",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 1.85,
+ "tempo_parede_observador_s": 2.59,
+ "max_rss_mb": 409.5,
+ "csv_mvp": "hotstuff-4v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "1232342b2771fb4628b6ad914d0805de",
+ "blocos_mvp": 1248,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "1232342b2771fb4628b6ad914d0805de",
+ "blocos_obs": 1248
+}

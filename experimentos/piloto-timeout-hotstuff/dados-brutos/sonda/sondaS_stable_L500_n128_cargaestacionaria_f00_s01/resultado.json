@@ -1,0 +1,14 @@
+{
+ "id": "sondaS_stable_L500_n128_cargaestacionaria_f00_s01",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 0.96,
+ "tempo_parede_observador_s": 1.31,
+ "max_rss_mb": 216.5,
+ "csv_mvp": "hotstuff-128v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "293e0473fef3fcebd0eac6183b1f9355",
+ "blocos_mvp": 103,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "293e0473fef3fcebd0eac6183b1f9355",
+ "blocos_obs": 103
+}

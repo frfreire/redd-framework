@@ -1,0 +1,28 @@
+{
+ "id": "med_stable_L100_n16_cargaestacionaria_f00_s04",
+ "protocolo": "HOTSTUFF",
+ "n": 16,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 28349,
+ "replicacao": 4,
+ "duracao_s": 460,
+ "simulador_commit": "9f305ddb678d5a456daee6cf7390daedc83d1876",
+ "gerado_em": "2026-11-12T22:03:50+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 60,
+  "L": 100,
+  "leader_policy": "STABLE",
+  "attack": null
+ },
+ "grupo": "STABLE_L100_n16",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/config/fatores-medicao-L100.json"
+}

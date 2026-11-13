@@ -1,0 +1,318 @@
+{
+ "L_aceite": 100,
+ "m_adotado": 3,
+ "propostas": [
+  {
+   "L": 10,
+   "n": 4,
+   "D_hat_p99_99_max_entre_politicas": 0.27534237159339625,
+   "D_max": 0.3691984204508003,
+   "N_por_politica": {
+    "ROTATING": 10870,
+    "STABLE": 10712
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.2634598764569258,
+    "STABLE": 0.27534237159339625
+   },
+   "propostas": {
+    "2": {
+     "T_s": 0.551,
+     "folga_Dmax_sobre_T": 0.6700515797655178,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 0.827,
+     "folga_Dmax_sobre_T": 0.4464309799888759,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 10,
+   "n": 16,
+   "D_hat_p99_99_max_entre_politicas": 0.30162231190422517,
+   "D_max": 0.32404858092085576,
+   "N_por_politica": {
+    "ROTATING": 10885,
+    "STABLE": 10862
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.30132334677020367,
+    "STABLE": 0.30162231190422517
+   },
+   "propostas": {
+    "2": {
+     "T_s": 0.604,
+     "folga_Dmax_sobre_T": 0.5365042730477745,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 0.905,
+     "folga_Dmax_sobre_T": 0.3580647302992881,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 10,
+   "n": 64,
+   "D_hat_p99_99_max_entre_politicas": 0.4861353168777214,
+   "D_max": 0.6806474206847639,
+   "N_por_politica": {
+    "ROTATING": 10841,
+    "STABLE": 10847
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.4847132127863176,
+    "STABLE": 0.4861353168777214
+   },
+   "propostas": {
+    "2": {
+     "T_s": 0.973,
+     "folga_Dmax_sobre_T": 0.6995348619576197,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 1.459,
+     "folga_Dmax_sobre_T": 0.46651639526029054,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 10,
+   "n": 128,
+   "D_hat_p99_99_max_entre_politicas": 0.6666538312332193,
+   "D_max": 0.7130465462947768,
+   "N_por_politica": {
+    "ROTATING": 10842,
+    "STABLE": 10850
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.6045071156834751,
+    "STABLE": 0.6666538312332193
+   },
+   "propostas": {
+    "2": {
+     "T_s": 1.334,
+     "folga_Dmax_sobre_T": 0.5345176508956347,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 2.0,
+     "folga_Dmax_sobre_T": 0.3565232731473884,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 100,
+   "n": 4,
+   "D_hat_p99_99_max_entre_politicas": 0.3058190785198178,
+   "D_max": 0.3802576204508199,
+   "N_por_politica": {
+    "ROTATING": 21634,
+    "STABLE": 21348
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.2792067465690593,
+    "STABLE": 0.3058190785198178
+   },
+   "propostas": {
+    "2": {
+     "T_s": 0.612,
+     "folga_Dmax_sobre_T": 0.6213359811287907,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 0.918,
+     "folga_Dmax_sobre_T": 0.41422398741919375,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 100,
+   "n": 16,
+   "D_hat_p99_99_max_entre_politicas": 0.36312437368050254,
+   "D_max": 0.5105710750824528,
+   "N_por_politica": {
+    "ROTATING": 21634,
+    "STABLE": 21597
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.3584307518483669,
+    "STABLE": 0.36312437368050254
+   },
+   "propostas": {
+    "2": {
+     "T_s": 0.727,
+     "folga_Dmax_sobre_T": 0.7022985902097013,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 1.09,
+     "folga_Dmax_sobre_T": 0.4684138303508741,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 100,
+   "n": 64,
+   "D_hat_p99_99_max_entre_politicas": 0.6880718728567672,
+   "D_max": 0.8994381592649603,
+   "N_por_politica": {
+    "ROTATING": 21628,
+    "STABLE": 21633
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.6855185905826886,
+    "STABLE": 0.6880718728567672
+   },
+   "propostas": {
+    "2": {
+     "T_s": 1.377,
+     "folga_Dmax_sobre_T": 0.6531867532788382,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 2.065,
+     "folga_Dmax_sobre_T": 0.4355632732517968,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 100,
+   "n": 128,
+   "D_hat_p99_99_max_entre_politicas": 1.1317851482420451,
+   "D_max": 1.177759165955905,
+   "N_por_politica": {
+    "ROTATING": 21630,
+    "STABLE": 21640
+   },
+   "p9999_por_politica": {
+    "ROTATING": 1.1309084775724614,
+    "STABLE": 1.1317851482420451
+   },
+   "propostas": {
+    "2": {
+     "T_s": 2.264,
+     "folga_Dmax_sobre_T": 0.5202116457402408,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 3.396,
+     "folga_Dmax_sobre_T": 0.34680776382682715,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 500,
+   "n": 4,
+   "D_hat_p99_99_max_entre_politicas": 0.34090502487038776,
+   "D_max": 0.42943178045055674,
+   "N_por_politica": {
+    "ROTATING": 10832,
+    "STABLE": 10716
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.3283809065690946,
+    "STABLE": 0.34090502487038776
+   },
+   "propostas": {
+    "2": {
+     "T_s": 0.682,
+     "folga_Dmax_sobre_T": 0.6296653672295554,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 1.023,
+     "folga_Dmax_sobre_T": 0.41977691148637025,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 500,
+   "n": 16,
+   "D_hat_p99_99_max_entre_politicas": 0.6096631947242983,
+   "D_max": 0.6181321917914886,
+   "N_por_politica": {
+    "ROTATING": 10845,
+    "STABLE": 10837
+   },
+   "p9999_por_politica": {
+    "ROTATING": 0.6049695728921591,
+    "STABLE": 0.6096631947242983
+   },
+   "propostas": {
+    "2": {
+     "T_s": 1.22,
+     "folga_Dmax_sobre_T": 0.50666573097663,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 1.829,
+     "folga_Dmax_sobre_T": 0.33796183258145907,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 500,
+   "n": 64,
+   "D_hat_p99_99_max_entre_politicas": 1.7368570625749271,
+   "D_max": 1.949537094729692,
+   "N_por_politica": {
+    "ROTATING": 10830,
+    "STABLE": 10831
+   },
+   "p9999_por_politica": {
+    "ROTATING": 1.7368570625749271,
+    "STABLE": 1.7351114848297584
+   },
+   "propostas": {
+    "2": {
+     "T_s": 3.474,
+     "folga_Dmax_sobre_T": 0.5611793594501128,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 5.211,
+     "folga_Dmax_sobre_T": 0.37411957296674186,
+     "A3_passa": true
+    }
+   }
+  },
+  {
+   "L": 500,
+   "n": 128,
+   "D_hat_p99_99_max_entre_politicas": 3.2300840111417983,
+   "D_max": 3.2768866856656587,
+   "N_por_politica": {
+    "ROTATING": 10830,
+    "STABLE": 10830
+   },
+   "p9999_por_politica": {
+    "ROTATING": 3.228676026227731,
+    "STABLE": 3.2300840111417983
+   },
+   "propostas": {
+    "2": {
+     "T_s": 6.461,
+     "folga_Dmax_sobre_T": 0.5071794901200524,
+     "A3_passa": false
+    },
+    "3": {
+     "T_s": 9.691,
+     "folga_Dmax_sobre_T": 0.3381371051146072,
+     "A3_passa": true
+    }
+   }
+  }
+ ]
+}

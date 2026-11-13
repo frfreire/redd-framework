@@ -1,0 +1,42 @@
+{
+ "n_celulas": 6,
+ "celulas": [
+  "sensovh100_rotating_L100_n16_cargaestacionaria_f00_s01",
+  "sensovh100_rotating_L100_n16_cargaestacionaria_f00_s02",
+  "sensovh100_rotating_L100_n16_cargaestacionaria_f00_s03",
+  "sensovh100_rotating_L100_n128_cargaestacionaria_f00_s01",
+  "sensovh100_rotating_L100_n128_cargaestacionaria_f00_s02",
+  "sensovh100_rotating_L100_n128_cargaestacionaria_f00_s03"
+ ],
+ "fatores": {
+  "n": [
+   16,
+   128
+  ],
+  "politicas": [
+   "ROTATING"
+  ],
+  "L": [
+   100
+  ],
+  "sementes": 3,
+  "semente_base": 12345,
+  "duracao_s": {
+   "16": 460,
+   "128": 1807
+  },
+  "view_timeout_s": 60,
+  "attack": null,
+  "prefixo": "sensovh100",
+  "variante_fixa": {
+   "max_future_view_horizon": 1000,
+   "s_tx": 512,
+   "sig_individual_B": 64,
+   "sig_agregada_B": 96,
+   "share_agregada_B": 96,
+   "overhead_msg_B": 100,
+   "signature_mode": "INDIVIDUAL",
+   "voter_encoding": "BITMAP"
+  }
+ }
+}

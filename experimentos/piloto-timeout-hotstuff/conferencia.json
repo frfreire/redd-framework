@@ -1,0 +1,161 @@
+{
+ "visao_menos_altura_celulas_honestas": {
+  "visao_menos_altura=1..1": 518,
+  "timeouts_total_!=0": 0,
+  "visao_menos_altura=0..1": 72
+ },
+ "visao_menos_altura_por_lote": {
+  "medicao-L100": {
+   "visao_menos_altura=1..1": 73,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 7
+  },
+  "medicao-L10": {
+   "visao_menos_altura=1..1": 68,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 12
+  },
+  "medicao-L500": {
+   "visao_menos_altura=1..1": 76,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 4
+  },
+  "verificacao-m3-L100": {
+   "visao_menos_altura=1..1": 70,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 10
+  },
+  "verificacao-m2-L100": {
+   "visao_menos_altura=1..1": 70,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 10
+  },
+  "sens-T100m3-L10": {
+   "visao_menos_altura=1..1": 64,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 16
+  },
+  "sens-T100m3-L500": {
+   "visao_menos_altura=1..1": 78,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 2
+  },
+  "sens-overhead100": {
+   "visao_menos_altura=1..1": 2,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 4
+  },
+  "sonda": {
+   "visao_menos_altura=1..1": 8,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 4
+  },
+  "sonda-stable": {
+   "visao_menos_altura=1..1": 9,
+   "timeouts_total_!=0": 0,
+   "visao_menos_altura=0..1": 3
+  }
+ },
+ "total": {
+  "esperadas": 678,
+  "obtidas": 678,
+  "rc_mvp_0": 650,
+  "rc_obs_0": 678,
+  "equiv_ok": 650,
+  "rc_mvp_nao0": 28
+ },
+ "por_lote": {
+  "medicao-L100": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "medicao-L10": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "medicao-L500": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "verificacao-m3-L100": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "verificacao-m2-L100": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "sens-T100m3-L10": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "sens-T100m3-L500": {
+   "esperadas": 80,
+   "obtidas": 80,
+   "rc_mvp_0": 80,
+   "rc_obs_0": 80,
+   "equiv_ok": 80
+  },
+  "sens-overhead100": {
+   "esperadas": 6,
+   "obtidas": 6,
+   "rc_mvp_0": 6,
+   "rc_obs_0": 6,
+   "equiv_ok": 6
+  },
+  "ataque": {
+   "esperadas": 88,
+   "obtidas": 88,
+   "rc_mvp_nao0": 28,
+   "rc_obs_0": 88,
+   "rc_mvp_0": 60,
+   "equiv_ok": 60
+  },
+  "sonda": {
+   "esperadas": 12,
+   "obtidas": 12,
+   "rc_mvp_0": 12,
+   "rc_obs_0": 12,
+   "equiv_ok": 12
+  },
+  "sonda-stable": {
+   "esperadas": 12,
+   "obtidas": 12,
+   "rc_mvp_0": 12,
+   "rc_obs_0": 12,
+   "equiv_ok": 12
+  }
+ },
+ "ataques_recusados_pelo_MVPComparison_para_HOTSTUFF": {
+  "SILENT": {
+   "rc": 1,
+   "mensagem": "Exception in thread \"main\" java.lang.IllegalArgumentException: ataque SILENT nao implementado para HOTSTUFF (so EQUIVOCATION)"
+  },
+  "WITHHOLD": {
+   "rc": 1,
+   "mensagem": "Exception in thread \"main\" java.lang.IllegalArgumentException: ataque WITHHOLD nao implementado para HOTSTUFF (so EQUIVOCATION)"
+  },
+  "DOUBLE_SIGN": {
+   "rc": 1,
+   "mensagem": "Exception in thread \"main\" java.lang.IllegalArgumentException: ataque DOUBLE_SIGN nao implementado para HOTSTUFF (so EQUIVOCATION)"
+  }
+ }
+}

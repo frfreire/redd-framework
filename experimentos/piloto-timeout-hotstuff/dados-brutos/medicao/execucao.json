@@ -1,0 +1,1231 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/piloto-timeout-hotstuff/celulas/medicao-L100",
+   "n_esperadas": 80,
+   "executadas_agora": [
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 6.7
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.6
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 6.2
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 6.6
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 6.2
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 7.2
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 5.6
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 6.5
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 5.8
+    },
+    {
+     "id": "med_rotating_L100_n4_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 6.2
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 17.5
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 16.5
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 16.9
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 16.5
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 16.9
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 17.7
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 16.2
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 16.4
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 15.2
+    },
+    {
+     "id": "med_rotating_L100_n16_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 15.6
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 52.0
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 51.0
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 50.5
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 50.5
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 51.0
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 50.7
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 45.4
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 47.8
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 43.9
+    },
+    {
+     "id": "med_rotating_L100_n64_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 44.4
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 92.3
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 95.3
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 93.4
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 92.0
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 90.1
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 91.3
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 91.6
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 93.4
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 100.6
+    },
+    {
+     "id": "med_rotating_L100_n128_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 91.3
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.3
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 5.1
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.3
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 5.6
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 5.6
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 4.8
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 6.1
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 5.7
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 5.4
+    },
+    {
+     "id": "med_stable_L100_n4_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 5.1
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 11.5
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 11.9
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 11.4
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 12.5
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 12.7
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 11.7
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 12.4
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 12.3
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 12.7
+    },
+    {
+     "id": "med_stable_L100_n16_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 12.1
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 42.7
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 40.9
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 43.4
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 44.5
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 42.0
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 42.2
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 41.7
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 44.4
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 41.8
+    },
+    {
+     "id": "med_stable_L100_n64_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 41.7
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 88.3
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 87.8
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 89.8
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 91.3
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 85.1
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 83.2
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 86.3
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 86.3
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 68.4
+    },
+    {
+     "id": "med_stable_L100_n128_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 68.2
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 419.8
+  },
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/piloto-timeout-hotstuff/celulas/medicao-L10",
+   "n_esperadas": 80,
+   "executadas_agora": [
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 3.2
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 3.3
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 3.2
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 3.2
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 3.2
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 3.3
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 3.2
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 3.2
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 1.9
+    },
+    {
+     "id": "med_rotating_L10_n4_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 2.2
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 5.5
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 4.7
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 5.1
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 4.8
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 6.8
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 6.5
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 6.0
+    },
+    {
+     "id": "med_rotating_L10_n16_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 6.3
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 17.6
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 17.3
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 17.1
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 16.0
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 14.9
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 16.1
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 15.2
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 14.9
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 12.8
+    },
+    {
+     "id": "med_rotating_L10_n64_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 14.7
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 26.4
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 27.1
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 26.4
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 27.7
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 27.9
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 27.8
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 26.7
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 30.0
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 27.1
+    },
+    {
+     "id": "med_rotating_L10_n128_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 28.6
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 2.8
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 3.4
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 2.9
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 2.3
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 2.7
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 2.3
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 2.9
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 3.7
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 3.4
+    },
+    {
+     "id": "med_stable_L10_n4_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 2.7
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 4.2
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 3.0
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 3.8
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 3.6
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 4.3
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 5.6
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 6.1
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 6.0
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 5.1
+    },
+    {
+     "id": "med_stable_L10_n16_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 6.0
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 12.1
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 13.4
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 13.3
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 13.4
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 15.0
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 12.3
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 13.2
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 11.7
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 11.8
+    },
+    {
+     "id": "med_stable_L10_n64_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 13.2
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 21.4
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 22.7
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 22.2
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 21.9
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 21.0
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 21.1
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 20.3
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 19.8
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 16.2
+    },
+    {
+     "id": "med_stable_L10_n128_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 15.7
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 124.4
+  },
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/piloto-timeout-hotstuff/celulas/medicao-L500",
+   "n_esperadas": 80,
+   "executadas_agora": [
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 6.1
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.0
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 6.6
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 6.5
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 5.8
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 6.3
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 6.1
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 6.1
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 6.3
+    },
+    {
+     "id": "med_rotating_L500_n4_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 6.3
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 8.4
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 7.7
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 9.1
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 8.4
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 8.6
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 8.4
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 7.3
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 8.9
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 8.0
+    },
+    {
+     "id": "med_rotating_L500_n16_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 6.8
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 16.1
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 16.3
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 15.9
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 16.5
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 16.9
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 17.5
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 15.4
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 16.2
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 15.7
+    },
+    {
+     "id": "med_rotating_L500_n64_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 14.8
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 27.7
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 28.0
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 29.4
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 28.6
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 29.4
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 26.3
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 27.9
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 29.4
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 30.5
+    },
+    {
+     "id": "med_rotating_L500_n128_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 29.1
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.8
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.3
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.2
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 4.8
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 5.1
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 5.3
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 6.4
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 5.8
+    },
+    {
+     "id": "med_stable_L500_n4_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 6.6
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 6.6
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.7
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 6.1
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 7.9
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 7.1
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 8.0
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 8.6
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 8.1
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 7.7
+    },
+    {
+     "id": "med_stable_L500_n16_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 7.6
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 17.2
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 14.9
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 16.3
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 16.3
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 14.6
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 15.9
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 17.1
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 15.9
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 13.7
+    },
+    {
+     "id": "med_stable_L500_n64_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 15.8
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s01",
+     "rc": 0,
+     "tempo_parede_s": 27.4
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s02",
+     "rc": 0,
+     "tempo_parede_s": 29.5
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s03",
+     "rc": 0,
+     "tempo_parede_s": 25.9
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s04",
+     "rc": 0,
+     "tempo_parede_s": 26.7
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s05",
+     "rc": 0,
+     "tempo_parede_s": 26.3
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s06",
+     "rc": 0,
+     "tempo_parede_s": 26.3
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s07",
+     "rc": 0,
+     "tempo_parede_s": 25.5
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s08",
+     "rc": 0,
+     "tempo_parede_s": 23.4
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s09",
+     "rc": 0,
+     "tempo_parede_s": 19.1
+    },
+    {
+     "id": "med_stable_L500_n128_cargaestacionaria_f00_s10",
+     "rc": 0,
+     "tempo_parede_s": 19.1
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 151.7
+  }
+ ]
+}

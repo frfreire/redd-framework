@@ -1,0 +1,14 @@
+{
+ "id": "med_stable_L100_n128_cargaestacionaria_f00_s02",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 43.5,
+ "tempo_parede_observador_s": 44.21,
+ "max_rss_mb": 721.1,
+ "csv_mvp": "hotstuff-128v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "981c3126785f2889c63a90016a83d609",
+ "blocos_mvp": 2214,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "981c3126785f2889c63a90016a83d609",
+ "blocos_obs": 2214
+}

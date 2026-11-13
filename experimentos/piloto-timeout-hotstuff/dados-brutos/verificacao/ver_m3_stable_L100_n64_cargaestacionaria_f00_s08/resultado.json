@@ -1,0 +1,14 @@
+{
+ "id": "ver_m3_stable_L100_n64_cargaestacionaria_f00_s08",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 20.93,
+ "tempo_parede_observador_s": 21.69,
+ "max_rss_mb": 608.9,
+ "csv_mvp": "hotstuff-64v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "1934e5dff15378fc8937c6a5eae5acfa",
+ "blocos_mvp": 2213,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "1934e5dff15378fc8937c6a5eae5acfa",
+ "blocos_obs": 2213
+}

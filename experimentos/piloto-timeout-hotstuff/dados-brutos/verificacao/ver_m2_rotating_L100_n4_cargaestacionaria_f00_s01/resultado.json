@@ -1,0 +1,14 @@
+{
+ "id": "ver_m2_rotating_L100_n4_cargaestacionaria_f00_s01",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 3.61,
+ "tempo_parede_observador_s": 4.23,
+ "max_rss_mb": 483.1,
+ "csv_mvp": "hotstuff-4v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "69b9b0888ddf2c82b295cfe38de15f51",
+ "blocos_mvp": 2216,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "69b9b0888ddf2c82b295cfe38de15f51",
+ "blocos_obs": 2216
+}

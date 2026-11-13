@@ -1,0 +1,14 @@
+{
+ "id": "v1_semhash_n16_L500",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 0.57,
+ "tempo_parede_observador_s": 0.55,
+ "max_rss_mb": 140.7,
+ "csv_mvp": "hotstuff-16v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "eff5601e90148529a62274a96ecf6a17",
+ "blocos_mvp": 66,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "eff5601e90148529a62274a96ecf6a17",
+ "blocos_obs": 66
+}

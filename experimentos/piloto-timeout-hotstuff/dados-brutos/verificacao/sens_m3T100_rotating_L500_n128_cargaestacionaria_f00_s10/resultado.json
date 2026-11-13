@@ -1,0 +1,14 @@
+{
+ "id": "sens_m3T100_rotating_L500_n128_cargaestacionaria_f00_s10",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 20.89,
+ "tempo_parede_observador_s": 19.58,
+ "max_rss_mb": 796.5,
+ "csv_mvp": "hotstuff-128v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "d148cbbb62e9f657fc9df3e38670d1d2",
+ "blocos_mvp": 1133,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "d148cbbb62e9f657fc9df3e38670d1d2",
+ "blocos_obs": 1133
+}

@@ -1,0 +1,190 @@
+{
+ "m_adotado": "3",
+ "T_s_por_n": {
+  "4": 0.918,
+  "16": 1.09,
+  "64": 2.065,
+  "128": 3.396
+ },
+ "por_n": {
+  "4": {
+   "T_s": 0.918,
+   "D_max_medicao": 0.3802576204508199,
+   "D_max_verificacao": 0.31083088012798044,
+   "D_max_empilhado": 0.3802576204508199,
+   "razao_Dmax_sobre_T": {
+    "medicao": 0.41422398741919375,
+    "verificacao": 0.3385957299869068,
+    "empilhado": 0.41422398741919375
+   },
+   "A3_passa": true,
+   "m_minimo_para_A3_empilhado": 2.486814245149707,
+   "max_sobre_p9999_empilhado": 1.2434071225748535,
+   "m2": {
+    "T_s": 0.612,
+    "razao_Dmax_empilhado_sobre_T": 0.6213359811287907,
+    "A3_passa_empilhado": false,
+    "A3_passa_so_medicao": false
+   }
+  },
+  "16": {
+   "T_s": 1.09,
+   "D_max_medicao": 0.5105710750824528,
+   "D_max_verificacao": 0.6856348418983487,
+   "D_max_empilhado": 0.6856348418983487,
+   "razao_Dmax_sobre_T": {
+    "medicao": 0.4684138303508741,
+    "verificacao": 0.62902279073243,
+    "empilhado": 0.62902279073243
+   },
+   "A3_passa": false,
+   "m_minimo_para_A3_empilhado": 3.776308568598643,
+   "max_sobre_p9999_empilhado": 1.8881542842993215,
+   "m2": {
+    "T_s": 0.727,
+    "razao_Dmax_empilhado_sobre_T": 0.9431015706992416,
+    "A3_passa_empilhado": false,
+    "A3_passa_so_medicao": false
+   }
+  },
+  "64": {
+   "T_s": 2.065,
+   "D_max_medicao": 0.8994381592649603,
+   "D_max_verificacao": 0.7097621556299316,
+   "D_max_empilhado": 0.8994381592649603,
+   "razao_Dmax_sobre_T": {
+    "medicao": 0.4355632732517968,
+    "verificacao": 0.34371048698786033,
+    "empilhado": 0.4355632732517968
+   },
+   "A3_passa": true,
+   "m_minimo_para_A3_empilhado": 2.61437269781319,
+   "max_sobre_p9999_empilhado": 1.307186348906595,
+   "m2": {
+    "T_s": 1.377,
+    "razao_Dmax_empilhado_sobre_T": 0.6531867532788382,
+    "A3_passa_empilhado": false,
+    "A3_passa_so_medicao": false
+   }
+  },
+  "128": {
+   "T_s": 3.396,
+   "D_max_medicao": 1.177759165955905,
+   "D_max_verificacao": 1.196960365120276,
+   "D_max_empilhado": 1.196960365120276,
+   "razao_Dmax_sobre_T": {
+    "medicao": 0.34680776382682715,
+    "verificacao": 0.35246182718500474,
+    "empilhado": 0.35246182718500474
+   },
+   "A3_passa": true,
+   "m_minimo_para_A3_empilhado": 2.1151724193933186,
+   "max_sobre_p9999_empilhado": 1.0575862096966593,
+   "m2": {
+    "T_s": 2.264,
+    "razao_Dmax_empilhado_sobre_T": 0.5286927407775072,
+    "A3_passa_empilhado": false,
+    "A3_passa_so_medicao": false
+   }
+  }
+ },
+ "A1": {
+  "medicao_L100": {
+   "celulas": 80,
+   "timeouts_disparados_total": 0,
+   "visoes_somadas": 172744
+  },
+  "verificacao_m3_L100": {
+   "celulas": 80,
+   "timeouts_disparados_total": 0,
+   "visoes_somadas": 172744
+  },
+  "verificacao_m2_L100": {
+   "celulas": 80,
+   "timeouts_disparados_total": 0,
+   "visoes_somadas": 172744
+  },
+  "nota": "verificacao_m2_L100 usa T_m2 (menor) nas MESMAS sementes novas: informa se m=2 teria disparado"
+ },
+ "A2": {
+  "medicao_L100": {
+   "visoes_pos_transiente_min_por_celula": 2131,
+   "N_min_por_grupo": 21348,
+   "passa": true
+  },
+  "verificacao_m3_L100": {
+   "visoes_pos_transiente_min_por_celula": 2131,
+   "N_min_por_grupo": 21350,
+   "passa": true
+  },
+  "sensibilidades_medicao": {
+   "10": {
+    "visoes_pos_transiente_min_por_celula": 1068,
+    "N_min_por_grupo": 10712,
+    "passa": true,
+    "timeouts_na_medicao": 0
+   },
+   "500": {
+    "visoes_pos_transiente_min_por_celula": 1070,
+    "N_min_por_grupo": 10716,
+    "passa": true,
+    "timeouts_na_medicao": 0
+   }
+  }
+ },
+ "sensibilidade_L_com_T_L100": {
+  "10": {
+   "4": {
+    "T_s": 0.918,
+    "D_max": 0.2813515937656348,
+    "razao": 0.30648321760962394,
+    "timeouts": 0
+   },
+   "16": {
+    "T_s": 1.09,
+    "D_max": 0.6460968226691364,
+    "razao": 0.5927493785955379,
+    "timeouts": 0
+   },
+   "64": {
+    "T_s": 2.065,
+    "D_max": 0.6499300574986204,
+    "razao": 0.31473610532620844,
+    "timeouts": 0
+   },
+   "128": {
+    "T_s": 3.396,
+    "D_max": 0.7097596258825547,
+    "razao": 0.20899871197955086,
+    "timeouts": 0
+   }
+  },
+  "500": {
+   "4": {
+    "T_s": 0.918,
+    "D_max": 0.37487982270855014,
+    "razao": 0.4083658199439544,
+    "timeouts": 0
+   },
+   "16": {
+    "T_s": 1.09,
+    "D_max": 0.9317175045334807,
+    "razao": 0.854786701406863,
+    "timeouts": 0
+   },
+   "64": {
+    "T_s": 2.065,
+    "D_max": 1.7585813874888458,
+    "razao": 0.8516132627064629,
+    "timeouts": 0
+   },
+   "128": {
+    "T_s": 3.396,
+    "D_max": 3.273947764966124,
+    "razao": 0.9640600014623452,
+    "timeouts": 0
+   }
+  }
+ },
+ "ACEITE_GERAL": false
+}
