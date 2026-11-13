@@ -209,8 +209,7 @@ especificacoes/
 # Ao congelar o pre-registro, publicar a versao final das baterias em experimentos/.
 .experimento/
 
-# ADRs e status do orquestrador. A documentacao Sphinx de docs/ continua versionada.
-docs/adr/
+# Status do orquestrador. ADRs (docs/adr/) sao versionados: sao decisoes do humano. A documentacao Sphinx de docs/ continua versionada.
 docs/STATUS.md
 docs/_build/
 
