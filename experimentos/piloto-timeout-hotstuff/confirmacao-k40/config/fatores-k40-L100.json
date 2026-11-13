@@ -1,0 +1,17 @@
+{
+ "_comentario": "ESPECIFICACAO pre-registrada (etapa 1). Consumida na etapa 2 por experimentos/piloto-timeout-hotstuff/scripts/gerar-celulas.py (nao editado). view_timeout_s e sobrescrito por view_timeout_por_n (mesmo padrao de confirmacao/config/fatores-confirmacao-L100.json). n=128 vem primeiro so para o lote comecar pelas celulas mais longas; a ordem nao afeta nenhuma celula (uma semente por processo).",
+ "n": [128, 64],
+ "politicas": ["ROTATING"],
+ "L": [100],
+ "sementes": 40,
+ "semente_base": 52345,
+ "duracao_s": {"64": 941, "128": 1807},
+ "view_timeout_s": 2.065,
+ "view_timeout_por_n": {"64": 2.065, "128": 3.396},
+ "attack": null,
+ "prefixo": "k40",
+ "variante_fixa": {
+  "max_future_view_horizon": 1000, "s_tx": 512, "sig_individual_B": 64, "sig_agregada_B": 96,
+  "share_agregada_B": 96, "overhead_msg_B": 10, "signature_mode": "INDIVIDUAL", "voter_encoding": "BITMAP"
+ }
+}

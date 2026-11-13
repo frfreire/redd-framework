@@ -1,0 +1,11 @@
+{
+ "sementes_ja_usadas_distintas": 204,
+ "min_usada": 16346,
+ "max_usada": 170365,
+ "sementes_novas": 80,
+ "min_nova": 116346,
+ "max_nova": 180385,
+ "colisoes_com_ja_usadas": {},
+ "duplicadas_na_especificacao": false,
+ "cfg_json_lidos": 769
+}
