@@ -1,0 +1,3 @@
+# attack=EQUIVOCATION byzantine_count=1 (HOTSTUFF; sorteio RandomnessEngine dedicado (semente do trial ^ sal) em [0,n), nao o laco do ARQ; coluna n = validadores; particao, abrangencia e coordenacao PROVISORIAS: ADR-0015 Q28)
+project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std
+HOTSTUFF;13;1;0.159504;0.000000;0.003131;0.000000;0.159504;0.000000

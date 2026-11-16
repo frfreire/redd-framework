@@ -1,0 +1,14 @@
+{
+ "id": "vb_individual_n10_f00_s08",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 10.69,
+ "tempo_parede_observador_s": 12.14,
+ "max_rss_mb": 532.3,
+ "csv_mvp": "hotstuff-10v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "914952dc9e296e291928e8d26b397f7a",
+ "blocos_mvp": 1587,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "914952dc9e296e291928e8d26b397f7a",
+ "blocos_obs": 1587
+}

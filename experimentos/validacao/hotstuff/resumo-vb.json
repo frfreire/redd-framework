@@ -1,0 +1,376 @@
+{
+ "rotulo": "DESCRITIVO e POS-HOC (nao pre-registrado, nao decide): vazao relativa e dispersao por semente",
+ "pontos": {
+  "n4_f0": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 1802,
+   "blocos_max": 1807,
+   "blocos_media": 1803.5,
+   "vazao_relativa_a_f0": 1.0,
+   "ultimo_Fmin_s_min": 299.8,
+   "alturas_ge_20s_min": 1682,
+   "alturas_ge_20s_max": 1688,
+   "conjuntos_bizantinos_distintos": 1
+  },
+  "n4_f1": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 622,
+   "blocos_max": 624,
+   "blocos_media": 622.9,
+   "vazao_relativa_a_f0": 0.345,
+   "ultimo_Fmin_s_min": 299.2,
+   "alturas_ge_20s_min": 580,
+   "alturas_ge_20s_max": 584,
+   "conjuntos_bizantinos_distintos": 4
+  },
+  "n4_f2": {
+   "classes": {
+    "VIVA": 6,
+    "NAO_EXECUTAVEL_POR_REGRA_DO_ATAQUE": 4
+   },
+   "blocos_min": 102,
+   "blocos_max": 102,
+   "blocos_media": 102.0,
+   "vazao_relativa_a_f0": 0.057,
+   "ultimo_Fmin_s_min": 297.9,
+   "alturas_ge_20s_min": 96,
+   "alturas_ge_20s_max": 96,
+   "conjuntos_bizantinos_distintos": 3
+  },
+  "n7_f0": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 1676,
+   "blocos_max": 1680,
+   "blocos_media": 1677.8,
+   "vazao_relativa_a_f0": 1.0,
+   "ultimo_Fmin_s_min": 299.8,
+   "alturas_ge_20s_min": 1565,
+   "alturas_ge_20s_max": 1568,
+   "conjuntos_bizantinos_distintos": 1
+  },
+  "n7_f1": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 822,
+   "blocos_max": 827,
+   "blocos_media": 824.2,
+   "vazao_relativa_a_f0": 0.491,
+   "ultimo_Fmin_s_min": 299.0,
+   "alturas_ge_20s_min": 767,
+   "alturas_ge_20s_max": 773,
+   "conjuntos_bizantinos_distintos": 5
+  },
+  "n7_f2": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 475,
+   "blocos_max": 479,
+   "blocos_media": 478.0,
+   "vazao_relativa_a_f0": 0.285,
+   "ultimo_Fmin_s_min": 298.8,
+   "alturas_ge_20s_min": 443,
+   "alturas_ge_20s_max": 447,
+   "conjuntos_bizantinos_distintos": 9
+  },
+  "n7_f3": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 45,
+   "blocos_max": 185,
+   "blocos_media": 121.6,
+   "vazao_relativa_a_f0": 0.072,
+   "ultimo_Fmin_s_min": 295.9,
+   "alturas_ge_20s_min": 42,
+   "alturas_ge_20s_max": 171,
+   "conjuntos_bizantinos_distintos": 9
+  },
+  "n10_f0": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 1586,
+   "blocos_max": 1589,
+   "blocos_media": 1587.6,
+   "vazao_relativa_a_f0": 1.0,
+   "ultimo_Fmin_s_min": 299.8,
+   "alturas_ge_20s_min": 1480,
+   "alturas_ge_20s_max": 1484,
+   "conjuntos_bizantinos_distintos": 1
+  },
+  "n10_f1": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 956,
+   "blocos_max": 963,
+   "blocos_media": 957.9,
+   "vazao_relativa_a_f0": 0.603,
+   "ultimo_Fmin_s_min": 299.9,
+   "alturas_ge_20s_min": 892,
+   "alturas_ge_20s_max": 900,
+   "conjuntos_bizantinos_distintos": 6
+  },
+  "n10_f2": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 638,
+   "blocos_max": 641,
+   "blocos_media": 639.1,
+   "vazao_relativa_a_f0": 0.403,
+   "ultimo_Fmin_s_min": 298.5,
+   "alturas_ge_20s_min": 593,
+   "alturas_ge_20s_max": 600,
+   "conjuntos_bizantinos_distintos": 8
+  },
+  "n10_f3": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 442,
+   "blocos_max": 447,
+   "blocos_media": 443.8,
+   "vazao_relativa_a_f0": 0.28,
+   "ultimo_Fmin_s_min": 298.1,
+   "alturas_ge_20s_min": 413,
+   "alturas_ge_20s_max": 416,
+   "conjuntos_bizantinos_distintos": 10
+  },
+  "n10_f4": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 65,
+   "blocos_max": 167,
+   "blocos_media": 104.1,
+   "vazao_relativa_a_f0": 0.066,
+   "ultimo_Fmin_s_min": 291.2,
+   "alturas_ge_20s_min": 60,
+   "alturas_ge_20s_max": 156,
+   "conjuntos_bizantinos_distintos": 10
+  },
+  "n13_f0": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 1510,
+   "blocos_max": 1512,
+   "blocos_media": 1511.5,
+   "vazao_relativa_a_f0": 1.0,
+   "ultimo_Fmin_s_min": 299.8,
+   "alturas_ge_20s_min": 1410,
+   "alturas_ge_20s_max": 1412,
+   "conjuntos_bizantinos_distintos": 1
+  },
+  "n13_f1": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 1024,
+   "blocos_max": 1033,
+   "blocos_media": 1029.0,
+   "vazao_relativa_a_f0": 0.681,
+   "ultimo_Fmin_s_min": 298.7,
+   "alturas_ge_20s_min": 958,
+   "alturas_ge_20s_max": 966,
+   "conjuntos_bizantinos_distintos": 10
+  },
+  "n13_f2": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 742,
+   "blocos_max": 748,
+   "blocos_media": 745.2,
+   "vazao_relativa_a_f0": 0.493,
+   "ultimo_Fmin_s_min": 297.8,
+   "alturas_ge_20s_min": 693,
+   "alturas_ge_20s_max": 698,
+   "conjuntos_bizantinos_distintos": 10
+  },
+  "n13_f3": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 553,
+   "blocos_max": 563,
+   "blocos_media": 559.4,
+   "vazao_relativa_a_f0": 0.37,
+   "ultimo_Fmin_s_min": 298.2,
+   "alturas_ge_20s_min": 520,
+   "alturas_ge_20s_max": 527,
+   "conjuntos_bizantinos_distintos": 10
+  },
+  "n13_f4": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 423,
+   "blocos_max": 430,
+   "blocos_media": 426.6,
+   "vazao_relativa_a_f0": 0.282,
+   "ultimo_Fmin_s_min": 296.8,
+   "alturas_ge_20s_min": 396,
+   "alturas_ge_20s_max": 401,
+   "conjuntos_bizantinos_distintos": 10
+  },
+  "n13_f5": {
+   "classes": {
+    "VIVA": 10
+   },
+   "blocos_min": 48,
+   "blocos_max": 203,
+   "blocos_media": 121.4,
+   "vazao_relativa_a_f0": 0.08,
+   "ultimo_Fmin_s_min": 292.3,
+   "alturas_ge_20s_min": 45,
+   "alturas_ge_20s_max": 186,
+   "conjuntos_bizantinos_distintos": 10
+  }
+ },
+ "n7_f3_por_semente": [
+  {
+   "semente": 427346,
+   "id": "vb_individual_n7_f03_s01",
+   "bizantinos": [
+    1,
+    3,
+    5
+   ],
+   "blocos": 103,
+   "alturas_ge_20s": 96,
+   "ultimo_Fmin_s": 297.5
+  },
+  {
+   "semente": 427347,
+   "id": "vb_individual_n7_f03_s02",
+   "bizantinos": [
+    0,
+    2,
+    4
+   ],
+   "blocos": 104,
+   "alturas_ge_20s": 96,
+   "ultimo_Fmin_s": 298.0
+  },
+  {
+   "semente": 427348,
+   "id": "vb_individual_n7_f03_s03",
+   "bizantinos": [
+    1,
+    3,
+    6
+   ],
+   "blocos": 103,
+   "alturas_ge_20s": 96,
+   "ultimo_Fmin_s": 297.4
+  },
+  {
+   "semente": 427349,
+   "id": "vb_individual_n7_f03_s04",
+   "bizantinos": [
+    3,
+    4,
+    5
+   ],
+   "blocos": 185,
+   "alturas_ge_20s": 171,
+   "ultimo_Fmin_s": 298.9
+  },
+  {
+   "semente": 427350,
+   "id": "vb_individual_n7_f03_s05",
+   "bizantinos": [
+    2,
+    3,
+    6
+   ],
+   "blocos": 103,
+   "alturas_ge_20s": 96,
+   "ultimo_Fmin_s": 296.4
+  },
+  {
+   "semente": 427351,
+   "id": "vb_individual_n7_f03_s06",
+   "bizantinos": [
+    1,
+    4,
+    5
+   ],
+   "blocos": 182,
+   "alturas_ge_20s": 170,
+   "ultimo_Fmin_s": 296.9
+  },
+  {
+   "semente": 427352,
+   "id": "vb_individual_n7_f03_s07",
+   "bizantinos": [
+    0,
+    3,
+    5
+   ],
+   "blocos": 104,
+   "alturas_ge_20s": 96,
+   "ultimo_Fmin_s": 296.4
+  },
+  {
+   "semente": 427353,
+   "id": "vb_individual_n7_f03_s08",
+   "bizantinos": [
+    0,
+    4,
+    6
+   ],
+   "blocos": 183,
+   "alturas_ge_20s": 170,
+   "ultimo_Fmin_s": 295.9
+  },
+  {
+   "semente": 427354,
+   "id": "vb_individual_n7_f03_s09",
+   "bizantinos": [
+    0,
+    2,
+    4
+   ],
+   "blocos": 104,
+   "alturas_ge_20s": 96,
+   "ultimo_Fmin_s": 298.0
+  },
+  {
+   "semente": 427355,
+   "id": "vb_individual_n7_f03_s10",
+   "bizantinos": [
+    0,
+    2,
+    3
+   ],
+   "blocos": 45,
+   "alturas_ge_20s": 42,
+   "ultimo_Fmin_s": 295.9
+  }
+ ],
+ "n4_f2_conjuntos_bizantinos_das_executaveis": [
+  [
+   1,
+   2
+  ],
+  [
+   1,
+   3
+  ],
+  [
+   2,
+   3
+  ]
+ ]
+}
