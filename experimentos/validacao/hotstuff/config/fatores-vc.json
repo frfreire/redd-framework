@@ -1,0 +1,51 @@
+{
+ "_comentario": "V-C NUMERICO DECLARADO INVIAVEL pelo humano em 16/11/2026 (nenhum numero VERIFICADO de Yin et al. 2019; figuras ilegiveis). Resta SO o teste ORDINAL fraco (n=16 com Tb maior e vazao menor que n=4), que NAO e confronto numerico. Registro da busca: FONTES-V-C.md.",
+ "bloco": "vc",
+ "n": [
+  4,
+  16
+ ],
+ "modos": [
+  "INDIVIDUAL"
+ ],
+ "politica": "ROTATING",
+ "L": [
+  100
+ ],
+ "sementes": 5,
+ "semente_base": 520345,
+ "duracao_s": 120,
+ "view_timeout_origem": "L=100: T aceito pelo humano em 16/11/2026 (n=4 0,918 s; n=16 1,090 s). L=400: T aceito pelo humano (T do L=500 do piloto, 1,023 / 1,829 s), mas as celulas L=400 NAO sao executadas nesta rodada (ver L400_nao_executado).",
+ "attack": null,
+ "load_record_t0": null,
+ "prefixo": "vc",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "variante_fixa": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "voter_encoding": "BITMAP"
+ },
+ "view_timeout_por_L_n": {
+  "100": {
+   "4": 0.918,
+   "16": 1.09
+  }
+ },
+ "L400_nao_executado": {
+  "motivo": "L=400 existia so para o confronto numerico com a varredura de n do artigo (declarado inviavel); sem sentido para o teste ordinal",
+  "celulas_que_seriam": 10,
+  "view_timeout_por_n_aceito": {
+   "4": 1.023,
+   "16": 1.829
+  },
+  "sementes_que_seriam": "as MESMAS do L=100 (semente = base + n*1000 + r); nenhuma semente nova deixa de ser usada"
+ }
+}

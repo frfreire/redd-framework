@@ -1,0 +1,51 @@
+{
+ "_comentario": "ESPECIFICACAO pre-registrada de V-A (agregado de rede, ROTATING). Consumida por scripts/gerar-celulas-val.py. Nenhum valor de pesquisa mora no script.",
+ "bloco": "va",
+ "descricao": "V-A agregado de rede: n varia, resto fixo. INDIVIDUAL = modo que RESPONDE por P4a (decisao 1 da etapa 1b, 16/11/2026); AGGREGATED = so SENSIBILIDADE rotulada (fixture 96 B sem fonte), nunca decide.",
+ "n": [
+  4,
+  7,
+  10,
+  16,
+  31
+ ],
+ "modos": [
+  "INDIVIDUAL",
+  "AGGREGATED"
+ ],
+ "politica": "ROTATING",
+ "L": 100,
+ "sementes": 5,
+ "semente_base": 220345,
+ "duracao_s": 120,
+ "view_timeout_por_n": {
+  "4": 0.918,
+  "7": 1.09,
+  "10": 1.09,
+  "13": 1.09,
+  "16": 1.09,
+  "31": 2.065
+ },
+ "view_timeout_origem": "T ACEITO PELO HUMANO em 16/11/2026 (decisao 2 da etapa 1b): n=4 0,918 s; n=7,10,13,16 1,090 s; n=31 2,065 s (n=7,10,13 = T do n=16; n=31 = T do n=64). Parametro de instrumento do V-ABC, nao e o T final do estudo; aceite do instrumento = zero timeouts sem falha.",
+ "attack": null,
+ "load_record_t0": null,
+ "prefixo": "va",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "variante_fixa": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "voter_encoding": "BITMAP"
+ },
+ "modo_decisivo": "INDIVIDUAL",
+ "modos_sensibilidade": [
+  "AGGREGATED"
+ ]
+}

@@ -1,0 +1,140 @@
+{
+ "nota": "calculado da FORMULA (leitura de codigo); nenhum dado desta rodada",
+ "ns": [
+  4,
+  7,
+  10,
+  16,
+  31
+ ],
+ "previsao": {
+  "INDIVIDUAL/rede_msgs": {
+   "valores_por_n": {
+    "4": 24,
+    "7": 48,
+    "10": 72,
+    "16": 120,
+    "31": 240
+   },
+   "expoente_b": 1.12,
+   "R2_loglog": 0.99851,
+   "classe": "O(n)",
+   "razao_y31_y4": 10.0,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": -0.0
+  },
+  "INDIVIDUAL/rede_assinaturas": {
+   "valores_por_n": {
+    "4": 54,
+    "7": 168,
+    "10": 342,
+    "16": 870,
+    "31": 3240
+   },
+   "expoente_b": 1.9976,
+   "R2_loglog": 0.99998,
+   "classe": "O(n^2)",
+   "razao_y31_y4": 60.0,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": 0.9887
+  },
+  "INDIVIDUAL/rede_consenso": {
+   "valores_por_n": {
+    "4": 4983,
+    "7": 13806,
+    "10": 26514,
+    "16": 63390,
+    "31": 223080
+   },
+   "expoente_b": 1.8557,
+   "R2_loglog": 0.99989,
+   "classe": "O(n^2)",
+   "razao_y31_y4": 44.768,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": 0.9217
+  },
+  "INDIVIDUAL/rede_total": {
+   "valores_por_n": {
+    "4": 158583,
+    "7": 321006,
+    "10": 487314,
+    "16": 831390,
+    "31": 1759080
+   },
+   "expoente_b": 1.1703,
+   "R2_loglog": 0.99936,
+   "classe": "O(n)",
+   "razao_y31_y4": 11.092,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": 0.1169
+  },
+  "AGGREGATED/rede_msgs": {
+   "valores_por_n": {
+    "4": 24,
+    "7": 48,
+    "10": 72,
+    "16": 120,
+    "31": 240
+   },
+   "expoente_b": 1.12,
+   "R2_loglog": 0.99851,
+   "classe": "O(n)",
+   "razao_y31_y4": 10.0,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": -0.0
+  },
+  "AGGREGATED/rede_assinaturas": {
+   "valores_por_n": {
+    "4": 24,
+    "7": 48,
+    "10": 72,
+    "16": 120,
+    "31": 240
+   },
+   "expoente_b": 1.12,
+   "R2_loglog": 0.99851,
+   "classe": "O(n)",
+   "razao_y31_y4": 10.0,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": -0.0
+  },
+  "AGGREGATED/rede_consenso": {
+   "valores_por_n": {
+    "4": 3831,
+    "7": 7662,
+    "10": 11538,
+    "16": 19230,
+    "31": 38760
+   },
+   "expoente_b": 1.1256,
+   "R2_loglog": 0.99864,
+   "classe": "O(n)",
+   "razao_y31_y4": 10.117,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": 0.0157
+  },
+  "AGGREGATED/rede_total": {
+   "valores_por_n": {
+    "4": 157431,
+    "7": 314862,
+    "10": 472338,
+    "16": 787230,
+    "31": 1574760
+   },
+   "expoente_b": 1.1201,
+   "R2_loglog": 0.99852,
+   "classe": "O(n)",
+   "razao_y31_y4": 10.003,
+   "razao_n31_n4": 7.75,
+   "razao_n31_n4_ao_quadrado": 60.062,
+   "fracao_termo_quadratico_em_n31": 0.0004
+  }
+ }
+}

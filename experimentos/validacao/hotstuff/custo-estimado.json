@@ -1,0 +1,59 @@
+{
+ "custo_cpu_por_s_sim": {
+  "128": 0.05451413278542469,
+  "16": 0.03196477455716586,
+  "4": 0.017468279340721794,
+  "64": 0.049290154850463036
+ },
+ "blocos": {
+  "va": {
+   "celulas": 50,
+   "cpu_s_sem_flag": 159,
+   "cpu_s_flag_5_5x": 875,
+   "parede_s_8_paralelos_sem_flag": 21,
+   "parede_s_8_paralelos_flag_5_5x": 118
+  },
+  "vano": {
+   "celulas": 30,
+   "cpu_s_sem_flag": 95,
+   "cpu_s_flag_5_5x": 525,
+   "parede_s_8_paralelos_sem_flag": 13,
+   "parede_s_8_paralelos_flag_5_5x": 71
+  },
+  "vc": {
+   "celulas": 10,
+   "cpu_s_sem_flag": 30,
+   "cpu_s_flag_5_5x": 163,
+   "parede_s_8_paralelos_sem_flag": 4,
+   "parede_s_8_paralelos_flag_5_5x": 22
+  },
+  "vc_antigo_L100_e_L400": {
+   "celulas": 20,
+   "cpu_s_sem_flag": 59,
+   "cpu_s_flag_5_5x": 326,
+   "parede_s_8_paralelos_sem_flag": 8,
+   "parede_s_8_paralelos_flag_5_5x": 44
+  },
+  "vb": {
+   "celulas": 180,
+   "cpu_s_sem_flag": 1291,
+   "cpu_s_flag_5_5x": 7102,
+   "parede_s_8_paralelos_sem_flag": 174,
+   "parede_s_8_paralelos_flag_5_5x": 956
+  }
+ },
+ "antes_da_emenda_1b": {
+  "celulas": 100,
+  "cpu_s_sem_flag": 313,
+  "parede_min_flag_5_5x": 3.9
+ },
+ "determinismo_extra": {
+  "celulas_repetidas": 4,
+  "nota": "4 execucoes extras (mesma semente), fora das estatisticas"
+ },
+ "va_mais_vano": {
+  "cpu_s_sem_flag": 284,
+  "parede_min_sem_flag": 0.6,
+  "parede_min_flag_5_5x": 3.5
+ }
+}

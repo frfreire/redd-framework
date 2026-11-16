@@ -1,0 +1,49 @@
+{
+ "_comentario": "ESPECIFICACAO pre-registrada de V-B. BLOQUEADO (nao executar): (1) a regra do ataque EQUIVOCATION (HotStuff.requireEquivocationSplit) aborta celulas fora da faixa e depende da semente (ver vb-celulas-bloqueadas.json); isto AINDA NAO e decisao do humano (pergunta aberta). f e inteiro (decisao 10/11, Q34); f_max(n)=floor((n-1)/3).",
+ "bloco": "vb",
+ "n": [
+  4,
+  7,
+  10,
+  13
+ ],
+ "f_de": 0,
+ "f_ate": "floor((n-1)/3)+1",
+ "modos": [
+  "INDIVIDUAL"
+ ],
+ "politica": "ROTATING",
+ "L": 100,
+ "sementes": 10,
+ "semente_base": 420345,
+ "duracao_s": 300,
+ "view_timeout_por_n": {
+  "4": 0.918,
+  "7": 1.09,
+  "10": 1.09,
+  "13": 1.09,
+  "16": 1.09,
+  "31": 2.065
+ },
+ "view_timeout_origem": "idem fatores-va.json (T aceito pelo humano em 16/11/2026).",
+ "attack": "EQUIVOCATION",
+ "flag_fora_da_faixa": "--allow-beyond-bft-threshold=true (existe em 76932b9, aprovada pelo critic; V-B segue BLOQUEADO pela regra do ataque)",
+ "load_record_t0": null,
+ "prefixo": "vb",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "variante_fixa": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "voter_encoding": "BITMAP"
+ },
+ "bloqueio": "regra do ataque EQUIVOCATION (requireEquivocationSplit); pergunta aberta ao humano; ver emenda 16/11/2026 no PREREGISTRO.md",
+ "tolerancia_aceita_pelo_humano": "criterio inteiro: a ruptura ocorre em f* = floor((n-1)/3)+1 (decisao 3, 16/11/2026); 1 p.p. nao e testavel com n<=13"
+}

@@ -1,0 +1,51 @@
+{
+ "_comentario": "ESPECIFICACAO pre-registrada de V-A por no (STABLE, lider = no 0), com registro de enlace --load-record (exige -XX:hashCode=2). Secundaria: nao decide sozinha.",
+ "bloco": "vano",
+ "descricao": "V-A por no: RecvBytes por no em W=[t0,fim] dividido pelos blocos finalizados em W. STABLE para que o lider seja identificavel (no 0). INDIVIDUAL decisivo; AGGREGATED so sensibilidade rotulada.",
+ "n": [
+  4,
+  7,
+  10,
+  16,
+  31
+ ],
+ "modos": [
+  "INDIVIDUAL",
+  "AGGREGATED"
+ ],
+ "politica": "STABLE",
+ "L": 100,
+ "sementes": 3,
+ "semente_base": 320345,
+ "duracao_s": 120,
+ "view_timeout_por_n": {
+  "4": 0.918,
+  "7": 1.09,
+  "10": 1.09,
+  "13": 1.09,
+  "16": 1.09,
+  "31": 2.065
+ },
+ "view_timeout_origem": "idem fatores-va.json (T aceito pelo humano em 16/11/2026).",
+ "attack": null,
+ "load_record_t0": 20.0,
+ "prefixo": "vano",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "variante_fixa": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "voter_encoding": "BITMAP"
+ },
+ "modo_decisivo": "INDIVIDUAL",
+ "modos_sensibilidade": [
+  "AGGREGATED"
+ ]
+}

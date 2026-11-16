@@ -1,0 +1,2159 @@
+{
+ "aviso": "PREVISAO por leitura de codigo + sorteio do simulador; NADA foi simulado. V-B segue BLOQUEADO (pergunta aberta ao humano).",
+ "regra": "HotStuff.requireEquivocationSplit: >=2 vizinhos e >=1 destinatario honesto em cada metade (half=max(1,(n-1)/2), vizinhos=outros ids em ordem)",
+ "f0_nao_listado": "f=0 (40 das 180 celulas) nao tem bizantino e nao aciona a regra; listadas so as 140 celulas com f>=1",
+ "limite_da_previsao": "cobre SO a regra requireEquivocationSplit. Outros modos de falha (nenhum bloco finalizado => rc!=0; visoes que nunca decidem) so aparecem simulando e NAO estao nesta lista",
+ "resumo_por_n_f": {
+  "n4_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n4_f2": {
+   "fora_da_faixa": true,
+   "abortam": 4,
+   "de": 10,
+   "sementes_que_abortam": [
+    3,
+    4,
+    7,
+    9
+   ]
+  },
+  "n7_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n7_f2": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n7_f3": {
+   "fora_da_faixa": true,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n10_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n10_f2": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n10_f3": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n10_f4": {
+   "fora_da_faixa": true,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n13_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n13_f2": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n13_f3": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n13_f4": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  },
+  "n13_f5": {
+   "fora_da_faixa": true,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": []
+  }
+ },
+ "celulas": [
+  {
+   "id": "vb_individual_n4_f01_s01",
+   "n": 4,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 424346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s02",
+   "n": 4,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 424347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s03",
+   "n": 4,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 424348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s04",
+   "n": 4,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 424349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s05",
+   "n": 4,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 424350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s06",
+   "n": 4,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 424351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s07",
+   "n": 4,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 424352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s08",
+   "n": 4,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 424353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s09",
+   "n": 4,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 424354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f01_s10",
+   "n": 4,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 424355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f02_s01",
+   "n": 4,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 424346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f02_s02",
+   "n": 4,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 424347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f02_s03",
+   "n": 4,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 424348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": true,
+   "nos_que_violam": [
+    {
+     "no": 2,
+     "honestos_1a_metade": 0,
+     "honestos_2a_metade": 2,
+     "vizinhos": 3
+    }
+   ]
+  },
+  {
+   "id": "vb_individual_n4_f02_s04",
+   "n": 4,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 424349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": true,
+   "nos_que_violam": [
+    {
+     "no": 3,
+     "honestos_1a_metade": 0,
+     "honestos_2a_metade": 2,
+     "vizinhos": 3
+    }
+   ]
+  },
+  {
+   "id": "vb_individual_n4_f02_s05",
+   "n": 4,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 424350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f02_s06",
+   "n": 4,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 424351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f02_s07",
+   "n": 4,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 424352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": true,
+   "nos_que_violam": [
+    {
+     "no": 2,
+     "honestos_1a_metade": 0,
+     "honestos_2a_metade": 2,
+     "vizinhos": 3
+    }
+   ]
+  },
+  {
+   "id": "vb_individual_n4_f02_s08",
+   "n": 4,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 424353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n4_f02_s09",
+   "n": 4,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 424354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": true,
+   "nos_que_violam": [
+    {
+     "no": 0,
+     "honestos_1a_metade": 0,
+     "honestos_2a_metade": 2,
+     "vizinhos": 3
+    },
+    {
+     "no": 1,
+     "honestos_1a_metade": 0,
+     "honestos_2a_metade": 2,
+     "vizinhos": 3
+    }
+   ]
+  },
+  {
+   "id": "vb_individual_n4_f02_s10",
+   "n": 4,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 424355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s01",
+   "n": 7,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 427346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s02",
+   "n": 7,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 427347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s03",
+   "n": 7,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 427348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s04",
+   "n": 7,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 427349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s05",
+   "n": 7,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 427350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s06",
+   "n": 7,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 427351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s07",
+   "n": 7,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 427352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s08",
+   "n": 7,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 427353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s09",
+   "n": 7,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 427354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f01_s10",
+   "n": 7,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 427355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s01",
+   "n": 7,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 427346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s02",
+   "n": 7,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 427347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s03",
+   "n": 7,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 427348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s04",
+   "n": 7,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 427349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s05",
+   "n": 7,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 427350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s06",
+   "n": 7,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 427351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s07",
+   "n": 7,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 427352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s08",
+   "n": 7,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 427353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s09",
+   "n": 7,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 427354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f02_s10",
+   "n": 7,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 427355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s01",
+   "n": 7,
+   "f": 3,
+   "replicacao": 1,
+   "semente": 427346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s02",
+   "n": 7,
+   "f": 3,
+   "replicacao": 2,
+   "semente": 427347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s03",
+   "n": 7,
+   "f": 3,
+   "replicacao": 3,
+   "semente": 427348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s04",
+   "n": 7,
+   "f": 3,
+   "replicacao": 4,
+   "semente": 427349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    3,
+    4,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s05",
+   "n": 7,
+   "f": 3,
+   "replicacao": 5,
+   "semente": 427350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s06",
+   "n": 7,
+   "f": 3,
+   "replicacao": 6,
+   "semente": 427351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    4,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s07",
+   "n": 7,
+   "f": 3,
+   "replicacao": 7,
+   "semente": 427352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    3,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s08",
+   "n": 7,
+   "f": 3,
+   "replicacao": 8,
+   "semente": 427353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    4,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s09",
+   "n": 7,
+   "f": 3,
+   "replicacao": 9,
+   "semente": 427354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n7_f03_s10",
+   "n": 7,
+   "f": 3,
+   "replicacao": 10,
+   "semente": 427355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s01",
+   "n": 10,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 430346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s02",
+   "n": 10,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 430347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s03",
+   "n": 10,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 430348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s04",
+   "n": 10,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 430349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s05",
+   "n": 10,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 430350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s06",
+   "n": 10,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 430351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s07",
+   "n": 10,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 430352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s08",
+   "n": 10,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 430353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s09",
+   "n": 10,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 430354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f01_s10",
+   "n": 10,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 430355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s01",
+   "n": 10,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 430346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s02",
+   "n": 10,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 430347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s03",
+   "n": 10,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 430348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s04",
+   "n": 10,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 430349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s05",
+   "n": 10,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 430350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s06",
+   "n": 10,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 430351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s07",
+   "n": 10,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 430352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s08",
+   "n": 10,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 430353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s09",
+   "n": 10,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 430354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f02_s10",
+   "n": 10,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 430355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s01",
+   "n": 10,
+   "f": 3,
+   "replicacao": 1,
+   "semente": 430346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s02",
+   "n": 10,
+   "f": 3,
+   "replicacao": 2,
+   "semente": 430347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s03",
+   "n": 10,
+   "f": 3,
+   "replicacao": 3,
+   "semente": 430348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6,
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s04",
+   "n": 10,
+   "f": 3,
+   "replicacao": 4,
+   "semente": 430349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    4,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s05",
+   "n": 10,
+   "f": 3,
+   "replicacao": 5,
+   "semente": 430350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    6,
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s06",
+   "n": 10,
+   "f": 3,
+   "replicacao": 6,
+   "semente": 430351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s07",
+   "n": 10,
+   "f": 3,
+   "replicacao": 7,
+   "semente": 430352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s08",
+   "n": 10,
+   "f": 3,
+   "replicacao": 8,
+   "semente": 430353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s09",
+   "n": 10,
+   "f": 3,
+   "replicacao": 9,
+   "semente": 430354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    4,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f03_s10",
+   "n": 10,
+   "f": 3,
+   "replicacao": 10,
+   "semente": 430355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s01",
+   "n": 10,
+   "f": 4,
+   "replicacao": 1,
+   "semente": 430346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    4,
+    5,
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s02",
+   "n": 10,
+   "f": 4,
+   "replicacao": 2,
+   "semente": 430347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    4,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s03",
+   "n": 10,
+   "f": 4,
+   "replicacao": 3,
+   "semente": 430348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    6,
+    7,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s04",
+   "n": 10,
+   "f": 4,
+   "replicacao": 4,
+   "semente": 430349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    4,
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s05",
+   "n": 10,
+   "f": 4,
+   "replicacao": 5,
+   "semente": 430350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    6,
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s06",
+   "n": 10,
+   "f": 4,
+   "replicacao": 6,
+   "semente": 430351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    4,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s07",
+   "n": 10,
+   "f": 4,
+   "replicacao": 7,
+   "semente": 430352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    3,
+    5,
+    6,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s08",
+   "n": 10,
+   "f": 4,
+   "replicacao": 8,
+   "semente": 430353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    4,
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s09",
+   "n": 10,
+   "f": 4,
+   "replicacao": 9,
+   "semente": 430354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    4,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n10_f04_s10",
+   "n": 10,
+   "f": 4,
+   "replicacao": 10,
+   "semente": 430355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s01",
+   "n": 13,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 433346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s02",
+   "n": 13,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 433347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s03",
+   "n": 13,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 433348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s04",
+   "n": 13,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 433349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s05",
+   "n": 13,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 433350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s06",
+   "n": 13,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 433351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s07",
+   "n": 13,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 433352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s08",
+   "n": 13,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 433353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s09",
+   "n": 13,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 433354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f01_s10",
+   "n": 13,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 433355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s01",
+   "n": 13,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 433346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s02",
+   "n": 13,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 433347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s03",
+   "n": 13,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 433348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s04",
+   "n": 13,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 433349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s05",
+   "n": 13,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 433350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s06",
+   "n": 13,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 433351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s07",
+   "n": 13,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 433352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s08",
+   "n": 13,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 433353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s09",
+   "n": 13,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 433354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f02_s10",
+   "n": 13,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 433355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s01",
+   "n": 13,
+   "f": 3,
+   "replicacao": 1,
+   "semente": 433346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s02",
+   "n": 13,
+   "f": 3,
+   "replicacao": 2,
+   "semente": 433347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    5,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s03",
+   "n": 13,
+   "f": 3,
+   "replicacao": 3,
+   "semente": 433348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s04",
+   "n": 13,
+   "f": 3,
+   "replicacao": 4,
+   "semente": 433349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    8,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s05",
+   "n": 13,
+   "f": 3,
+   "replicacao": 5,
+   "semente": 433350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    8,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s06",
+   "n": 13,
+   "f": 3,
+   "replicacao": 6,
+   "semente": 433351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7,
+    8
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s07",
+   "n": 13,
+   "f": 3,
+   "replicacao": 7,
+   "semente": 433352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s08",
+   "n": 13,
+   "f": 3,
+   "replicacao": 8,
+   "semente": 433353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    7,
+    9
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s09",
+   "n": 13,
+   "f": 3,
+   "replicacao": 9,
+   "semente": 433354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f03_s10",
+   "n": 13,
+   "f": 3,
+   "replicacao": 10,
+   "semente": 433355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    4,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s01",
+   "n": 13,
+   "f": 4,
+   "replicacao": 1,
+   "semente": 433346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    8,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s02",
+   "n": 13,
+   "f": 4,
+   "replicacao": 2,
+   "semente": 433347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    3,
+    5,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s03",
+   "n": 13,
+   "f": 4,
+   "replicacao": 3,
+   "semente": 433348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    5,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s04",
+   "n": 13,
+   "f": 4,
+   "replicacao": 4,
+   "semente": 433349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    8,
+    10,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s05",
+   "n": 13,
+   "f": 4,
+   "replicacao": 5,
+   "semente": 433350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    4,
+    8,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s06",
+   "n": 13,
+   "f": 4,
+   "replicacao": 6,
+   "semente": 433351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7,
+    8,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s07",
+   "n": 13,
+   "f": 4,
+   "replicacao": 7,
+   "semente": 433352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    6,
+    7,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s08",
+   "n": 13,
+   "f": 4,
+   "replicacao": 8,
+   "semente": 433353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    7,
+    9,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s09",
+   "n": 13,
+   "f": 4,
+   "replicacao": 9,
+   "semente": 433354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6,
+    9,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f04_s10",
+   "n": 13,
+   "f": 4,
+   "replicacao": 10,
+   "semente": 433355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    4,
+    6,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s01",
+   "n": 13,
+   "f": 5,
+   "replicacao": 1,
+   "semente": 433346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    2,
+    8,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s02",
+   "n": 13,
+   "f": 5,
+   "replicacao": 2,
+   "semente": 433347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    3,
+    5,
+    6
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s03",
+   "n": 13,
+   "f": 5,
+   "replicacao": 3,
+   "semente": 433348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    5,
+    6,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s04",
+   "n": 13,
+   "f": 5,
+   "replicacao": 4,
+   "semente": 433349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    5,
+    8,
+    9,
+    10,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s05",
+   "n": 13,
+   "f": 5,
+   "replicacao": 5,
+   "semente": 433350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    4,
+    8,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s06",
+   "n": 13,
+   "f": 5,
+   "replicacao": 6,
+   "semente": 433351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    4,
+    6,
+    7,
+    8,
+    10
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s07",
+   "n": 13,
+   "f": 5,
+   "replicacao": 7,
+   "semente": 433352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    4,
+    6,
+    7,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s08",
+   "n": 13,
+   "f": 5,
+   "replicacao": 8,
+   "semente": 433353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    5,
+    7,
+    9,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s09",
+   "n": 13,
+   "f": 5,
+   "replicacao": 9,
+   "semente": 433354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    6,
+    9,
+    10,
+    12
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  },
+  {
+   "id": "vb_individual_n13_f05_s10",
+   "n": 13,
+   "f": 5,
+   "replicacao": 10,
+   "semente": 433355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    4,
+    5,
+    6,
+    11
+   ],
+   "aborta_pela_regra_do_ataque_(previsao)": false,
+   "nos_que_violam": []
+  }
+ ],
+ "totais": {
+  "celulas_f_ge_1": 140,
+  "abortam_previsto": 4,
+  "abortam_dentro_da_faixa": 0,
+  "abortam_fora_da_faixa": 4
+ }
+}
