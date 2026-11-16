@@ -1,0 +1,30 @@
+{
+ "sementes_ja_usadas_distintas": 284,
+ "min_usada": 16346,
+ "max_usada": 180385,
+ "sementes_novas_distintas": 90,
+ "min_nova": 224346,
+ "max_nova": 536350,
+ "faixa_por_bloco": {
+  "va": [
+   224346,
+   251350
+  ],
+  "vano": [
+   324346,
+   351348
+  ],
+  "vb": [
+   424346,
+   433355
+  ],
+  "vc": [
+   524346,
+   536350
+  ]
+ },
+ "colisoes_com_ja_usadas": {},
+ "duplicadas_entre_blocos": {},
+ "cfg_json_lidos": 849,
+ "nota": "mesma semente entre modos de assinatura (va, vano) e entre valores de f (vb) e INTENCIONAL (pareamento)"
+}

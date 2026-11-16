@@ -1,0 +1,10 @@
+{
+ "commit_pinado": "76932b925719a2b83d6165b5a84d30f5501896ee",
+ "arquivos_src_no_commit": 1076,
+ "arquivos_src_no_build": 1076,
+ "tree_src_do_commit": "a1b464ee983b78a2a6b6de7166a6e6460839b8af",
+ "tree_src_no_HEAD_de_trabalho": "a1b464ee983b78a2a6b6de7166a6e6460839b8af",
+ "HEAD_de_trabalho_tem_a_mesma_tree_de_src": true,
+ "classes_compiladas_conferidas_por": "existencia (o .class nao tem blob de origem; a prova e a fonte identica + o build ter sido feito por preparar-val.py)",
+ "problemas": []
+}

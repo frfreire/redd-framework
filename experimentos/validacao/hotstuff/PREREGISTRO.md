@@ -527,3 +527,186 @@ A tabela da seção 11 é histórica (v1). A que `hash-preregistro.py conferir -
 | `scripts/jabs/validar-complexidade.py` | `e229f38d1ea25d614ca976da0f6f6620c6914be0c485bb4646d436b4f8f684a8` |
 
 
+
+
+---
+
+## E7. V-B liberado (decisão do humano 16/11/2026)
+
+**Etapa 3a. Nenhuma célula de V-B foi simulada e nenhum dado de V-B existe ou foi visto.** O texto da v2 (v1 + Emenda 1b, SHA-256
+`bf1d85f78a1f70e5f74b368e836a80b32cd3e065e3c0c834d37d0cfc44ed4ec2`) está arquivado byte a byte em
+`PREREGISTRO.v2-emenda-1b-2026-11-16.md` (hash em `PREREGISTRO.v2-emenda-1b.sha256`); esta seção **só anexa** (`hash-emenda-e7.py` confere que o
+arquivo novo começa pelos mesmos bytes da v2). **Precedência:** onde a E7 contradiz a seção 3.5, a E6 ou os comentários de `fatores-vb.json`
+("BLOQUEADO", "A_DEFINIR", "pergunta aberta"; o arquivo não foi editado porque seu hash está pinado), **vale a E7**. A E6 deixa de estar em aberto.
+**A E7 não altera nenhum critério, limiar, semente, T nem script de V-A ou V-C**: dados e parecer da etapa 2 estão commitados (`26c98f6`) e nenhum
+arquivo deles foi tocado (`hash-preregistro.py conferir --artefatos` segue conferindo os hashes da Emenda 1b, todos inalterados, mais a tabela E7 abaixo).
+
+**O que foi executado nesta etapa, e que não gera dado de V-B:** leitura de código (`HotStuff.java`, `MVPComparison.java`, `ObservadorVal.java` em
+`76932b9`); sorteio dos ids bizantinos pelo próprio simulador pinado (`ObservadorVal --listar-byz-faixa`: só sorteia e imprime, não constrói cenário);
+enumeração exaustiva de conjuntos bizantinos por aritmética; geração das 180 configurações em `/tmp` (não em `celulas/vb`) e conferência contra
+`celulas-esperadas.json`; autoteste de `analisar-vb.py` sobre dado **sintético fabricado pelo próprio script** (não é saída do simulador); conferência de
+que o build de V-A/V-C é o commit pinado; leitura de `resultado.json` de V-A/V-C (já commitados) para estimar custo. **Nenhuma JVM de simulação foi executada.**
+
+**Decisões do humano em 16/11/2026, aplicadas literalmente:** P4a fechado (O(n) em pacotes/mensagens por bloco e O(n²) em bytes de consenso, INDIVIDUAL;
+contagem de assinaturas nos QC não medida, só fórmula); bytes de consenso decidem; 5 valores de n bastam; t0 = 20 s aceito; V-B: **manter a regra de
+ataque `requireEquivocationSplit`** (não mudar o ataque); tolerância de V-B: critério inteiro "a ruptura ocorre em f\* = ⌊(n−1)/3⌋ + 1".
+Interpretação minha, a confirmar: "5 valores de n bastam" refere-se a V-A (n ∈ {4, 7, 10, 16, 31}); **V-B fica com os 4 valores de n já pré-registrados (4, 7, 10, 13)**.
+
+### E7 (a) Células que abortam pela regra do ataque: classe própria, definida antes dos dados
+
+**Previsão (script, sem simular) e sua independência da semente.** `listar-vb-e7.py` refaz o sorteio com o build pinado e **confere igual** à Emenda 1b
+(0 diferenças nas 140 células com f ≥ 1). Além disso enumera **todos** os conjuntos bizantinos possíveis e aplica a regra lida em
+`HotStuff.requireEquivocationSplit` (vizinhos = outros ids em ordem crescente; `half = max(1, (n−1)/2)`; ≥ 1 honesto em cada metade): **só n=4, f=2 tem
+conjunto que aborta: 3 dos 6 pares possíveis, exatamente os que contêm o nó 0** ({0,1}, {0,2}, {0,3}). Para n=7 (f de 1 a 3), n=10 (1 a 4) e n=13 (1 a 5),
+**nenhum** conjunto aborta, **para qualquer semente**. A previsão de 4 abortos em n=4, f=2 **continua válida** no simulador pinado `76932b9`:
+
+| id | semente | bizantinos |
+|---|---|---|
+| `vb_individual_n4_f02_s03` | 424 348 | {0, 2} |
+| `vb_individual_n4_f02_s04` | 424 349 | {0, 3} |
+| `vb_individual_n4_f02_s07` | 424 352 | {0, 2} |
+| `vb_individual_n4_f02_s09` | 424 354 | {0, 1} |
+
+As outras 6 células de n=4 f=2 são previstas **executáveis**: sementes 424 346 ({2,3}), 424 347 ({1,3}), 424 350 ({2,3}), 424 351 ({1,2}), 424 353 ({1,3}),
+424 355 ({1,3}). **Limite que isto impõe:** essas 6 cobrem só **3 conjuntos bizantinos distintos** ({1,2} 1×, {1,3} 3×, {2,3} 2×), todos com o nó 0 honesto.
+A seleção por regra do ataque **não é aleatória**: o veredito de n=4, f=2 vale **condicionado a "nó 0 honesto"**, e isso vai dito no relatório. O relato do
+humano de que n=7, f=3 depende da semente **não é reproduzido** pela regra lida (0 de 35 conjuntos); fica nos pontos abertos.
+
+**Classe própria `NAO_EXECUTAVEL_POR_REGRA_DO_ATAQUE`:**
+
+> Célula cujo `MVPComparison` e cujo observador abortam com a `IllegalStateException` de `HotStuff.requireEquivocationSplit` (critério mecânico em E7 (b)).
+> **Não conta como ruptura nem como sucesso. Não é substituída por outra semente. Não é reexecutada.** Fica listada por `id` e `semente` (com fase e nó que
+> violou) em `analise-vb.json`, campo `nao_executaveis_por_regra_do_ataque`. A previsão acima é comparada com o observado (`previsao_E7_x_observado`:
+> previstos que rodaram; abortos não previstos), **sem reclassificar nada com base nela: vale o que o log disser**. Se uma célula **fora** das 4 previstas
+> abortar pela mesma regra, ela entra na mesma classe pelo mesmo critério mecânico, e isso é relatado como **previsão falsificada**, não ajustado.
+
+**Mínimo de células executáveis por ponto (n, f) para o veredito valer, escolhido AGORA:**
+
+> **`MIN_EXEC = 6`.** Célula executável = classe `VIVA` ou `SEM_VIVACIDADE` (a soma das duas é `k_exec`). Para cada ponto (n, f) o veredito de **confirmação**
+> (L(f) = 1 dentro da faixa; L(f\*) = 0, ou 0 < L(f\*) < 1, em f\*) **só vale com `k_exec ≥ 6` e nenhuma célula `OUTRA_FALHA` no ponto**; fora disso o ponto é
+> **INCONCLUSIVO** e o veredito de n **não** é CONSISTENTE. **Refutação não precisa de mínimo:** dentro da faixa (f ≤ f_max), **uma** célula `SEM_VIVACIDADE` basta
+> para INCONSISTENTE (contraexemplo), com qualquer `k_exec`. O critério de V-B **por n** usa **só as células executáveis** e **declara o `k_exec` de cada ponto**
+> (`pontos[n][f].k_exec`, de 10, mais `nexec`). **Veredito de n=4, f=2:** com as 6 executáveis previstas (`k_exec = 6 ≥ 6`) o ponto é decidido pelo critério inteiro
+> (L(2) = 0 ⇒ CONSISTENTE; 0 < L(2) < 1 ⇒ MISTO; L(2) = 1 ⇒ INCONSISTENTE). **Se restarem menos de 6 células executáveis em n=4, f=2 (por aborto não previsto ou
+> `OUTRA_FALHA`), o veredito de n=4 f=2, e portanto de n=4, é INCONCLUSIVO.** O veredito **global** de V-B só é CONSISTENTE se **os quatro n** forem CONSISTENTES;
+> com algum n INCONCLUSIVO e nenhum INCONSISTENTE, o relatório diz "INCONCLUSIVO (n decididos: …)" e **não é aprovação**: vai ao humano (impacto ALTO, sem arbiter).
+
+**Por que 6, e o que a justificativa não é:** (i) é **maioria estrita das 10 réplicas pré-registradas** (> 50 %); com 5 ou menos a amostra executável é metade ou menos do
+desenho. (ii) Com L observado = 0 em `k` células, o limite superior unilateral exato de 95 % para a probabilidade de vivacidade é 1 − 0,05^(1/k): **39,3 % (k = 6)**, 45,1 % (k = 5),
+25,9 % (k = 10); o analisador grava esse número como rótulo (não decide). "Ruptura" em V-B quer dizer "0 de `k` sementes vivas", **não** probabilidade zero; o critério é determinístico
+sobre as sementes pré-registradas, como já era na v1. (iii) Um mínimo de 7 ou mais tornaria n=4, f=2 inconclusivo por construção. **Dito com franqueza:** escolhi 6 **sabendo** da
+previsão de 6/10 executáveis em n=4 f=2; essa previsão vem de código e de sorteio, **não de dado de V-B**, mas o limite poderia ter sido outro: é a escolha mais exigente que ainda
+deixa o ponto decidível, e aceitá-la é decisão do humano (ponto aberto 2).
+
+### E7 (b) Como distinguir os casos (critério mecânico, decidido pelos arquivos da célula)
+
+Todos os campos existem em `dados-brutos/vb/<id>/` e são lidos por `analisar-vb.py` (ordem de decisão):
+
+| Classe | Critério mecânico (todos obrigatórios) | Campos que decidem |
+|---|---|---|
+| **`NAO_EXECUTAVEL_POR_REGRA_DO_ATAQUE`** (abortou pela regra do ataque) | (1) `stdout-mvp.log` (linha `✗ failed: <mensagem>`) **ou** `stderr-mvp.log` (pilha) contém `EQUIVOCATION em <FASE> (no <id>) exige ao menos (2 vizinhos \| 1 destinatario honesto)` **e** `Ataque nao aplicado: simulacao abortada em vez de degradar` (texto de `HotStuff.java` linhas 840 a 866, `IllegalStateException`, relançada por `rethrowIfHotStuff` como `trial HOTSTUFF falhou (n=…, seed=…): …`); (2) `resultado.json: rc_mvp != 0`; (3) `resultado.json: rc_observador != 0`; (4) `obs/observador-resumo.json` **ausente** (o observador só o escreve depois de `scenario.run()`, que nem termina) | regex nos dois logs; `rc_mvp`; `rc_observador`; existência de `observador-resumo.json` |
+| **`SEM_VIVACIDADE`, sub-rótulo `SEM_BLOCO`** (liveness perdida: o dado que V-B procura) | `observador-resumo.json` existe e `finalizacoes_locais_total == 0`; `rc_mvp != 0`; `stdout-mvp.log` tem `failed: HOTSTUFF finalizou 0 blocos`; `observador-por-altura.csv.gz` sem linha de dados; `rc_observador == 0`; **nenhuma** mensagem de regra de ataque | `finalizacoes_locais_total`; `rc_mvp`; a linha `finalizou 0 blocos` |
+| **`SEM_VIVACIDADE`, sub-rótulo `PARADA_ANTES_DE_T0`** | rodou até o fim (`rc_mvp == rc_observador == 0`, MD5 do CSV por bloco igual entre as duas JVMs, `blocos_mvp == blocos_obs`) e **nenhuma altura** com `Fmin_s ≥ 20 s` em `obs/observador-por-altura.csv.gz` | `observador-por-altura.csv.gz`, coluna `Fmin_s` |
+| **`VIVA`** | idem, e **ao menos uma** altura com `Fmin_s ≥ 20 s` | idem |
+| **`OUTRA_FALHA`** (relatada, **não** classificada como ruptura nem como sucesso) | qualquer outro caso: sem `resultado.json`; observador sem resultado e **sem** a mensagem da regra; mensagem da regra mas `rc_mvp == 0` ou observador terminou (incoerente); outra `IllegalStateException` de `EQUIVOCATION` (ex.: "bloco real sem pai", "só fabrica blocos em HotStuffNode"); MD5 do CSV por bloco ou nº de blocos diferentes entre as JVMs; observador com blocos mas `rc_mvp != 0`; observador sem finalização mas o `MVPComparison` **não** falhou com `finalizou 0 blocos` | lista `outras_falhas` em `analise-vb.json`, com `motivo` |
+
+Regras que seguem: **`OUTRA_FALHA` em um ponto ⇒ o ponto é INCONCLUSIVO** (a célula não é excluída em silêncio nem reexecutada; fica listada). A distinção entre "aborto pela regra" e
+"liveness perdida" é o par **`rc_observador` / `observador-resumo.json`**: na regra, o observador **morre** (mesma exceção, mesma semente, mesma construção do cenário); na liveness perdida,
+o observador **termina** e relata zero finalizações. `executar-lote-vb.py` usa `--rc-mvp-registrado`; o **código de saída 3 do lote é esperado** quando há `rc_observador != 0` (previstas: 4)
+e **não** é erro de execução; quem classifica é `analisar-vb.py`. **Verificado só em teste sintético** (texto copiado do código-fonte; o formato `failed: …` do `MVPComparison` já aparece em logs
+antigos do piloto para o caso "0 blocos"): **nunca vi o log real de um aborto pela regra** em `76932b9` (as 4 células nunca rodaram). Por isso a etapa 3b roda **primeiro só essas 4** e confere o regex
+contra o log real **antes** do resto; se o formato real diferir, ajusta-se o regex por errata datada **antes de qualquer outra célula** (as 4 não carregam dado de ruptura, então o ajuste é cego a ela).
+
+### E7 (c) Definição mecânica de ruptura
+
+**Já estava na v1 (seção 3.5) e vale como está:** vivacidade por célula = ≥ 1 altura finalizada com `Fmin_s ≥ 20 s` (observador; tempo simulado; `Fmin_s` = instante em que o primeiro nó finaliza a
+altura); `L(f)` = fração das células com vivacidade; `f*` = menor f sem vivacidade; critério CONSISTENTE / INCONSISTENTE / MISTO. **Faltava e define-se agora, antes dos dados:**
+
+1. **Denominador de `L(f)`:** só as células **executáveis** (`VIVA` + `SEM_VIVACIDADE`); `NAO_EXECUTAVEL_POR_REGRA_DO_ATAQUE` e `OUTRA_FALHA` **não** entram.
+2. **Ruptura em f** ⇔ `L(f) = 0` com ponto DECIDIDO (`k_exec ≥ 6`, sem `OUTRA_FALHA`). **"A ruptura ocorre em f\* = ⌊(n−1)/3⌋ + 1" (critério inteiro do humano)** ⇔ `L(f) = 1` para todo f de 0 a
+   f_max **e** `L(f_max + 1) = 0`, em pontos DECIDIDOS: **CONSISTENTE**. **INCONSISTENTE** ⇔ algum f ≤ f_max tem **ao menos uma** célula `SEM_VIVACIDADE` (perda de vivacidade dentro da tolerância;
+   refutação não exige mínimo), **ou** `L(f_max + 1) = 1` num ponto DECIDIDO (sem ruptura). **MISTO** ⇔ `0 < L(f_max + 1) < 1` num ponto DECIDIDO (reporta-se; decide o humano). **INCONCLUSIVO** ⇔ algum
+   ponto não é DECIDIDO e não há refutação.
+3. **Fração de réplicas honestas que finalizam: NÃO decide.** Reporto por célula, só como **rótulo**, `alturas_com_Fmin_ge_20s`, `ultimo_Fmin_s` e `max_replicas_que_finalizaram_apos_20s` (coluna `n_finalizaram`,
+   **que não separa bizantinos de honestos**: os bizantinos rodam o núcleo honesto e também finalizam). Não mudei o critério da v1 para "fração de honestos" porque o observador não grava o conjunto de
+   finalizadores por altura; trocar o critério agora seria desenhar métrica sem dado.
+4. **Limites declarados:** (i) o critério é **binário por célula**: uma única altura finalizada após 20 s basta para `VIVA`, mesmo com vazão muito degradada (f\* poderia ter `L = 1` com vazão quase nula);
+   `ultimo_Fmin_s` e `alturas_com_Fmin_ge_20s` mostram isso, mas **não decidem**. (ii) **Só vivacidade é medida; a segurança (dois commits conflitantes) NÃO é verificada** (v1, 3.5); "ruptura" aqui é perda
+   de vivacidade. (iii) 1 p.p. continua **não testável** com n ≤ 13 (E3).
+
+### E7 (d) Flag fora da faixa
+
+**Mantida** `--allow-beyond-bft-threshold=true` **nos pontos f = f\* = f_max + 1** (n=4 f=2, n=7 f=3, n=10 f=4, n=13 f=5; 40 das 180 células) e **só neles**: `gerar-celulas-vb.py` grava
+`flags_extras = ["--allow-beyond-bft-threshold=true"]` nesses cfg e `[]` nos demais (dentro da faixa a saída com a flag seria idêntica, mas ela não é passada). Conferido por
+`gerar-celulas-vb.py conferir-manifesto` sobre as 180 configurações geradas em `/tmp`: **manifesto == especificação** (sementes, n, f, duração, T, modo, ataque, flags, commit, `-XX:hashCode=2`).
+f = 0 (40 células) roda **sem ataque** (`attack: null`), como controle honesto (`MVPComparison` recusa `--byzantine-count=0` com ataque ativo). Ataque **inalterado**: EQUIVOCATION com a regra provisória (B-34 a B-36).
+
+### E7 (e) Listagem por script das células afetadas (sem simular)
+
+`python3 experimentos/validacao/hotstuff/scripts/listar-vb-e7.py` (grava `vb-celulas-bloqueadas-e7.json`; não toca em `listar-vb-bloqueadas.py` nem em `vb-celulas-bloqueadas.json`, ambos hash-conferidos):
+**4 células abortam, todas em n=4 f=2 (fora da faixa), sementes 424 348, 424 349, 424 352 e 424 354**; 0 em n=7, 10, 13; **0 diferenças** em relação à Emenda 1b; exaustivo: só n=4 f=2 (3 de 6 conjuntos).
+**Limite:** previsão por leitura de código e sorteio; cobre **só** esta regra, **não** cobre `SEM_BLOCO` nem `OUTRA_FALHA` (só a execução mostra).
+
+### E7 (f) Instrumento, sementes, custo
+
+- **Simulador:** commit `76932b925719a2b83d6165b5a84d30f5501896ee` (o mesmo de V-A/V-C). `conferir-build-vb.py` (grava `conferencia-build-e7.json`): os **1 076** arquivos de `src/` da cópia
+  `/tmp/opencode/val-hs` têm o mesmo blob git que os do commit (0 faltando, 0 sobrando, 0 diferentes); `pom.xml` e `ObservadorVal.java` com os hashes pinados; tree de `src/` do HEAD de trabalho = `a1b464ee…`
+  (sem mudança de código desde `76932b9`). **Limite:** que os `.class` vêm dessa fonte só se sabe por "foi construído por `preparar-val.py` e a fonte é idêntica" (`.class` não tem blob de origem). Se
+  `/tmp/opencode/val-hs` sumir, rodar `preparar-val.py` (ele já recusa outro commit) antes de V-B.
+- **`-XX:hashCode=2` obrigatório** em toda célula (`rodar_celula.py` aborta sem ela; presente no cfg gerado). `rodar_celula.py` e `ObservadorVal` **são os de V-A/V-C, sem alteração**.
+- **Sementes:** V-B usa 424 346 a 433 355 (base 420 345). `checar-sementes-val.py` → `checagem-sementes-e7.json`: **0 colisões** com as 284 sementes já usadas (849 `cfg.json`) e **0 duplicadas entre blocos**;
+  a repetição da mesma semente entre valores de f é intencional (pareamento).
+- **Custo estimado de V-B (180 células, 300 s simulados, 8 paralelos):** `custo-vb-e7.py` → `custo-vb-e7.json`, a partir de tempos **medidos** em V-A/V-C (INDIVIDUAL, com a flag, em `76932b9`; n = 4, 7, 10, 16, 31;
+  n=13 = máximo entre n=10 e n=16, **não medido**): **CPU ≈ 3 376 s (média) a 3 892 s (teto por n); parede com 8 paralelos (eficiência 7,43 medida) ≈ 7,6 min (média), 8,7 min (teto), 26 min (teto × 3)**; pior célula
+  estimada ≈ 32 s. **Isto substitui os 956 s do `custo-estimado.json`**, que usava o fator pessimista 5,5× (medido no piloto em outro HEAD; V-A/V-C mostraram custo real menor). **Limites:** custo de célula **com ataque** em
+  `76932b9` não medido; duração 300 s vs 120 s (escala linear assumida); n=13 não medido; sem tempo de build (reaproveitado). Memória: RSS máximo medido em V-A/V-C 501 MB; 8 paralelos cabem; disco ≈ 0,4 a 1 MB por célula.
+- **Replicações e duração:** 10 sementes, 300 s, 180 células, como na seção 3.5. T por n como na seção 4 (aceitos pelo humano em 16/11).
+
+### E7: comandos da etapa 3b (só depois do commit desta emenda; **não executar agora**)
+
+```
+V=experimentos/validacao/hotstuff
+0.  python3 $V/scripts/hash-preregistro.py conferir --artefatos         # exit 0 obrigatório
+    python3 $V/scripts/hash-emenda-e7.py conferir                         # exit 0
+    git status --short -- $V                                              # sem alteração não commitada
+1.  python3 $V/scripts/conferir-build-vb.py                               # exit 0 (se falhar: preparar-val.py com destino vazio)
+    python3 $V/scripts/checar-sementes-val.py                             # exit 0
+2.  python3 $V/scripts/gerar-celulas-vb.py gerar --saida $V/celulas/vb --simulador-commit 76932b925719a2b83d6165b5a84d30f5501896ee
+    python3 $V/scripts/gerar-celulas-vb.py conferir-manifesto $V/celulas/vb/manifesto.json   # exit 0
+3.  PILOTO (só as 4 previstas a abortar; não carregam dado de ruptura): rodar_celula.py célula a célula em $V/dados-brutos/vb; conferir o log real contra o regex de E7 (b).
+    Se o log real não casar: errata datada do regex ANTES de qualquer outra célula; se casar: seguir.
+4.  python3 $V/scripts/executar-lote-vb.py $V/celulas/vb --saida $V/dados-brutos/vb --paralelo 8 --pular-existentes   # sem espiar resultado parcial; exit 3 esperado
+5.  python3 $V/scripts/analisar-vb.py $V/dados-brutos/vb --saida $V/analise-vb.json
+```
+Depois: `PARECER-TECNICO-vb.json` (`n_celulas_esperadas` = 180; `n_celulas_obtidas` = células com `resultado.json`; **mais** a contagem por classe e os `k_exec` por ponto) e loop 3 (humano, impacto ALTO).
+**Nenhum limiar é ajustado depois de ver o resultado**; tudo o que for escolha posterior é **pós-hoc rotulado**.
+
+### E7: pontos ainda abertos que dependem do humano
+
+1. **n=7, f=3 "depende da semente":** a regra lida **não** reproduz isso (0 de 35 conjuntos abortam). Ou o relato vem de outro modo, versão ou protocolo, ou a minha leitura da regra está incompleta. Não afeta o desenho
+   (a classe trata qualquer aborto por regra do mesmo jeito), mas **a previsão de 4 abortos pode ser falsificada** no piloto da etapa 3b.
+2. **`MIN_EXEC = 6`** (E7 (a)): escolha minha; se o humano exigir mínimo maior, n=4 f=2 vira INCONCLUSIVO por construção.
+3. **n=4 f=2 só cobre 3 conjuntos bizantinos, todos com o nó 0 honesto** (E7 (a)): o veredito de n=4 é condicional; aceitar essa leitura ou declarar n=4 f=2 fora do critério global?
+4. **Critério binário de vivacidade** (≥ 1 altura após 20 s): mantido como na v1; se o humano quiser um limiar de vazão, é critério novo, não pré-registrado.
+5. **"5 valores de n bastam" aplicado só a V-A** (decisões, acima): V-B segue com 4 valores de n. Confirmar.
+6. **Commit desta emenda** antes da etapa 3b (precedente `06c67b5`); este agente não commita.
+7. Custo de célula com ataque (e n=13) é **estimado, não medido**.
+
+### Artefatos acrescentados pela E7 (SHA-256; conferidos por `hash-preregistro.py conferir --artefatos`, que lê do marcador da Emenda 1b até o fim)
+
+A tabela "Artefatos vigentes (SHA-256) apos a Emenda 1b" **continua valendo, sem mudança**; abaixo só o que a E7 acrescenta.
+
+| arquivo | SHA-256 |
+|---|---|
+| `experimentos/validacao/hotstuff/PREREGISTRO.v2-emenda-1b-2026-11-16.md` | `bf1d85f78a1f70e5f74b368e836a80b32cd3e065e3c0c834d37d0cfc44ed4ec2` |
+| `experimentos/validacao/hotstuff/vb-celulas-bloqueadas-e7.json` | `ed2f74a8be2232538169b9aad36f15db4452539fb4264e6aa02598b6f72f7a2c` |
+| `experimentos/validacao/hotstuff/checagem-sementes-e7.json` | `da549e637169f968c04f7383b446448427be6d75fca9bb10ce80d77ee45fcb91` |
+| `experimentos/validacao/hotstuff/conferencia-build-e7.json` | `8474fcb66ad34aceed58986e48ef10620ebb3e329c2f70e4a670f95637595fb3` |
+| `experimentos/validacao/hotstuff/custo-vb-e7.json` | `25d25847aa3c94750abbffa453c97318655a421a87825cc959fe29296e244f78` |
+| `experimentos/validacao/hotstuff/scripts/hash-emenda-e7.py` | `586a43b9f24410a271df535133a07355c9dc4791e4c25f0342766f0b68cbf4e2` |
+| `experimentos/validacao/hotstuff/scripts/gerar-celulas-vb.py` | `44b50bedc91f6b0775f6f85f0323116cc04677373dee3fcf4f98ad20f6da04d4` |
+| `experimentos/validacao/hotstuff/scripts/executar-lote-vb.py` | `f1dca382f519626e1f137ed0fda56281b923739ce9542d35dbb006c9f2bd546b` |
+| `experimentos/validacao/hotstuff/scripts/analisar-vb.py` | `99d819f42563cc7bf76421b8fb0b57908271c89e2ed40bd70fd9c2ce942e6e90` |
+| `experimentos/validacao/hotstuff/scripts/conferir-build-vb.py` | `1dba73f36b0f036ddb310649cfe977ea1f3a956515274e06f35e267e38d801f0` |
+| `experimentos/validacao/hotstuff/scripts/listar-vb-e7.py` | `8dd4ca7109cbe97e0c94ae1c882656d830f1a749a3ff5cc473a4150b1a466c24` |
+| `experimentos/validacao/hotstuff/scripts/custo-vb-e7.py` | `406f38199866ec20b9cff1f3d01ae46d40ce0711d8449d7228603733aaf68c1f` |

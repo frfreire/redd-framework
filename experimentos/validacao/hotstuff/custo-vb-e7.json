@@ -1,0 +1,49 @@
+{
+ "fonte": "dados-brutos/va e vc (INDIVIDUAL, rc_mvp=0, com -XX:hashCode=2, commit 76932b9)",
+ "celulas_vb": 180,
+ "celulas_por_n": {
+  "4": 30,
+  "7": 40,
+  "10": 50,
+  "13": 60
+ },
+ "n_medidos": {
+  "4": 10,
+  "7": 5,
+  "10": 5,
+  "16": 10,
+  "31": 5
+ },
+ "custo_cpu_s_por_s_simulado_media": {
+  "4": 0.03535,
+  "7": 0.05443,
+  "10": 0.07288,
+  "13": 0.07288,
+  "16": 0.06265,
+  "31": 0.0979
+ },
+ "custo_cpu_s_por_s_simulado_max": {
+  "4": 0.0395,
+  "7": 0.061,
+  "10": 0.08133,
+  "13": 0.088,
+  "16": 0.088,
+  "31": 0.10758
+ },
+ "n13": "NAO medido: max(n=10, n=16)",
+ "cpu_total_s_media": 3376,
+ "cpu_total_s_teto_max_por_n": 3892,
+ "parede_min_8_paralelos_media": 7.6,
+ "parede_min_8_paralelos_teto": 8.7,
+ "parede_min_8_paralelos_teto_x3": 26.2,
+ "eficiencia_de_paralelismo_usada": 7.43,
+ "paralelismo": 8,
+ "pior_celula_estimada_s": 32,
+ "limites": [
+  "custo de celula COM ataque nao medido em 76932b9",
+  "duracao 300 s vs 120 s de V-A (escala linear assumida)",
+  "n=13 nao medido",
+  "build de V-A/V-C reaproveitado (conferir-build-vb.py); sem tempo de build"
+ ],
+ "comparacao_com_estimativa_antiga": "custo-estimado.json dava 956 s de parede (fator pessimista 5,5x)"
+}
