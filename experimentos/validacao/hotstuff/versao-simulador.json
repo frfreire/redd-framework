@@ -1,0 +1,23 @@
+{
+ "commit_construido": "76932b925719a2b83d6165b5a84d30f5501896ee",
+ "head_no_momento": "5b99d3e7ac37a9e818df8bc8d18ad0b69d18e8fd",
+ "tree_src": "a1b464ee983b78a2a6b6de7166a6e6460839b8af",
+ "blob_pom": "32f934e332097d6bfed46830ff03132c36763670",
+ "blob_observador_piloto_conferido": "4024e15b53b8939458c22ae9d04f107b422e3cd0",
+ "sha256_observador_compilado_ObservadorVal": "21aa3f9e7669765ba32ff91f4cadd8e7b28c364d8989a27d6a850c7e9d61e089",
+ "origem": "git archive (arvore de trabalho NAO usada)",
+ "mudancas_nao_commitadas_em_src_pom_na_arvore_de_trabalho_(excluidas_do_build)": [],
+ "copia_de_build": "/tmp/opencode/val-hs",
+ "classes": "/tmp/opencode/val-hs/target/classes",
+ "classpath_arquivo": "/tmp/opencode/val-hs/cp.txt",
+ "observador_classes": "/tmp/opencode/val-hs/harness-classes",
+ "java_version": [
+  "openjdk version \"25.0.5.0.3\" 2026-10-24",
+  "OpenJDK Runtime Environment (build 25.0.5.0.3+1-1-24.04.1-Ubuntu)",
+  "OpenJDK 64-Bit Server VM (build 25.0.5.0.3+1-1-24.04.1-Ubuntu, mixed mode, sharing)"
+ ],
+ "mvn_v": [
+  "\u001b[1mApache Maven 3.8.7\u001b[m",
+  "Maven home: /usr/share/maven"
+ ]
+}

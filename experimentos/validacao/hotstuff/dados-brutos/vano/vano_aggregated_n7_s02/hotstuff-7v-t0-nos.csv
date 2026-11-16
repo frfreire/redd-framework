@@ -1,0 +1,11 @@
+# Seed=327347; SimulatorVersion=0.2.0+m1a1; Protocol=HOTSTUFF; n=7 (nodes in the built network); window W=[WindowStart_s, WindowEnd_s]=[20.000000000, 120.003929657] s (t0 explicit on the command line; t1 = time of the last executed event; counters snapshotted at t0 and subtracted)
+# JVM: hashCode=2 (verificado na JVM em execucao; exigido=2); java.runtime.version=25.0.5.0.3+1-1-24.04.1-Ubuntu; java.vm.name=OpenJDK 64-Bit Server VM; java.vm.version=25.0.5.0.3+1-1-24.04.1-Ubuntu; java.vendor=Ubuntu
+# Granularity: PER NODE over W. SentBytes = sum of packet.getSize() of packets whose transmission on the node uplink ended (left the send queue; packets to self that pass the queue count; direct deliveries do not). RecvBytes = bytes the receiving process delivered to the node. BusyTime_s = time the send queue was non-empty, integrated per event, cut at t0 and t1. U_i = BusyTime_s / (WindowEnd_s - WindowStart_s), in [0,1]. -1 = not measured (differs from 0). Busy time of a burst follows the simulator link model: sum(T_j) + (T_1 - T_n).
+NodeID,SentBytes,RecvBytes,BusyTime_s,U_i
+0,174152010,1853658,13.932160800,0.139316133
+1,308851,29025154,0.024708000,0.000247070
+2,308851,29025154,0.024708000,0.000247070
+3,308989,29025335,0.024718960,0.000247180
+4,308989,29025335,0.024718960,0.000247180
+5,308851,29025154,0.024707920,0.000247069
+6,308851,29025154,0.024708080,0.000247071

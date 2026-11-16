@@ -1,0 +1,63 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/validacao/hotstuff/celulas/vc",
+   "n_esperadas": 10,
+   "executadas_agora": [
+    {
+     "id": "vc_individual_L100_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 4.3
+    },
+    {
+     "id": "vc_individual_L100_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 4.5
+    },
+    {
+     "id": "vc_individual_L100_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 4.3
+    },
+    {
+     "id": "vc_individual_L100_n4_s04",
+     "rc": 0,
+     "tempo_parede_s": 4.8
+    },
+    {
+     "id": "vc_individual_L100_n4_s05",
+     "rc": 0,
+     "tempo_parede_s": 4.5
+    },
+    {
+     "id": "vc_individual_L100_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 6.8
+    },
+    {
+     "id": "vc_individual_L100_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.3
+    },
+    {
+     "id": "vc_individual_L100_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 6.0
+    },
+    {
+     "id": "vc_individual_L100_n16_s04",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    },
+    {
+     "id": "vc_individual_L100_n16_s05",
+     "rc": 0,
+     "tempo_parede_s": 5.0
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 9.3
+  }
+ ]
+}

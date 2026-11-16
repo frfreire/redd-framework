@@ -1,0 +1,866 @@
+{
+ "integridade": {
+  "va": {
+   "esperadas": 50,
+   "obtidas": 50,
+   "faltando": [],
+   "extras": [],
+   "nao_integras": [],
+   "com_timeout": []
+  },
+  "vano": {
+   "esperadas": 30,
+   "obtidas": 30,
+   "faltando": [],
+   "extras": [],
+   "nao_integras": [],
+   "com_timeout": []
+  }
+ },
+ "va": {
+  "AGGREGATED": {
+   "rede_msgs": {
+    "por_n": {
+     "4": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 24.0,
+      "min": 24.0,
+      "max": 24.0,
+      "formula": 24,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 48.0,
+      "min": 48.0,
+      "max": 48.0,
+      "formula": 48,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 72.0,
+      "min": 72.0,
+      "max": 72.0,
+      "formula": 72,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 120.0,
+      "min": 120.0,
+      "max": 120.0,
+      "formula": 120,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 240.0,
+      "min": 240.0,
+      "max": 240.0,
+      "formula": 240,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.119976697156707,
+    "R2_loglog": 0.9985124002055163,
+    "classe_medida": "O(n)",
+    "classe_prevista_pelo_codigo": "O(n)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   },
+   "rede_total": {
+    "por_n": {
+     "4": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 157431.0,
+      "min": 157431.0,
+      "max": 157431.0,
+      "formula": 157431,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 314862.0,
+      "min": 314862.0,
+      "max": 314862.0,
+      "formula": 314862,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 472338.0,
+      "min": 472338.0,
+      "max": 472338.0,
+      "formula": 472338,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 787230.0,
+      "min": 787230.0,
+      "max": 787230.0,
+      "formula": 787230,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 1574760.0,
+      "min": 1574760.0,
+      "max": 1574760.0,
+      "formula": 1574760,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.1201143971749874,
+    "R2_loglog": 0.9985157308119054,
+    "classe_medida": "O(n)",
+    "classe_prevista_pelo_codigo": "O(n)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   },
+   "rede_consenso": {
+    "por_n": {
+     "4": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 3831.0,
+      "min": 3831.0,
+      "max": 3831.0,
+      "formula": 3831,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 7662.0,
+      "min": 7662.0,
+      "max": 7662.0,
+      "formula": 7662,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 11538.0,
+      "min": 11538.0,
+      "max": 11538.0,
+      "formula": 11538,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 19230.0,
+      "min": 19230.0,
+      "max": 19230.0,
+      "formula": 19230,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 38760.0,
+      "min": 38760.0,
+      "max": 38760.0,
+      "formula": 38760,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.1256052145029072,
+    "R2_loglog": 0.9986425627409179,
+    "classe_medida": "O(n)",
+    "classe_prevista_pelo_codigo": "O(n)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   }
+  },
+  "INDIVIDUAL": {
+   "rede_msgs": {
+    "por_n": {
+     "4": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 24.0,
+      "min": 24.0,
+      "max": 24.0,
+      "formula": 24,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 48.0,
+      "min": 48.0,
+      "max": 48.0,
+      "formula": 48,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 72.0,
+      "min": 72.0,
+      "max": 72.0,
+      "formula": 72,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 120.0,
+      "min": 120.0,
+      "max": 120.0,
+      "formula": 120,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 240.0,
+      "min": 240.0,
+      "max": 240.0,
+      "formula": 240,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.119976697156707,
+    "R2_loglog": 0.9985124002055163,
+    "classe_medida": "O(n)",
+    "classe_prevista_pelo_codigo": "O(n)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   },
+   "rede_total": {
+    "por_n": {
+     "4": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 158583.0,
+      "min": 158583.0,
+      "max": 158583.0,
+      "formula": 158583,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 321006.0,
+      "min": 321006.0,
+      "max": 321006.0,
+      "formula": 321006,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 487314.0,
+      "min": 487314.0,
+      "max": 487314.0,
+      "formula": 487314,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 831390.0,
+      "min": 831390.0,
+      "max": 831390.0,
+      "formula": 831390,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 1759080.0,
+      "min": 1759080.0,
+      "max": 1759080.0,
+      "formula": 1759080,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.1702559926813274,
+    "R2_loglog": 0.9993607753602213,
+    "classe_medida": "O(n)",
+    "classe_prevista_pelo_codigo": "O(n)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   },
+   "rede_consenso": {
+    "por_n": {
+     "4": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 4983.0,
+      "min": 4983.0,
+      "max": 4983.0,
+      "formula": 4983,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 13806.0,
+      "min": 13806.0,
+      "max": 13806.0,
+      "formula": 13806,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 26514.0,
+      "min": 26514.0,
+      "max": 26514.0,
+      "formula": 26514,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 63390.0,
+      "min": 63390.0,
+      "max": 63390.0,
+      "formula": 63390,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 5,
+      "integras": 5,
+      "media": 223080.0,
+      "min": 223080.0,
+      "max": 223080.0,
+      "formula": 223080,
+      "erro_rel_max": 0.0,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.8556787128059542,
+    "R2_loglog": 0.9998917894661248,
+    "classe_medida": "O(n^2)",
+    "classe_prevista_pelo_codigo": "O(n^2)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": false,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   }
+  }
+ },
+ "va_veredito_preregistrado": {
+  "veredito": "CONSISTENTE",
+  "motivos": [],
+  "rotulos_nao_decisorios": [
+   "SENSIBILIDADE AGGREGATED/rede_msgs: classe O(n) (prevista O(n)), fiel_a_formula=True, b=1.120; nao decide",
+   "SENSIBILIDADE AGGREGATED/rede_total: classe O(n) (prevista O(n)), fiel_a_formula=True, b=1.120; nao decide",
+   "SENSIBILIDADE AGGREGATED/rede_consenso: classe O(n) (prevista O(n)), fiel_a_formula=True, b=1.126; nao decide",
+   "INDIVIDUAL/rede_total (so rotulo): classe O(n) (prevista O(n)), fiel_a_formula=True, b=1.170"
+  ]
+ },
+ "va_materialidade_quadratica": {
+  "INDIVIDUAL/rede_msgs": {
+   "fracao_termo_quadratico_em_n_max": 8.367764564531687e-15,
+   "material": false
+  },
+  "INDIVIDUAL/rede_total": {
+   "fracao_termo_quadratico_em_n_max": 0.11689134216430001,
+   "material": true
+  },
+  "INDIVIDUAL/rede_consenso": {
+   "fracao_termo_quadratico_em_n_max": 0.9217429013116959,
+   "material": true
+  },
+  "AGGREGATED/rede_msgs": {
+   "fracao_termo_quadratico_em_n_max": 8.367764564531687e-15,
+   "material": false
+  },
+  "AGGREGATED/rede_total": {
+   "fracao_termo_quadratico_em_n_max": 0.0003859111332284152,
+   "material": false
+  },
+  "AGGREGATED/rede_consenso": {
+   "fracao_termo_quadratico_em_n_max": 0.015679564475457437,
+   "material": false
+  }
+ },
+ "va_regra_S_aceita": {
+  "INDIVIDUAL/rede_msgs": {
+   "linear_aceito": true,
+   "quadratico_aceito": false
+  },
+  "INDIVIDUAL/rede_total": {
+   "linear_aceito": false,
+   "quadratico_aceito": true
+  },
+  "INDIVIDUAL/rede_consenso": {
+   "linear_aceito": false,
+   "quadratico_aceito": true
+  },
+  "AGGREGATED/rede_msgs": {
+   "linear_aceito": true,
+   "quadratico_aceito": false
+  },
+  "AGGREGATED/rede_total": {
+   "linear_aceito": true,
+   "quadratico_aceito": false
+  },
+  "AGGREGATED/rede_consenso": {
+   "linear_aceito": true,
+   "quadratico_aceito": false
+  }
+ },
+ "va_script_validar_complexidade_NAO_DECIDE": {
+  "INDIVIDUAL/rede_msgs/linear": {
+   "rc": 0,
+   "saida": [
+    "protocolo=HOTSTUFF/INDIVIDUAL/rede_msgs  pontos=25  valores_de_n=5",
+    "linear:     R2=1.00000  AIC=-1550.76",
+    "quadratico: R2=1.00000  AIC=-1469.37  coef(n^2)=2.09e-15",
+    "melhor ajuste: linear  (esperado: linear)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A CONSISTENTE"
+   ]
+  },
+  "INDIVIDUAL/rede_msgs/quadratico": {
+   "rc": 1,
+   "saida": [
+    "protocolo=HOTSTUFF/INDIVIDUAL/rede_msgs  pontos=25  valores_de_n=5",
+    "linear:     R2=1.00000  AIC=-1550.76",
+    "quadratico: R2=1.00000  AIC=-1469.37  coef(n^2)=2.09e-15",
+    "melhor ajuste: linear  (esperado: quadratico)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A INCONSISTENTE: investigar medicao (formula fechada? hook de trafego ausente? granularidade?) antes de seguir."
+   ]
+  },
+  "INDIVIDUAL/rede_total/linear": {
+   "rc": 1,
+   "saida": [
+    "protocolo=HOTSTUFF/INDIVIDUAL/rede_total  pontos=25  valores_de_n=5",
+    "linear:     R2=0.99931  AIC=484.56",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=214",
+    "melhor ajuste: quadratico  (esperado: linear)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A INCONSISTENTE: investigar medicao (formula fechada? hook de trafego ausente? granularidade?) antes de seguir."
+   ]
+  },
+  "INDIVIDUAL/rede_total/quadratico": {
+   "rc": 0,
+   "saida": [
+    "protocolo=HOTSTUFF/INDIVIDUAL/rede_total  pontos=25  valores_de_n=5",
+    "linear:     R2=0.99931  AIC=484.56",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=214",
+    "melhor ajuste: quadratico  (esperado: quadratico)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A CONSISTENTE"
+   ]
+  },
+  "INDIVIDUAL/rede_consenso/linear": {
+   "rc": 1,
+   "saida": [
+    "protocolo=HOTSTUFF/INDIVIDUAL/rede_consenso  pontos=25  valores_de_n=5",
+    "linear:     R2=0.96590  AIC=484.56",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=214",
+    "melhor ajuste: quadratico  (esperado: linear)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A INCONSISTENTE: investigar medicao (formula fechada? hook de trafego ausente? granularidade?) antes de seguir."
+   ]
+  },
+  "INDIVIDUAL/rede_consenso/quadratico": {
+   "rc": 0,
+   "saida": [
+    "protocolo=HOTSTUFF/INDIVIDUAL/rede_consenso  pontos=25  valores_de_n=5",
+    "linear:     R2=0.96590  AIC=484.56",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=214",
+    "melhor ajuste: quadratico  (esperado: quadratico)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A CONSISTENTE"
+   ]
+  },
+  "AGGREGATED/rede_msgs/linear": {
+   "rc": 0,
+   "saida": [
+    "protocolo=HOTSTUFF/AGGREGATED/rede_msgs  pontos=25  valores_de_n=5",
+    "linear:     R2=1.00000  AIC=-1550.76",
+    "quadratico: R2=1.00000  AIC=-1469.37  coef(n^2)=2.09e-15",
+    "melhor ajuste: linear  (esperado: linear)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A CONSISTENTE"
+   ]
+  },
+  "AGGREGATED/rede_msgs/quadratico": {
+   "rc": 1,
+   "saida": [
+    "protocolo=HOTSTUFF/AGGREGATED/rede_msgs  pontos=25  valores_de_n=5",
+    "linear:     R2=1.00000  AIC=-1550.76",
+    "quadratico: R2=1.00000  AIC=-1469.37  coef(n^2)=2.09e-15",
+    "melhor ajuste: linear  (esperado: quadratico)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A INCONSISTENTE: investigar medicao (formula fechada? hook de trafego ausente? granularidade?) antes de seguir."
+   ]
+  },
+  "AGGREGATED/rede_total/linear": {
+   "rc": 1,
+   "saida": [
+    "protocolo=HOTSTUFF/AGGREGATED/rede_total  pontos=25  valores_de_n=5",
+    "linear:     R2=1.00000  AIC=195.14",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=0.6324",
+    "melhor ajuste: quadratico  (esperado: linear)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A INCONSISTENTE: investigar medicao (formula fechada? hook de trafego ausente? granularidade?) antes de seguir."
+   ]
+  },
+  "AGGREGATED/rede_total/quadratico": {
+   "rc": 0,
+   "saida": [
+    "protocolo=HOTSTUFF/AGGREGATED/rede_total  pontos=25  valores_de_n=5",
+    "linear:     R2=1.00000  AIC=195.14",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=0.6324",
+    "melhor ajuste: quadratico  (esperado: quadratico)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A CONSISTENTE"
+   ]
+  },
+  "AGGREGATED/rede_consenso/linear": {
+   "rc": 1,
+   "saida": [
+    "protocolo=HOTSTUFF/AGGREGATED/rede_consenso  pontos=25  valores_de_n=5",
+    "linear:     R2=0.99999  AIC=195.14",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=0.6324",
+    "melhor ajuste: quadratico  (esperado: linear)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A INCONSISTENTE: investigar medicao (formula fechada? hook de trafego ausente? granularidade?) antes de seguir."
+   ]
+  },
+  "AGGREGATED/rede_consenso/quadratico": {
+   "rc": 0,
+   "saida": [
+    "protocolo=HOTSTUFF/AGGREGATED/rede_consenso  pontos=25  valores_de_n=5",
+    "linear:     R2=0.99999  AIC=195.14",
+    "quadratico: R2=1.00000  AIC=130.29  coef(n^2)=0.6324",
+    "melhor ajuste: quadratico  (esperado: quadratico)",
+    "AVISO: menos de 6 valores de n: distinguir linear de quadratico e fragil, sobretudo com n baixo.",
+    "V-A CONSISTENTE"
+   ]
+  }
+ },
+ "vano": {
+  "AGGREGATED": {
+   "no_lider": {
+    "por_n": {
+     "4": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 1659.9296847054013,
+      "min": 1659.6969696969697,
+      "max": 1660.3939393939395,
+      "formula": 1659,
+      "erro_rel_max": 0.0008402286883300123,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 3317.422163233116,
+      "min": 3315.273703041145,
+      "max": 3320.967741935484,
+      "formula": 3318,
+      "erro_rel_max": 0.0008944369908028632,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 4986.965825669551,
+      "min": 4979.988700564972,
+      "max": 4992.825757575758,
+      "formula": 4986,
+      "erro_rel_max": 0.001368984672233847,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 8307.616477875355,
+      "min": 8306.024691358025,
+      "max": 8310.0,
+      "formula": 8310,
+      "erro_rel_max": 0.0004783764912124021,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 16678.88657938487,
+      "min": 16662.104738154612,
+      "max": 16689.94,
+      "formula": 16680,
+      "erro_rel_max": 0.0010728574247834365,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.1223073259183822,
+    "R2_loglog": 0.9985882361555513,
+    "classe_medida": "O(n)",
+    "classe_prevista_pelo_codigo": "O(n)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   },
+   "no_replica": {
+    "por_n": {
+     "4": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 51981.93619569626,
+      "min": 51953.036475869805,
+      "max": 52010.80471380471,
+      "formula": 51924,
+      "erro_rel_max": 0.001671764767828198,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 51903.50279343341,
+      "min": 51832.03011329755,
+      "max": 51955.01792114696,
+      "formula": 51924,
+      "erro_rel_max": 0.0017712404033288845,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 51946.175369915145,
+      "min": 51830.70223896213,
+      "max": 52025.65909090909,
+      "formula": 51928,
+      "erro_rel_max": 0.0018806634360862783,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 51895.10103208956,
+      "min": 51822.27572016461,
+      "max": 51935.07741046832,
+      "formula": 51928,
+      "erro_rel_max": 0.002035978274445211,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 51911.51904405653,
+      "min": 51858.213798836245,
+      "max": 51940.282,
+      "formula": 51936,
+      "erro_rel_max": 0.0014977318461906063,
+      "fiel": true
+     }
+    },
+    "expoente_b": -0.0005877024080528853,
+    "R2_loglog": 0.43891158041324874,
+    "classe_medida": "O(1)",
+    "classe_prevista_pelo_codigo": "O(1)",
+    "classe_esperada_ADR": "O(1)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   }
+  },
+  "INDIVIDUAL": {
+   "no_lider": {
+    "por_n": {
+     "4": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 1658.86790331647,
+      "min": 1658.6037099494097,
+      "max": 1659.0,
+      "formula": 1659,
+      "erro_rel_max": 0.00023887284544323297,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 4086.5350926301294,
+      "min": 4084.8602150537636,
+      "max": 4087.6032315978455,
+      "formula": 4086,
+      "erro_rel_max": 0.0003923719035353595,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 7287.552177371438,
+      "min": 7280.648956356737,
+      "max": 7291.806818181818,
+      "formula": 7290,
+      "erro_rel_max": 0.0012827220361129545,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 15983.904484291983,
+      "min": 15965.520833333334,
+      "max": 15994.65,
+      "formula": 15990,
+      "erro_rel_max": 0.0015309047321242063,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 51237.90549828178,
+      "min": 51236.99484536082,
+      "max": 51239.45360824742,
+      "formula": 51240,
+      "erro_rel_max": 5.8648607321953705e-05,
+      "fiel": true
+     }
+    },
+    "expoente_b": 1.6734960656812075,
+    "R2_loglog": 0.9995369516077481,
+    "classe_medida": "O(n^2)",
+    "classe_prevista_pelo_codigo": "O(n^2)",
+    "classe_esperada_ADR": "O(n)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": false,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   },
+   "no_replica": {
+    "por_n": {
+     "4": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 52336.887205387204,
+      "min": 52308.0,
+      "max": 52394.66161616162,
+      "formula": 52308,
+      "erro_rel_max": 0.0016567564456989071,
+      "fiel": true
+     },
+     "7": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 52856.0982520715,
+      "min": 52773.1541218638,
+      "max": 52912.64811490125,
+      "formula": 52820,
+      "erro_rel_max": 0.0017540347387589364,
+      "fiel": true
+     },
+     "10": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 53335.937386195925,
+      "min": 53236.81973434535,
+      "max": 53434.992424242424,
+      "formula": 53336,
+      "erro_rel_max": 0.0018595370041744731,
+      "fiel": true
+     },
+     "16": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 54374.87941499191,
+      "min": 54293.36666666667,
+      "max": 54469.629166666666,
+      "formula": 54360,
+      "erro_rel_max": 0.002016724920284505,
+      "fiel": true
+     },
+     "31": {
+      "celulas": 3,
+      "integras": 3,
+      "media": 56888.81237113402,
+      "min": 56873.74020618557,
+      "max": 56914.435051546396,
+      "formula": 56928,
+      "erro_rel_max": 0.0009531301611585118,
+      "fiel": true
+     }
+    },
+    "expoente_b": 0.04043460250199401,
+    "R2_loglog": 0.9201189249485745,
+    "classe_medida": "O(1)",
+    "classe_prevista_pelo_codigo": "O(1)",
+    "classe_esperada_ADR": "O(1)",
+    "bate_com_previsao_do_codigo": true,
+    "bate_com_ADR": true,
+    "todos_fieis_a_formula": true,
+    "pontos_sem_celula_integra": []
+   }
+  }
+ },
+ "vano_veredito_preregistrado": {
+  "veredito": "CONSISTENTE",
+  "motivos": [],
+  "rotulos_nao_decisorios": [
+   "SENSIBILIDADE AGGREGATED/no_lider: classe O(n) (prevista O(n)), fiel_a_formula=True, b=1.122; nao decide",
+   "SENSIBILIDADE AGGREGATED/no_replica: classe O(1) (prevista O(1)), fiel_a_formula=True, b=-0.001; nao decide"
+  ]
+ }
+}

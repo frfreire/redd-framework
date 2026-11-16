@@ -1,0 +1,263 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/validacao/hotstuff/celulas/va",
+   "n_esperadas": 50,
+   "executadas_agora": [
+    {
+     "id": "va_individual_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 4.0
+    },
+    {
+     "id": "va_individual_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 4.6
+    },
+    {
+     "id": "va_individual_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 3.8
+    },
+    {
+     "id": "va_individual_n4_s04",
+     "rc": 0,
+     "tempo_parede_s": 4.1
+    },
+    {
+     "id": "va_individual_n4_s05",
+     "rc": 0,
+     "tempo_parede_s": 4.3
+    },
+    {
+     "id": "va_individual_n7_s01",
+     "rc": 0,
+     "tempo_parede_s": 7.0
+    },
+    {
+     "id": "va_individual_n7_s02",
+     "rc": 0,
+     "tempo_parede_s": 5.8
+    },
+    {
+     "id": "va_individual_n7_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.9
+    },
+    {
+     "id": "va_individual_n7_s04",
+     "rc": 0,
+     "tempo_parede_s": 7.5
+    },
+    {
+     "id": "va_individual_n7_s05",
+     "rc": 0,
+     "tempo_parede_s": 7.2
+    },
+    {
+     "id": "va_individual_n10_s01",
+     "rc": 0,
+     "tempo_parede_s": 9.2
+    },
+    {
+     "id": "va_individual_n10_s02",
+     "rc": 0,
+     "tempo_parede_s": 8.3
+    },
+    {
+     "id": "va_individual_n10_s03",
+     "rc": 0,
+     "tempo_parede_s": 7.8
+    },
+    {
+     "id": "va_individual_n10_s04",
+     "rc": 0,
+     "tempo_parede_s": 9.4
+    },
+    {
+     "id": "va_individual_n10_s05",
+     "rc": 0,
+     "tempo_parede_s": 10.0
+    },
+    {
+     "id": "va_individual_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 10.7
+    },
+    {
+     "id": "va_individual_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 8.8
+    },
+    {
+     "id": "va_individual_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 9.8
+    },
+    {
+     "id": "va_individual_n16_s04",
+     "rc": 0,
+     "tempo_parede_s": 8.7
+    },
+    {
+     "id": "va_individual_n16_s05",
+     "rc": 0,
+     "tempo_parede_s": 8.8
+    },
+    {
+     "id": "va_individual_n31_s01",
+     "rc": 0,
+     "tempo_parede_s": 10.7
+    },
+    {
+     "id": "va_individual_n31_s02",
+     "rc": 0,
+     "tempo_parede_s": 13.0
+    },
+    {
+     "id": "va_individual_n31_s03",
+     "rc": 0,
+     "tempo_parede_s": 12.3
+    },
+    {
+     "id": "va_individual_n31_s04",
+     "rc": 0,
+     "tempo_parede_s": 11.4
+    },
+    {
+     "id": "va_individual_n31_s05",
+     "rc": 0,
+     "tempo_parede_s": 12.1
+    },
+    {
+     "id": "va_aggregated_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.9
+    },
+    {
+     "id": "va_aggregated_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 5.3
+    },
+    {
+     "id": "va_aggregated_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.2
+    },
+    {
+     "id": "va_aggregated_n4_s04",
+     "rc": 0,
+     "tempo_parede_s": 5.9
+    },
+    {
+     "id": "va_aggregated_n4_s05",
+     "rc": 0,
+     "tempo_parede_s": 4.9
+    },
+    {
+     "id": "va_aggregated_n7_s01",
+     "rc": 0,
+     "tempo_parede_s": 7.4
+    },
+    {
+     "id": "va_aggregated_n7_s02",
+     "rc": 0,
+     "tempo_parede_s": 7.0
+    },
+    {
+     "id": "va_aggregated_n7_s03",
+     "rc": 0,
+     "tempo_parede_s": 7.7
+    },
+    {
+     "id": "va_aggregated_n7_s04",
+     "rc": 0,
+     "tempo_parede_s": 7.3
+    },
+    {
+     "id": "va_aggregated_n7_s05",
+     "rc": 0,
+     "tempo_parede_s": 7.1
+    },
+    {
+     "id": "va_aggregated_n10_s01",
+     "rc": 0,
+     "tempo_parede_s": 8.7
+    },
+    {
+     "id": "va_aggregated_n10_s02",
+     "rc": 0,
+     "tempo_parede_s": 8.9
+    },
+    {
+     "id": "va_aggregated_n10_s03",
+     "rc": 0,
+     "tempo_parede_s": 8.9
+    },
+    {
+     "id": "va_aggregated_n10_s04",
+     "rc": 0,
+     "tempo_parede_s": 9.0
+    },
+    {
+     "id": "va_aggregated_n10_s05",
+     "rc": 0,
+     "tempo_parede_s": 8.0
+    },
+    {
+     "id": "va_aggregated_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 11.7
+    },
+    {
+     "id": "va_aggregated_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 9.5
+    },
+    {
+     "id": "va_aggregated_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 10.1
+    },
+    {
+     "id": "va_aggregated_n16_s04",
+     "rc": 0,
+     "tempo_parede_s": 8.4
+    },
+    {
+     "id": "va_aggregated_n16_s05",
+     "rc": 0,
+     "tempo_parede_s": 8.8
+    },
+    {
+     "id": "va_aggregated_n31_s01",
+     "rc": 0,
+     "tempo_parede_s": 9.6
+    },
+    {
+     "id": "va_aggregated_n31_s02",
+     "rc": 0,
+     "tempo_parede_s": 10.5
+    },
+    {
+     "id": "va_aggregated_n31_s03",
+     "rc": 0,
+     "tempo_parede_s": 10.0
+    },
+    {
+     "id": "va_aggregated_n31_s04",
+     "rc": 0,
+     "tempo_parede_s": 9.0
+    },
+    {
+     "id": "va_aggregated_n31_s05",
+     "rc": 0,
+     "tempo_parede_s": 7.7
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 54.4
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "id": "vano_aggregated_n7_s03",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 3.56,
+ "tempo_parede_observador_s": 3.86,
+ "max_rss_mb": 463.8,
+ "csv_mvp": "hotstuff-7v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "f6a0f1b3f878eee117024e4708216196",
+ "blocos_mvp": 669,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "f6a0f1b3f878eee117024e4708216196",
+ "blocos_obs": 669
+}

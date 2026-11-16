@@ -1,0 +1,38 @@
+{
+ "nota": "so fatos medidos (L=100); V-C numerico inviavel (decisao do humano 16/11/2026); ver FONTES-V-C.md",
+ "por_L_n": {
+  "L100_n4": {
+   "celulas_integras": 5,
+   "Tb_avg_s": 0.12964899485184062,
+   "Tb_min": 0.12924309779625195,
+   "Tb_max": 0.12996961785197217,
+   "vazao_tx_por_s_media": 600.8
+  },
+  "L100_n16": {
+   "celulas_integras": 5,
+   "Tb_avg_s": 0.16737102273387633,
+   "Tb_min": 0.1671947824485203,
+   "Tb_max": 0.16770973467922368,
+   "vazao_tx_por_s_media": 481.0
+  }
+ },
+ "integridade": {
+  "esperadas": 10,
+  "obtidas": 10,
+  "faltando": [],
+  "extras": [],
+  "nao_integras": [],
+  "com_timeout": []
+ },
+ "ordem_n4_n16": {
+  "L100": {
+   "ordem_ok": true,
+   "Tb_4": 0.12964899485184062,
+   "Tb_16": 0.16737102273387633,
+   "vazao_4": 600.8,
+   "vazao_16": 481.0
+  }
+ },
+ "veredito_numerico": "INVIAVEL (declarado pelo humano em 16/11/2026): nenhum numero VERIFICADO de Yin et al. 2019; o teste ordinal abaixo e REGISTRO QUALITATIVO e NAO e confronto numerico",
+ "rotulo": "TESTE ORDINAL FRACO; NAO e confronto numerico com o publicado; nao valida magnitude"
+}

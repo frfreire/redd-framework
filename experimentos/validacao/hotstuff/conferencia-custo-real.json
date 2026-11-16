@@ -1,0 +1,43 @@
+{
+ "blocos": {
+  "va": {
+   "esperadas": 50,
+   "obtidas": 50,
+   "faltando": [],
+   "extras": [],
+   "soma_tempo_das_2_JVMs_s": 400.6,
+   "maior_celula": [
+    "va_individual_n31_s02",
+    12.91
+   ],
+   "max_rss_mb": 500.6
+  },
+  "vano": {
+   "esperadas": 30,
+   "obtidas": 30,
+   "faltando": [],
+   "extras": [],
+   "soma_tempo_das_2_JVMs_s": 519.6,
+   "maior_celula": [
+    "vano_individual_n31_s02",
+    46.67
+   ],
+   "max_rss_mb": 476.4
+  },
+  "vc": {
+   "esperadas": 10,
+   "obtidas": 10,
+   "faltando": [],
+   "extras": [],
+   "soma_tempo_das_2_JVMs_s": 51.0,
+   "maior_celula": [
+    "vc_individual_L100_n16_s01",
+    6.74
+   ],
+   "max_rss_mb": 487.1
+  }
+ },
+ "problemas": [],
+ "soma_tempo_2_JVMs_total_s": 971.2,
+ "celulas_conferidas": 90
+}

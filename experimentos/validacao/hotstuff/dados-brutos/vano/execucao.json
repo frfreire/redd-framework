@@ -1,0 +1,163 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "/home/fabricio.freire/Projetos/redd-framework/experimentos/validacao/hotstuff/celulas/vano",
+   "n_esperadas": 30,
+   "executadas_agora": [
+    {
+     "id": "vano_individual_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.6
+    },
+    {
+     "id": "vano_individual_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.4
+    },
+    {
+     "id": "vano_individual_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 6.6
+    },
+    {
+     "id": "vano_individual_n7_s01",
+     "rc": 0,
+     "tempo_parede_s": 8.6
+    },
+    {
+     "id": "vano_individual_n7_s02",
+     "rc": 0,
+     "tempo_parede_s": 8.5
+    },
+    {
+     "id": "vano_individual_n7_s03",
+     "rc": 0,
+     "tempo_parede_s": 10.1
+    },
+    {
+     "id": "vano_individual_n10_s01",
+     "rc": 0,
+     "tempo_parede_s": 13.1
+    },
+    {
+     "id": "vano_individual_n10_s02",
+     "rc": 0,
+     "tempo_parede_s": 13.6
+    },
+    {
+     "id": "vano_individual_n10_s03",
+     "rc": 0,
+     "tempo_parede_s": 13.2
+    },
+    {
+     "id": "vano_individual_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 26.3
+    },
+    {
+     "id": "vano_individual_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 20.9
+    },
+    {
+     "id": "vano_individual_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 22.6
+    },
+    {
+     "id": "vano_individual_n31_s01",
+     "rc": 0,
+     "tempo_parede_s": 44.0
+    },
+    {
+     "id": "vano_individual_n31_s02",
+     "rc": 0,
+     "tempo_parede_s": 46.7
+    },
+    {
+     "id": "vano_individual_n31_s03",
+     "rc": 0,
+     "tempo_parede_s": 43.9
+    },
+    {
+     "id": "vano_aggregated_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.9
+    },
+    {
+     "id": "vano_aggregated_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 6.0
+    },
+    {
+     "id": "vano_aggregated_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.2
+    },
+    {
+     "id": "vano_aggregated_n7_s01",
+     "rc": 0,
+     "tempo_parede_s": 9.5
+    },
+    {
+     "id": "vano_aggregated_n7_s02",
+     "rc": 0,
+     "tempo_parede_s": 8.0
+    },
+    {
+     "id": "vano_aggregated_n7_s03",
+     "rc": 0,
+     "tempo_parede_s": 7.6
+    },
+    {
+     "id": "vano_aggregated_n10_s01",
+     "rc": 0,
+     "tempo_parede_s": 13.5
+    },
+    {
+     "id": "vano_aggregated_n10_s02",
+     "rc": 0,
+     "tempo_parede_s": 12.1
+    },
+    {
+     "id": "vano_aggregated_n10_s03",
+     "rc": 0,
+     "tempo_parede_s": 11.8
+    },
+    {
+     "id": "vano_aggregated_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 19.3
+    },
+    {
+     "id": "vano_aggregated_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 22.5
+    },
+    {
+     "id": "vano_aggregated_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 18.1
+    },
+    {
+     "id": "vano_aggregated_n31_s01",
+     "rc": 0,
+     "tempo_parede_s": 33.0
+    },
+    {
+     "id": "vano_aggregated_n31_s02",
+     "rc": 0,
+     "tempo_parede_s": 31.7
+    },
+    {
+     "id": "vano_aggregated_n31_s03",
+     "rc": 0,
+     "tempo_parede_s": 28.5
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 81.1
+  }
+ ]
+}

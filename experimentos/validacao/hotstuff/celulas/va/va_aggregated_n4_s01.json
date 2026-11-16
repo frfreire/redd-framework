@@ -1,0 +1,35 @@
+{
+ "id": "va_aggregated_n4_s01",
+ "protocolo": "HOTSTUFF",
+ "n": 4,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 224346,
+ "replicacao": 1,
+ "duracao_s": 120,
+ "simulador_commit": "76932b925719a2b83d6165b5a84d30f5501896ee",
+ "gerado_em": "2026-11-16T19:15:30+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 0.918,
+  "L": 100,
+  "leader_policy": "ROTATING",
+  "attack": null,
+  "signature_mode": "AGGREGATED"
+ },
+ "grupo": "va_AGGREGATED_L100_n4",
+ "bloco": "va",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "load_record_t0": null,
+ "fatores_origem": "experimentos/validacao/hotstuff/config/fatores-va.json"
+}
