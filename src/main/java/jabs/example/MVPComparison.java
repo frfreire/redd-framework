@@ -77,6 +77,12 @@ public class MVPComparison {
             }
         }
         int hotStuffByzantineCount = resolveByzantineCount(protocolList, hotStuffAttack, cli, validatorsList);
+        // ADR-0015 decisao 3 / D3(a): f > floor((n-1)/3) so chega aqui com --allow-beyond-bft-threshold=true (senao a linha
+        // acima ja falhou). Rotulo '#' por n fora da faixa; vazio (nada alocado) sem ataque ou com todo f dentro da faixa.
+        java.util.List<String> beyondLines = beyondThresholdLines(hotStuffAttack, hotStuffByzantineCount, validatorsList);
+        for (String line : beyondLines) {
+            System.out.println("AVISO: " + line.substring(2));
+        }
         // HS-CB-fase2 (B2, decisao D4): HOTSTUFF e TENDERMINT na MESMA execucao exigem lote e tx-size iguais; senao falha
         // alto (ou, com --allow-fixture-mismatch=true, segue deixando rastro no stdout e no cabecalho '#' dos CSV).
         // Vazio (e nada novo alocado) quando so um dos dois protocolos roda ou quando os valores coincidem.
@@ -127,8 +133,9 @@ public class MVPComparison {
         }
 
         // Initialize CSV file with header
+        java.util.List<String> cbHeaderLines = joinLines(beyondLines, fixtureLines);
         initializeCSV(csvOut, nodesMode, sizingLines, joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount),
-                fixtureLines));
+                cbHeaderLines));
         // HS-CB-fase2 (parte A): colunas ADITIVAS de C_B (soma da rede e estatisticas) so para HOTSTUFF/TENDERMINT, num
         // SEGUNDO arquivo (mvp-results-cb.csv, ao lado do mvp-results.csv). Sem esses protocolos o arquivo nem e criado:
         // a saida dos demais e byte a byte a de antes (mvp-results.csv nunca muda).
@@ -188,7 +195,7 @@ public class MVPComparison {
                 writeSingleResultToCSV(csvOut, protocol, validators, trials, acc);
                 if (hasCbRede(protocol)) {
                     if (!cbCsvStarted) {
-                        initializeCbCSV(cbCsv, fixtureLines);
+                        initializeCbCSV(cbCsv, cbHeaderLines);
                         cbCsvStarted = true;
                     }
                     appendCbCSV(cbCsv, protocol, validators, trials, cbPool);
@@ -213,7 +220,7 @@ public class MVPComparison {
             "hs-view-timeout", "hs-max-future-view-horizon", "hs-batch-size", "hs-tx-size",
             "hs-individual-signature-size", "hs-aggregated-signature-size", "hs-aggregated-share-size",
             "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding",
-            "attack", "byzantine-count", "allow-fixture-mismatch"};
+            "attack", "byzantine-count", "allow-fixture-mismatch", "allow-beyond-bft-threshold"};
 
     /** ADR-0012: registro de carga do enlace ligado? Primitivos: o caminho desligado nao carrega classe nova. */
     private static boolean loadRecordOn = false;
@@ -484,10 +491,34 @@ public class MVPComparison {
      * {@code n} de {@code validators} precisa ter {@code count <= n}. Fracao NAO e aceita: a regra de arredondamento de
      * fracao para contagem e o universo do sorteio sao {@code a definir com o humano} (ADR-0015 B-33/Q34, B-37/Q30).
      * Falha antes de criar saida. Devolve 0 sem ataque.
+     *
+     * <p>Faixa BFT (ADR-0015, decisao 3 de 10/11/2026 e D3(a)): {@code f > floor((n-1)/3)} para algum {@code n} e "fora da
+     * faixa" e FALHA ALTO (a mensagem cita n, f e o limite), a menos que {@code --allow-beyond-bft-threshold=true} esteja
+     * presente; com a flag o modo roda e e ROTULADO ({@link #beyondThresholdLines}). A flag so tem sentido com ataque
+     * ativo e HOTSTUFF: com HOTSTUFF e sem ataque, {@code =true} falha alto (seria ignorada em silencio, como a contagem);
+     * sem HOTSTUFF segue ignorada com aviso no stderr, como {@code --attack}. Aritmetica inteira.
      */
     static int resolveByzantineCount(java.util.List<String> protocols, ByzantineConfig.AttackType attack,
             java.util.Map<String, String> cli, java.util.List<Integer> validators) {
         String bruto = cli.get("byzantine-count");
+        String beyondBruto = cli.get(ALLOW_BEYOND_BFT_THRESHOLD);
+        boolean temHotStuffGeral = false;
+        for (String protocol : protocols) {
+            temHotStuffGeral |= isHotStuff(protocol);
+        }
+        boolean allowBeyond = false;
+        if (beyondBruto != null) {
+            if (!temHotStuffGeral) {
+                avisar(new StringBuilder("--").append(ALLOW_BEYOND_BFT_THRESHOLD).append("=").append(beyondBruto)
+                        .append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+            } else {
+                allowBeyond = parseAllowBeyondBftThreshold(beyondBruto);
+                if (allowBeyond && noAttack(attack)) {
+                    throw new IllegalArgumentException("--" + ALLOW_BEYOND_BFT_THRESHOLD + "=true sem ataque ativo (--attack="
+                            + cli.get("attack") + "): a flag seria ignorada em silencio");
+                }
+            }
+        }
         if (noAttack(attack)) {
             boolean temHotStuff = false;
             for (String protocol : protocols) {
@@ -518,7 +549,66 @@ public class MVPComparison {
                 throw new IllegalArgumentException("--byzantine-count=" + count + " maior que n=" + n);
             }
         }
+        if (!allowBeyond) {
+            StringBuilder fora = null;
+            for (int n : validators) {
+                if (count > bftLimit(n)) {
+                    fora = (fora == null ? new StringBuilder() : fora.append("; "));
+                    fora.append("n=").append(n).append(" f=").append(count).append(" limite floor((n-1)/3)=")
+                            .append(bftLimit(n));
+                }
+            }
+            if (fora != null) {
+                throw new IllegalArgumentException("--byzantine-count fora da faixa BFT (f > floor((n-1)/3)): " + fora
+                        + ". Modo explicito e rotulado so com --" + ALLOW_BEYOND_BFT_THRESHOLD
+                        + "=true (ADR-0015 decisao 3 e D3(a)); nada e arredondado em silencio");
+            }
+        }
         return count;
+    }
+
+    /** Flag que libera (rotulado) {@code f > floor((n-1)/3)} no HOTSTUFF (ADR-0015 D3(a)). Valor aceito: {@code true} ou {@code false}. */
+    static final String ALLOW_BEYOND_BFT_THRESHOLD = "allow-beyond-bft-threshold";
+
+    /** {@code floor((n-1)/3)}: maior f tolerado com n = 3f+1. Inteiro; {@code floorDiv} para n &lt; 1 nao truncar para 0. */
+    static int bftLimit(int n) {
+        return Math.floorDiv(n - 1, 3);
+    }
+
+    /** {@code true}/{@code false} exatos; qualquer outro valor falha alto (mesmo padrao de {@code --allow-fixture-mismatch}). */
+    static boolean parseAllowBeyondBftThreshold(String valor) {
+        if (valor == null || valor.equals("false")) {
+            return false;
+        }
+        if (valor.equals("true")) {
+            return true;
+        }
+        throw new IllegalArgumentException("--" + ALLOW_BEYOND_BFT_THRESHOLD + " aceita 'true' ou 'false' (recebido '" + valor + "')");
+    }
+
+    /**
+     * Linhas '#' (uma por {@code n} com {@code count > floor((n-1)/3)}) que rotulam a saida como fora da faixa BFT.
+     * Vazia, sem alocar, sem ataque ou quando todo f esta dentro da faixa: com ou sem a flag a saida dentro da faixa e
+     * byte a byte a de antes (a flag NAO rotula o que esta dentro). Chamada so depois de {@link #resolveByzantineCount}.
+     */
+    static java.util.List<String> beyondThresholdLines(ByzantineConfig.AttackType attack, int count,
+            java.util.List<Integer> validators) {
+        if (noAttack(attack)) {
+            return java.util.Collections.emptyList();
+        }
+        java.util.List<String> linhas = null;
+        for (int n : validators) {
+            if (count > bftLimit(n)) {
+                if (linhas == null) {
+                    linhas = new java.util.ArrayList<>();
+                }
+                linhas.add(new StringBuilder("# fora_da_faixa=true n=").append(n).append(" byzantine_count=").append(count)
+                        .append(" limite_bft=").append(bftLimit(n))
+                        .append(" (limite = floor((n-1)/3); modo explicito --").append(ALLOW_BEYOND_BFT_THRESHOLD)
+                        .append("=true; ADR-0015 decisao 3 e D3(a); resultado fora da garantia BFT do protocolo)").toString());
+            }
+        }
+        return linhas == null ? java.util.Collections.emptyList() : linhas;
     }
 
     /** Concatena linhas '#' sem alocar quando uma das listas e vazia (o caminho sem trava devolve a lista original). */
