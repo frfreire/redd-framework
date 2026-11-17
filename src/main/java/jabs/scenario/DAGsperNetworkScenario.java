@@ -43,15 +43,13 @@ import static jabs.network.stats.eightysixcountries.ethereum.EthereumProofOfWork
  * Falha bizantina: so {@code SILENT} e {@code WITHHOLD} (o no bizantino nao emite o proprio voto de
  * justificacao/finalizacao; continua recebendo, propagando e minerando), com a mesma semantica do voto do
  * Casper. {@code EQUIVOCATION} e {@code DOUBLE_SIGN} NAO estao implementados para o DAGsper e o construtor os
- * recusa, em vez de tratar o no como honesto em silencio. Os nos bizantinos sao sorteados com um
- * {@link RandomnessEngine} proprio derivado da semente (nao consome o fluxo da simulacao) e sao aninhados:
+ * recusa, em vez de tratar o no como honesto em silencio. Os nos bizantinos sao sorteados pelo gerador
+ * unico {@link ByzantineConfig#selectNested} (fluxo dedicado, nao consome o fluxo da simulacao) e sao aninhados:
  * mesma semente e count maior contem o conjunto do count menor.
  */
 public class DAGsperNetworkScenario extends AbstractScenario {
     /** Menor rede em que o setup P2P (EthereumGethP2P) costuma terminar; ver o limite no javadoc da classe. */
     public static final int MIN_NODES = 10;
-    /** Deslocamento fixo da semente do sorteio de bizantinos (fluxo separado do da simulacao). */
-    private static final long BYZANTINE_SELECTION_SEED_OFFSET = 7919L;
 
     private final double simulationStopTime;
     private final double averageBlockInterval;
@@ -145,17 +143,16 @@ public class DAGsperNetworkScenario extends AbstractScenario {
         }
     }
 
-    /** Embaralha os ids 0..n-1 com um engine proprio e toma os primeiros {@code byzantineCount}. */
+    /**
+     * BYZ-UNICA (ADR-0015): conjunto pelo gerador unico {@link ByzantineConfig#selectNested} sobre os ids de TODOS os nos
+     * (no DAGsper todos votam), na ordem de criacao. Antes: Fisher-Yates com {@code RandomnessEngine(seed + 7919)}.
+     */
     private Set<Integer> selectByzantineIds() {
-        RandomnessEngine selection = new RandomnessEngine(this.seed + BYZANTINE_SELECTION_SEED_OFFSET);
         List<Integer> ids = new ArrayList<>();
         for (Object o : this.network.getAllNodes()) {
             ids.add(((Node) o).nodeID);
         }
-        for (int i = ids.size() - 1; i > 0; i--) { // Fisher-Yates
-            Collections.swap(ids, i, selection.nextInt(i + 1));
-        }
-        return new HashSet<>(ids.subList(0, this.byzantineCount));
+        return ByzantineConfig.selectNested(this.seed, ids, this.byzantineCount);
     }
 
     @Override

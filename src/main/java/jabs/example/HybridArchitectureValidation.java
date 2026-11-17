@@ -39,7 +39,6 @@ public class HybridArchitectureValidation {
         
         // Configuration
         int totalValidators = 20;
-        double byzantinePercentage = 0.0;  // Start without Byzantine for clean comparison
         long randomSeed = 54321L;
         double simulationTime = 300.0;  // 5 minutes (shorter for quick validation)
         
@@ -140,15 +139,17 @@ public class HybridArchitectureValidation {
         System.out.println("─".repeat(60));
         
         try {
-            byzantinePercentage = 25.0;  // 25% Byzantine (below 33% threshold)
+            // BYZ-UNICA (ADR-0015): f inteiro = ceil(25% * n) em aritmetica inteira (25/100), sem pct em double
+            // (25% Byzantine, abaixo do limiar de 33%).
+            int byzantineCount = ByzantineConfig.countFromFraction(totalValidators, 25, 100);
             
             HybridNetworkScenario byzantineHybrid = new HybridNetworkScenario(
                 "Hybrid Network with 25% Byzantine",
                 randomSeed + 2,
                 totalValidators,
                 simulationTime,
-                byzantinePercentage,
-                ByzantineConfig.AttackType.EQUIVOCATION
+                ByzantineConfig.withExactCount(totalValidators, byzantineCount,
+                        ByzantineConfig.AttackType.EQUIVOCATION.name(), randomSeed + 2)
             );
             
             byzantineHybrid.addMetricsLogger("output/hybrid-validation/hybrid-byzantine-metrics.csv");

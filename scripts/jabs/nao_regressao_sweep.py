@@ -12,8 +12,10 @@ o CSV agregado (`s.csv`, uma linha por f) E os CSV por trial (`tmp/<TIPO>/<n>n-<
 
 LIMITES (declarados, nao escondidos):
   - sequencial (nao paralelo): o sweep escreve em subpastas distintas, mas cada caso leva alguns segundos;
-  - cobre VOTING e POSA com o ataque pedido, 1 valor de n, f pequeno e 2 trials; nao cobre POS/POW/DAGSPER (que
-    constroem o ByzantineConfig por ids explicitos, caminho que esta tarefa nao altera);
+  - cobre VOTING e POSA (D3a-2a-2d-2) e, desde BYZ-UNICA (ADR-0015), tambem POS, POW e DAGSPER, com o ataque pedido, 1 valor
+    de n, f pequeno e 2 trials. Desde BYZ-UNICA o ByzantineSweep falha ALTO com f > floor((n-1)/3) (n = universo de
+    validadores/votantes do tipo): escolha --max-byz dentro da faixa, ou passe --allow-beyond-bft-threshold=true por
+    --extra-flag (repassado nos QUATRO lados; o HEAD o ignora com aviso e roda f fora da faixa);
   - POSA depende de System.identityHashCode (ADR-0012/0013): use --jvm-flag=-XX:+UnlockExperimentalVMOptions
     --jvm-flag=-XX:hashCode=2 nos QUATRO lados; sem ela a divergencia base x atual NAO e atribuivel ao codigo.
 Uso:
@@ -43,7 +45,7 @@ def montar_cmd(cp, a, destino: Path, jvm=()):
     return ["java", *jvm, "-cp", cp, "jabs.example.ByzantineSweep", f"--type={a.tipo}",
             f"--validators={a.validators}", f"--max-byz={a.max_byz}", f"--trials={a.trials}",
             f"--duration={a.duration}", f"--attack={a.attack}", f"--seed={a.semente}",
-            f"--out={destino / 's.csv'}"]
+            f"--out={destino / 's.csv'}", *getattr(a, "extra_flag", [])]
 
 
 def rodar(nr, raiz: Path, a, destino: Path, jvm):
@@ -76,7 +78,7 @@ def main():
     ap.add_argument("--base", required=True)
     ap.add_argument("--atual", required=True)
     ap.add_argument("--saida", required=True)
-    ap.add_argument("--tipo", required=True, choices=["VOTING", "POSA"])
+    ap.add_argument("--tipo", required=True, choices=["VOTING", "POSA", "POS", "POW", "DAGSPER"])
     ap.add_argument("--validators", required=True)
     ap.add_argument("--max-byz", dest="max_byz", required=True)
     ap.add_argument("--trials", default="2")
@@ -85,6 +87,8 @@ def main():
     ap.add_argument("--semente", type=int, default=1)
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--jvm-flag", dest="jvm_flag", action="append", default=[])
+    ap.add_argument("--extra-flag", dest="extra_flag", action="append", default=[], metavar="--CHAVE=VALOR",
+                    help="repassada ao ByzantineSweep nas QUATRO execucoes (ex.: --n-semantics=nodes)")
     a = ap.parse_args()
     base, atual, out = Path(a.base).resolve(), Path(a.atual).resolve(), Path(a.saida)
     for r in (base, atual):

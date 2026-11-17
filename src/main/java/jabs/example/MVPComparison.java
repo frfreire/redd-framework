@@ -568,7 +568,7 @@ public class MVPComparison {
     }
 
     /** Flag que libera (rotulado) {@code f > floor((n-1)/3)} no HOTSTUFF (ADR-0015 D3(a)). Valor aceito: {@code true} ou {@code false}. */
-    static final String ALLOW_BEYOND_BFT_THRESHOLD = "allow-beyond-bft-threshold";
+    static final String ALLOW_BEYOND_BFT_THRESHOLD = ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD;
 
     /** {@code floor((n-1)/3)}: maior f tolerado com n = 3f+1. Inteiro; {@code floorDiv} para n &lt; 1 nao truncar para 0. */
     static int bftLimit(int n) {
@@ -1061,15 +1061,14 @@ public class MVPComparison {
         metrics.setConsensusType(SimulationMetrics.ConsensusType.VOTING);
 
         try {
+            // BYZ-UNICA (ADR-0015, decisao 1): f=0 e inteiro, entra por contagem (nao por pct=0.0). Mesma configuracao
+            // de antes (30% privadas, 20/60/20, conjunto vazio, sem consumir o fluxo): saida sem ataque identica.
             HybridNetworkScenario scenario = new HybridNetworkScenario(
                     "Arq-REDD+ Hybrid (Honest Nodes)",
                     seed,
                     totalValidators,
                     duration,
-                    30.0,
-                    new double[] { 20.0, 60.0, 20.0 },
-                    0.0,
-                    ByzantineConfig.AttackType.NONE);
+                    ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
             scenario.addMetricsLogger(outputPath);
             attachLoadRecorder(scenario, "ARQ", seed, outputPath);
             System.out.println(

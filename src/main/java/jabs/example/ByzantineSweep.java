@@ -98,6 +98,55 @@ public class ByzantineSweep {
         final int[] sizing = temDecomposicao ? sweepSizing(nodesMode, n) : null;
         final String sizingLine = describeSizing(type, nodesMode, n, sizing);
         System.out.println(new StringBuilder("Network sizing: ").append(sizingLine).toString());
+        // BYZ-UNICA: regra de contagem e universo declarados no stdout (o CSV legacy segue byte a byte o de antes)
+        System.out.println(new StringBuilder("Byzantine count: f inteiro direto; universo_sorteio=")
+                .append(universoRotulo(type)).append(" universo_n=").append(universeSize(type, n, sizing))
+                .append(" gerador=ByzantineConfig.selectNested(semente,universo,f) aninhado_entre_f=sim limite_bft=")
+                .append(bftApplies(type) ? String.valueOf(ByzantineConfig.bftLimit(universeSize(type, n, sizing))) : "nao_aplicavel")
+                .toString());
+
+        // BYZ-UNICA (ADR-0015): f e o INTEIRO da linha de comando, sem ida e volta por percentual. Universo do sorteio = so
+        // validadores/votantes do protocolo (Q30 A, Q32 A). Faixa BFT: f > floor(|universo|-1)/3) falha ALTO antes de gravar
+        // qualquer coisa, salvo --allow-beyond-bft-threshold=true (modo explicito, rotulado no CSV).
+        final int step = Math.max(1, n / 100); // step corresponds to ~1% of N
+        final java.util.List<Integer> fValues = new java.util.ArrayList<>();
+        fValues.add(0); // include the 0-byzantine case
+        for (int v = step; v <= maxByz; v += step) {
+            fValues.add(v);
+        }
+        final boolean allowBeyond = ByzantineConfig.parseAllowBeyondBftThreshold(cli.get(ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD));
+        final int universeSize = universeSize(type, n, sizing);
+        final java.util.List<String> beyondLines = new java.util.ArrayList<>();
+        final StringBuilder fora = new StringBuilder();
+        for (int f : fValues) {
+            if (f > universeSize) {
+                throw new IllegalArgumentException("contagem bizantina f=" + f + " maior que o universo de sorteio ("
+                        + universoRotulo(type) + ", " + universeSize + " no(s)) no tipo " + type
+                        + ": so validadores/votantes sao sorteados (ADR-0015 Q30/Q32). Reduza --max-byz; a flag --"
+                        + ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD + " nao libera f > universo");
+            }
+        }
+        if (bftApplies(type)) {
+            for (int f : fValues) {
+                if (ByzantineConfig.beyondBftThreshold(universeSize, f)) {
+                    if (!allowBeyond) {
+                        fora.append(fora.length() == 0 ? "" : "; ").append("n=").append(universeSize).append(" f=").append(f)
+                                .append(" limite floor((n-1)/3)=").append(ByzantineConfig.bftLimit(universeSize));
+                    } else {
+                        beyondLines.add(ByzantineConfig.beyondThresholdLine(universeSize, f));
+                    }
+                }
+            }
+            if (fora.length() > 0) {
+                throw new IllegalArgumentException("contagem bizantina fora da faixa BFT (f > floor((n-1)/3)) no tipo " + type
+                        + " (n = universo de validadores/votantes): " + fora + ". Reduza --max-byz ou use --"
+                        + ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD
+                        + "=true (modo explicito e rotulado, ADR-0015 decisao 3 e D3(a)); nada e arredondado em silencio");
+            }
+        } else if (allowBeyond) {
+            throw new IllegalArgumentException("--" + ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD + "=true nao se aplica ao tipo " + type
+                    + " (limiar de Nakamoto/PoW nao e floor((n-1)/3); a definir com o humano): seria ignorada em silencio");
+        }
 
         Path outPath = Paths.get(out);
         Path outDir = outPath.getParent() == null ? Paths.get(".") : outPath.getParent();
@@ -112,15 +161,12 @@ public class ByzantineSweep {
                         .append(" (coluna n = valor pedido na linha de comando)\n").toString());
                 bw.write(new StringBuilder("# ").append(sizingLine).append('\n').toString());
             }
+            for (String line : beyondLines) {
+                bw.write(line);
+                bw.write('\n');
+            }
             bw.write(
                     "protocol,n,f,trials,avgPdv,stdPdv,avgFinalizationTime,stdFinalizationTime,avgConfirmationLatency,stdConfirmationLatency,avgBlockCount,stdBlockCount,avgTraffic,stdTraffic,avgEmpiricalBFT_pct,stdEmpiricalBFT_pct,secureCount\n");
-
-            int step = Math.max(1, n / 100); // step corresponds to ~1% of N
-            java.util.List<Integer> fValues = new java.util.ArrayList<>();
-            fValues.add(0); // include the 0-byzantine case
-            for (int v = step; v <= maxByz; v += step) {
-                fValues.add(v);
-            }
 
             for (int f : fValues) {
                 boolean anySecureInThisF = false;
@@ -150,14 +196,12 @@ public class ByzantineSweep {
                     try {
                         switch (type) {
                             case "VOTING": {
-                                double byzPct = (n == 0) ? 0.0 : (100.0 * f / n);
                                 HybridNetworkScenario scenario = new HybridNetworkScenario(
                                         "sweep/arqREDD/HybridSweep-" + n + "n-" + f + "b",
                                         seed,
                                         n,
                                         duration,
-                                        byzPct,
-                                        attack);
+                                        configFor(type, n, f, seed, attack, sizing));
                                 String tmp = outDir.resolve("tmp/" + type + "/" + n + "n-" + f + "-" + t + ".csv")
                                         .toString();
                                 Files.createDirectories(Paths.get(tmp).getParent());
@@ -168,7 +212,6 @@ public class ByzantineSweep {
                             case "POS": {
                                 int numMiners = sizing[0];
                                 int numStakeholders = sizing[1];
-                                double byzPct = (n == 0) ? 0.0 : (100.0 * f / n);
                                 CasperEthereumNetworkScenario scenario = new CasperEthereumNetworkScenario(
                                         "sweep/Ethereum/CasperSweep-" + n + "n-" + f + "b",
                                         seed,
@@ -176,9 +219,10 @@ public class ByzantineSweep {
                                         15.0,
                                         14,
                                         numMiners,
-                                        numStakeholders,
-                                        byzPct,
-                                        attack);
+                                        numStakeholders);
+                                if (f > 0) { // f=0: sem config (como antes: pct 0 nao injetava nada)
+                                    scenario.setByzantineConfig(configFor(type, n, f, seed, attack, sizing));
+                                }
                                 String tmp = outDir.resolve("tmp/" + type + "/" + n + "n-" + f + "-" + t + ".csv")
                                         .toString();
                                 Files.createDirectories(Paths.get(tmp).getParent());
@@ -188,7 +232,6 @@ public class ByzantineSweep {
                             }
                             case "POW": {
                                 int confirmationDepth = 6;
-                                double byzPct = (n == 0) ? 0.0 : (100.0 * f / n);
                                 BitcoinGlobalNetworkScenario scenario = new BitcoinGlobalNetworkScenario(
                                         "sweep/Bitcoin/BitcoinSweep-" + n + "n-" + f + "b",
                                         seed,
@@ -198,9 +241,10 @@ public class ByzantineSweep {
                                         0,  // numNodes (non-mining nodes)
                                         confirmationDepth,
                                         enableTransactions, // whether to generate txs
-                                        txInterval,
-                                        byzPct,  // Byzantine percentage of hashpower
-                                        attack);
+                                        txInterval);
+                                if (f > 0) {
+                                    scenario.setByzantineConfig(configFor(type, n, f, seed, attack, sizing));
+                                }
                                 String tmp = outDir.resolve("tmp/" + type + "/" + n + "n-" + f + "-" + t + ".csv")
                                         .toString();
                                 Files.createDirectories(Paths.get(tmp).getParent());
@@ -209,7 +253,6 @@ public class ByzantineSweep {
                                 break;
                             }
                             case "POSA": {
-                                double byzPct = (n == 0) ? 0.0 : (100.0 * f / n);
                                 int numMiners = sizing[0];
                                 int turnLength = Integer.parseInt(cli.getOrDefault("turn-length", "3"));
                                 int epochLength = Integer.parseInt(cli.getOrDefault("epoch-length", "21"));
@@ -225,12 +268,9 @@ public class ByzantineSweep {
                                     // legacy: o proprio n (sem max(1, n) do POS), como antes da N1
                                     nodesMode ? sizing[1] : n);
 
-                                ByzantineConfig byzConfig = new ByzantineConfig(
-                                    n,
-                                    byzPct,
-                                    attack,
-                                    seed);
-                                scenario.setByzantineConfig(byzConfig);
+                                // universo = so os mineradores, unicos validadores do Parlia (Q32 A); antes sorteava em [0, n),
+                                // incluindo stakeholders que nao validam (ver configFor)
+                                scenario.setByzantineConfig(configFor(type, n, f, seed, attack, sizing));
 
                                 String tmp = outDir.resolve("tmp/" + type + "/" + n + "n-" + f + "-" + t + ".csv")
                                     .toString();
@@ -450,11 +490,77 @@ public class ByzantineSweep {
     /** Flags que o programa le (as demais sao ignoradas com aviso no stderr). Array: sem colecao hash nem classe nova. */
     private static final String[] KNOWN = {"validators", "max-byz", "trials", "duration", "type", "attack",
             "enable-tx", "tx-interval", "out", "seed", "turn-length", "epoch-length", "max-pdv-pct",
-            NetworkSizing.FLAG};
+            NetworkSizing.FLAG, ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD};
 
     /** Flags aceitas, como conjunto (para testes e mensagens). */
     static java.util.Set<String> knownFlags() {
         return new java.util.TreeSet<>(java.util.Arrays.asList(KNOWN));
+    }
+
+    /**
+     * Config bizantina de UM nivel {@code f} (inteiro, direto da linha de comando) para o tipo {@code type}: e o unico
+     * lugar onde o sweep decide universo e contagem (BYZ-UNICA, ADR-0015). {@code sizing} = {miners, stakeholders}
+     * (POS/POSA) ou {@code null}. VOTING: universo [0,n). POS (Casper): todos os nos, ids [0, miners+stakeholders). POSA
+     * (Parlia): so os mineradores, ids [0, miners); {@code totalValidators} = nos construidos (mineradores + stakeholders
+     * da rede, que no legacy e {@code miners + n}). POW: os n mineradores. DAGSPER: {@code null} (o proprio cenario sorteia
+     * pelo mesmo gerador sobre todos os nos).
+     */
+    static ByzantineConfig configFor(String type, int n, int f, long seed, ByzantineConfig.AttackType attack, int[] sizing) {
+        switch (type) {
+            case "VOTING":
+            case "POW":
+                return ByzantineConfig.forUniverse(n, ByzantineConfig.range(0, n), f, attack.name(), seed);
+            case "POS": {
+                int total = sizing[0] + sizing[1];
+                return ByzantineConfig.forUniverse(total, ByzantineConfig.range(0, total), f, attack.name(), seed);
+            }
+            case "POSA": {
+                int total = sizing[0] + sizing[1];
+                return ByzantineConfig.forUniverse(total, ByzantineConfig.range(0, sizing[0]), f, attack.name(), seed);
+            }
+            case "DAGSPER":
+                return null;
+            default:
+                throw new IllegalArgumentException("Unsupported protocol type: " + type);
+        }
+    }
+
+    /**
+     * Universo do sorteio bizantino (so validadores/votantes; ADR-0015 Q30 A, Q32 A): VOTING, DAGSPER e POW (n mineradores):
+     * {@code n}; POS (Casper: todos os nos votam): mineradores + stakeholders; POSA (Parlia: so os mineradores validam):
+     * mineradores. Tipo desconhecido: {@code n} (a execucao recusa o tipo depois).
+     */
+    static int universeSize(String type, int n, int[] sizing) {
+        switch (type) {
+            case "POS":
+                return sizing[0] + sizing[1];
+            case "POSA":
+                return sizing[0];
+            default:
+                return n;
+        }
+    }
+
+    /** Rotulo do universo, para o cabecalho '#' do CSV e mensagens. */
+    static String universoRotulo(String type) {
+        switch (type) {
+            case "POS":
+                return "casper_voters(todos_os_nos)";
+            case "POSA":
+                return "parlia_validators(mineradores)";
+            case "POW":
+                return "mineradores";
+            default:
+                return "n_validadores";
+        }
+    }
+
+    /**
+     * A faixa BFT {@code f <= floor((n-1)/3)} vale para os protocolos de votacao (VOTING, DAGSPER, POS, POSA). O POW usa
+     * limiar de poder de hash (Nakamoto), nao 1/3: o valor do limiar e a definir com o humano; o guarda nao se aplica.
+     */
+    static boolean bftApplies(String type) {
+        return !type.equals("POW");
     }
 
     /**
@@ -481,15 +587,14 @@ public class ByzantineSweep {
         if (sizing != null) {
             int miners = sizing[0];
             int stakeholders = sizing[1];
-            // regra do numero de bizantinos (herdada, NAO alterada): POS sorteia ceil(stakeholders*f/n) entre os
-            // stakeholders (em 'nodes' stakeholders < n, entao o numero efetivo e ~0,7 f); POSA sorteia f ids em
-            // 0..n-1 (so os mineradores validam). Ver README da N1: pergunta ao humano.
+            // BYZ-UNICA (ADR-0015): f inteiro direto; POS sorteia entre TODOS os nos (todos votam), POSA entre os
+            // mineradores (unicos validadores do Parlia). Antes: POS ceil(stakeholders*f/n) entre stakeholders e POSA f ids em 0..n-1.
             sb.append(" n_semantics=").append(rot).append(" n_requested=").append(n).append(" nodes=")
                     .append(miners + stakeholders).append(" miners=").append(miners).append(" stakeholders=")
                     .append(stakeholders).append(" casper_voters=").append(miners + stakeholders)
                     .append(" casper_S=").append(stakeholders).append(" parlia_validators=").append(miners);
-            return sb.append(type.equals("POS") ? " voters=casper_voters byz_count=ceil(stakeholders*f/n)_among_stakeholders"
-                    : " voters=parlia_validators byz_count=f_ids_drawn_from_0..n-1").toString();
+            return sb.append(type.equals("POS") ? " voters=casper_voters byz_universe=casper_voters(all_nodes) byz_count=f"
+                    : " voters=parlia_validators byz_universe=parlia_validators(miners) byz_count=f").toString();
         }
         return sb.append(" n_semantics=").append(rot).append(" n_requested=").append(n).append(" nodes=").append(n)
                 .append(" (n ja e o numero de nos nas duas semanticas)").toString();

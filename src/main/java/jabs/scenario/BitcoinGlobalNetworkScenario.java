@@ -70,7 +70,9 @@ public class BitcoinGlobalNetworkScenario extends AbstractScenario {
 
 
     /**
-     * Variant with both transaction generation and Byzantine injection
+     * Variant with both transaction generation and Byzantine injection by PERCENTAGE (legacy path: f = EXACT ceiling of
+     * the received double, {@link ByzantineConfig#countFromPercent}, no tolerance; with an integer f use
+     * {@link #setByzantineConfig(ByzantineConfig)}).
      */
     public BitcoinGlobalNetworkScenario(String name, long seed, long stopTime,
                                         double averageBlockInterval, int numMiners, int numNodes, 
@@ -86,7 +88,8 @@ public class BitcoinGlobalNetworkScenario extends AbstractScenario {
 
     /**
      * Variant that injects Byzantine miners (for PoW attack simulation)
-     * Byzantine percentage represents the proportion of total hashpower controlled by attackers
+     * Byzantine percentage represents the proportion of total hashpower controlled by attackers (legacy path: f = EXACT
+     * ceiling of the received double, no tolerance; with an integer f use {@link #setByzantineConfig(ByzantineConfig)})
      */
     public BitcoinGlobalNetworkScenario(String name, long seed, long stopTime,
                                         double averageBlockInterval, int numMiners, int numNodes, 
@@ -122,24 +125,13 @@ public class BitcoinGlobalNetworkScenario extends AbstractScenario {
 
         // Propagate ByzantineConfig if configured
         // For PoW: byzantinePercentage represents % of hashpower (distributed among miners)
+        // BYZ-UNICA (ADR-0015): contagem inteira (countFromPercent) e conjunto do gerador unico, universo = mineradores
+        // (ids 0..numMiners-1). Antes: ceil(miners*pct/100.0) em double e java.util.Random(semente).
         if (this.injectedByzantinePercentage > 0.0) {
-            // Bitcoin miners are the first numMiners nodes created
             int totalMiners = this.numMiners;
-            int byzCount = (int) Math.ceil(totalMiners * (this.injectedByzantinePercentage / 100.0));
-            java.util.Random rnd = new java.util.Random(this.injectedSeed);
-            java.util.Set<Integer> byzGlobalIds = new java.util.HashSet<>();
-            // Select random miners to be Byzantine (node IDs 0..numMiners-1)
-            while (byzGlobalIds.size() < byzCount) {
-                int idx = rnd.nextInt(totalMiners);
-                byzGlobalIds.add(idx);
-            }
-            // Create config with explicit global node IDs
-            this.byzantineConfig = new ByzantineConfig(
-                this.network.getAllNodes().size(), 
-                byzGlobalIds, 
-                this.injectedAttackType.name(), 
-                this.injectedSeed
-            );
+            int byzCount = ByzantineConfig.countFromPercent(totalMiners, this.injectedByzantinePercentage);
+            this.byzantineConfig = ByzantineConfig.forUniverse(this.network.getAllNodes().size(),
+                    ByzantineConfig.range(0, totalMiners), byzCount, this.injectedAttackType.name(), this.injectedSeed);
 
             for (Object o : this.network.getAllNodes()) {
                 if (o instanceof Node) {

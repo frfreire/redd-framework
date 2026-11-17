@@ -59,7 +59,10 @@ public class ArqReddVotingScenario extends AbstractScenario {
      * @param seed                Random seed
      * @param numNodes            Number of consensus nodes
      * @param simulationStopTime  Stop condition (seconds)
-     * @param byzantinePercentage Percentage of Byzantine nodes (0-100)
+     * @param byzantinePercentage Percentage of Byzantine nodes (0-100). LEGACY path: f = EXACT ceiling of the received
+     *                            double ({@link ByzantineConfig#countFromPercent}), no tolerance; a caller that HAS the
+     *                            integer f must use the {@link ByzantineConfig}-taking constructor
+     *                            ({@link ByzantineConfig#withExactCount}), never pct = 100.0 * f / n.
      * @param attackType          Type of Byzantine attack
      */
     public ArqReddVotingScenario(String name, long seed, int numNodes, double simulationStopTime,
@@ -72,6 +75,29 @@ public class ArqReddVotingScenario extends AbstractScenario {
         this.byzantineConfig = new ByzantineConfig(numNodes, byzantinePercentage, attackType, seed);
 
         // Initialize metrics with Byzantine info
+        this.metrics = new SimulationMetrics();
+        this.metrics.setByzantineValidators(byzantineConfig.getByzantineCount());
+        this.metrics.setTotalValidators(numNodes);
+    }
+
+    /**
+     * Create Arq-REDD+ voting scenario WITH an already-built Byzantine configuration (BYZ-UNICA, ADR-0015): the caller
+     * draws the set with the single generator ({@code ByzantineConfig.selectNested}) from an integer f, with no
+     * round trip through a percentage. {@code byzantineConfig.getTotalValidators()} must equal {@code numNodes}.
+     */
+    public ArqReddVotingScenario(String name, long seed, int numNodes, double simulationStopTime,
+            ByzantineConfig byzantineConfig) {
+        super(name, seed);
+        if (byzantineConfig == null) {
+            throw new IllegalArgumentException("ByzantineConfig obrigatorio (use o construtor sem ataque para o honesto)");
+        }
+        if (byzantineConfig.getTotalValidators() != numNodes) {
+            throw new IllegalArgumentException("ByzantineConfig.totalValidators=" + byzantineConfig.getTotalValidators()
+                    + " difere de numNodes=" + numNodes);
+        }
+        this.numNodes = numNodes;
+        this.simulationStopTime = simulationStopTime;
+        this.byzantineConfig = byzantineConfig;
         this.metrics = new SimulationMetrics();
         this.metrics.setByzantineValidators(byzantineConfig.getByzantineCount());
         this.metrics.setTotalValidators(numNodes);

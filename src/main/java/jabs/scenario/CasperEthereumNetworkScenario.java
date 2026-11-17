@@ -48,7 +48,9 @@ public class CasperEthereumNetworkScenario extends AbstractScenario {
     }
 
     /**
-     * Variant that injects Byzantine validators
+     * Variant that injects Byzantine validators by PERCENTAGE (legacy path: f = EXACT ceiling of the received double,
+     * {@link ByzantineConfig#countFromPercent}, no tolerance). A caller that HAS the integer f must use
+     * {@link #setByzantineConfig(ByzantineConfig)} with {@link ByzantineConfig#forUniverse}, never pct = 100.0 * f / n.
      */
     public CasperEthereumNetworkScenario(String name, long seed,
                                          double simulationStopTime, double averageBlockInterval,
@@ -69,21 +71,16 @@ public class CasperEthereumNetworkScenario extends AbstractScenario {
         ethereumNetwork.populateNetwork(simulator, this.numOfMiners, this.numOfStakeholders,
                 new CasperFFGConfig(EthereumBlock.generateGenesisBlock(ETHEREUM_DIFFICULTY_2022),
                         this.averageBlockInterval, this.checkpointSpace, this.numOfStakeholders));
-        // Propagate ByzantineConfig if configured (map stakeholder-relative indices to global node IDs)
-        if (this.injectedByzantinePercentage > 0.0) {
-            // Stakeholder nodes are created after miners; their nodeIDs start at numOfMiners
-            int numMiners = this.numOfMiners;
-            int stakeholders = this.numOfStakeholders;
-            int byzCount = (int) Math.ceil(stakeholders * (this.injectedByzantinePercentage / 100.0));
-            java.util.Random rnd = new java.util.Random(this.injectedSeed);
-            java.util.Set<Integer> byzGlobalIds = new java.util.HashSet<>();
-            while (byzGlobalIds.size() < byzCount) {
-                int idx = rnd.nextInt(stakeholders);
-                byzGlobalIds.add(numMiners + idx);
-            }
-            // Create a config with explicit global node IDs
-            this.byzantineConfig = new ByzantineConfig(this.network.getAllNodes().size(), byzGlobalIds, this.injectedAttackType.name(), this.injectedSeed);
-
+        // BYZ-UNICA (ADR-0015): contagem inteira e conjunto do gerador unico. Universo = todos os nos (Q32, opcao A: no
+        // Casper todos votam; ids 0..miners+stakeholders-1). Antes: ceil(stakeholders*pct/100.0) em double, sorteio por
+        // java.util.Random(semente) so entre os stakeholders (ids a partir de numMiners).
+        if (this.injectedByzantinePercentage > 0.0 && this.byzantineConfig == null) {
+            int totalNodes = this.network.getAllNodes().size();
+            int byzCount = ByzantineConfig.countFromPercent(totalNodes, this.injectedByzantinePercentage);
+            this.byzantineConfig = ByzantineConfig.forUniverse(totalNodes, ByzantineConfig.range(0, totalNodes), byzCount,
+                    this.injectedAttackType.name(), this.injectedSeed);
+        }
+        if (this.byzantineConfig != null) {
             for (Object o : this.network.getAllNodes()) {
                 if (o instanceof Node) {
                     Node n = (Node) o;
@@ -99,6 +96,23 @@ public class CasperEthereumNetworkScenario extends AbstractScenario {
             this.metrics.setByzantineValidators(this.byzantineConfig.getByzantineCount());
             this.metrics.setTotalValidators(this.numOfStakeholders);
         }
+    }
+
+    /**
+     * Injeta uma {@link ByzantineConfig} ja montada (gerador unico, f inteiro; BYZ-UNICA). Chamar antes de {@code run()}.
+     * {@code getTotalValidators()} deve ser o total de nos da rede (mineradores + stakeholders).
+     */
+    public void setByzantineConfig(ByzantineConfig byzantineConfig) {
+        if (byzantineConfig == null) {
+            throw new IllegalArgumentException("ByzantineConfig obrigatorio");
+        }
+        int total = this.numOfMiners + this.numOfStakeholders;
+        if (byzantineConfig.getTotalValidators() != total) {
+            throw new IllegalArgumentException("ByzantineConfig.totalValidators=" + byzantineConfig.getTotalValidators()
+                    + " difere do total de nos " + total + " (" + this.numOfMiners + " mineradores + "
+                    + this.numOfStakeholders + " stakeholders)");
+        }
+        this.byzantineConfig = byzantineConfig;
     }
 
     @Override

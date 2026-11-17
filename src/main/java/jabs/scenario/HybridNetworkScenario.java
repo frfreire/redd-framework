@@ -73,7 +73,9 @@ public class HybridNetworkScenario extends ArqReddVotingScenario {
      * @param seed Random seed
      * @param numNodes Number of nodes
      * @param simulationStopTime Stop time in seconds
-     * @param byzantinePercentage Percentage of Byzantine nodes
+     * @param byzantinePercentage Percentage of Byzantine nodes. LEGACY path: f = EXACT ceiling of the received double
+     *                            ({@link ByzantineConfig#countFromPercent}), no tolerance; with an integer f use the
+     *                            constructor taking a {@link ByzantineConfig} ({@link ByzantineConfig#withExactCount}).
      * @param attackType Type of Byzantine attack
      */
     public HybridNetworkScenario(String name, long seed, int numNodes, double simulationStopTime,
@@ -117,7 +119,9 @@ public class HybridNetworkScenario extends ArqReddVotingScenario {
      * @param simulationStopTime Stop time in seconds
      * @param privateTransactionPercentage Percentage of private transactions (0-100)
      * @param nodeTypeDistribution Array [simple%, validator%, generator%] must sum to 100
-     * @param byzantinePercentage Percentage of Byzantine nodes
+     * @param byzantinePercentage Percentage of Byzantine nodes. LEGACY path: f = EXACT ceiling of the received double
+     *                            ({@link ByzantineConfig#countFromPercent}), no tolerance; with an integer f use the
+     *                            constructor taking a {@link ByzantineConfig} ({@link ByzantineConfig#withExactCount}).
      * @param attackType Type of Byzantine attack
      */
     public HybridNetworkScenario(String name, long seed, int numNodes, double simulationStopTime,
@@ -137,6 +141,24 @@ public class HybridNetworkScenario extends ArqReddVotingScenario {
         this.metrics.setPrivateTransactionPercentage(this.privateTransactionPercentage);
     }
     
+    /**
+     * Create hybrid network scenario (default distribution: 30% private; 20/60/20) WITH an already-built Byzantine
+     * configuration drawn by the single generator from an integer f (BYZ-UNICA, ADR-0015). Same initialisation as the
+     * percentage constructors; only the way the Byzantine set is obtained differs.
+     */
+    public HybridNetworkScenario(String name, long seed, int numNodes, double simulationStopTime,
+                                 ByzantineConfig byzantineConfig) {
+        super(name, seed, numNodes, simulationStopTime, byzantineConfig);
+        double[] distribution = new double[]{20.0, 60.0, 20.0};
+        validateDistribution(distribution);
+        this.privateTransactionPercentage = Math.max(0.0, Math.min(100.0, 30.0));
+        this.nodeTypeDistribution = distribution;
+        this.accessControlManager = new AccessControlManager();
+        this.privacyRandom = new Random(seed + 1000);
+        this.metrics.setHybridMode(true);
+        this.metrics.setPrivateTransactionPercentage(this.privateTransactionPercentage);
+    }
+
     /**
      * Validate that node type distribution sums to 100%
      */
