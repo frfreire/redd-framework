@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PBFTTrafficMeasurementTest {
 
     /** Uma finalizacao observada: (no, altura, C_B_total, C_B_consenso, tempo). */
-    private record Fin(int nodeId, int height, long total, long consensus, double time) {}
+    private record Fin(int nodeId, int height, long total, long consensus, double time, long self) {}
 
     private static List<Fin> simular(long seed, int n, double stop, Integer noSilencioso) {
         RandomnessEngine rng = new RandomnessEngine(seed);
@@ -56,7 +56,7 @@ class PBFTTrafficMeasurementTest {
             if (ev instanceof BlockFinalizationEvent fe) {
                 out.add(new Fin(fe.getNode().nodeID, fe.getBlock().getHeight(),
                         fe.getTrafficUntilFinalization(), fe.getConsensusMessageTraffic(),
-                        sim.getSimulationTime()));
+                        sim.getSimulationTime(), fe.getSelfDeliveryTraffic()));
             }
         }
         return out;
@@ -123,13 +123,21 @@ class PBFTTrafficMeasurementTest {
         int n = 7;
         List<Fin> fins = simular(1, n, 30, null);
         assertFalse(fins.isEmpty(), "deve haver finalizacoes");
+        boolean algumReceptorDoBloco = false;
         for (Fin f : fins) {
-            assertTrue(f.total() > 100_000,
-                    "C_B_total medido inclui o bloco (~centenas de KB), nao n*2*1024=" + (n * 2 * 1024));
+            // D2 (ADR-0015): o PRE_PREPARE que o PROPRIO primario entrega a si mesmo (carrega o bloco) e autoentrega e saiu
+            // do C_B. Quem recebeu o bloco pela rede tem C_B_total com o bloco; o primario so o tem na coluna propria.
+            assertTrue(f.total() + f.self() > 100_000,
+                    "trafego medido (C_B + autoentrega) inclui o bloco (~centenas de KB), nao n*2*1024=" + (n * 2 * 1024));
+            if (f.total() > 100_000) {
+                algumReceptorDoBloco = true;
+            }
+            assertTrue(f.self() >= 0, "autoentrega medida (>= 0, nao sentinela)");
             assertTrue(f.consensus() >= 0, "C_B_consenso medido (>= 0, nao sentinela)");
-            assertTrue(f.consensus() < f.total(), "consenso < total (o bloco nao conta no consenso)");
+            assertTrue(f.consensus() < f.total() + f.self(), "consenso < total (o bloco nao conta no consenso)");
             assertNotEquals((long) n * 2 * 1024, f.total(), "nao pode ser a formula fechada");
         }
+        assertTrue(algumReceptorDoBloco, "ao menos um no que finalizou primeiro recebeu o bloco pela rede (C_B_total > 100 KB)");
     }
 
     @Test

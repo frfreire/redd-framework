@@ -1,0 +1,78 @@
+{
+ "N_alvo_por_grupo": 36887,
+ "fonte_N_alvo": "experimentos/piloto-timeout-hotstuff/emenda-nmin.json",
+ "origem": "piloto, medicao, ROTATING, L=100, 10 sementes por n, alturas h>50",
+ "por_n": {
+  "4": {
+   "celulas_piloto": 10,
+   "duracao_s_piloto": 368,
+   "visoes_pos_t0_por_celula": {
+    "min": 2161,
+    "media": 2163.4,
+    "max": 2167
+   },
+   "sementes_minimas_para_N_alvo": 18,
+   "sementes_adotadas": 20,
+   "N_esperado_minimo": 43220,
+   "margem_sobre_N_alvo": 0.17168650201968183,
+   "parede_s_por_celula_media_2JVMs": 6.101,
+   "parede_s_max": 7.16,
+   "rss_mb_max": 500.3
+  },
+  "16": {
+   "celulas_piloto": 10,
+   "duracao_s_piloto": 460,
+   "visoes_pos_t0_por_celula": {
+    "min": 2162,
+    "media": 2163.4,
+    "max": 2165
+   },
+   "sementes_minimas_para_N_alvo": 18,
+   "sementes_adotadas": 20,
+   "N_esperado_minimo": 43240,
+   "margem_sobre_N_alvo": 0.17222869845745103,
+   "parede_s_por_celula_media_2JVMs": 16.347,
+   "parede_s_max": 17.61,
+   "rss_mb_max": 570.0
+  },
+  "64": {
+   "celulas_piloto": 10,
+   "duracao_s_piloto": 941,
+   "visoes_pos_t0_por_celula": {
+    "min": 2162,
+    "media": 2162.8,
+    "max": 2163
+   },
+   "sementes_minimas_para_N_alvo": 18,
+   "sementes_adotadas": 20,
+   "N_esperado_minimo": 43240,
+   "margem_sobre_N_alvo": 0.17222869845745103,
+   "parede_s_por_celula_media_2JVMs": 48.574,
+   "parede_s_max": 51.88,
+   "rss_mb_max": 676.7
+  },
+  "128": {
+   "celulas_piloto": 10,
+   "duracao_s_piloto": 1807,
+   "visoes_pos_t0_por_celula": {
+    "min": 2163,
+    "media": 2163.0,
+    "max": 2163
+   },
+   "sementes_minimas_para_N_alvo": 18,
+   "sementes_adotadas": 20,
+   "N_esperado_minimo": 43260,
+   "margem_sobre_N_alvo": 0.17277089489522046,
+   "parede_s_por_celula_media_2JVMs": 93.013,
+   "parede_s_max": 100.53999999999999,
+   "rss_mb_max": 776.2
+  }
+ },
+ "custo_estimado": {
+  "cpu_s_por_lote_de_80_celulas": 3280.7000000000003,
+  "lotes": 2,
+  "parede_estimada_min_com_8_paralelos": 13.669583333333334,
+  "cpus_da_maquina": 28,
+  "limite_enxame_paralelo": 8
+ }
+}

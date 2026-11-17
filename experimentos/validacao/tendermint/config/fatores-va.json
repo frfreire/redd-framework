@@ -1,0 +1,29 @@
+{
+ "_comentario": "ESPECIFICACAO de V-A do Tendermint (RASCUNHO, etapa 1; nada simulado). Consumida por scripts/gerar-celulas-tm.py. Nenhum valor de pesquisa mora no script. Valores 'a definir com o humano' estao marcados em tm_a_definir.",
+ "bloco": "va",
+ "descricao": "V-A agregado de rede (e por no, das MESMAS celulas): n varia, resto fixo. Tendermint sem ataque (f=0), round-robin (h+r) mod n, lote cheio por altura, sem gerador de carga.",
+ "n": [4, 7, 10, 16, 31],
+ "L": 100,
+ "sementes": 5,
+ "semente_base": 620345,
+ "duracao_s": 120,
+ "attack": null,
+ "prefixo": "tva",
+ "jvm_flags": ["-Xmx2g", "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"],
+ "tm": {
+  "s_tx": 512,
+  "assinatura_voto_B": 64,
+  "assinatura_proponente_B": 64,
+  "overhead_msg_B": 10,
+  "timeouts_s": {"propose": 3.0, "propose_delta": 0.5, "prevote": 1.0, "prevote_delta": 0.5, "precommit": 1.0, "precommit_delta": 0.5}
+ },
+ "tm_a_definir": {
+  "timeouts_s": "A DEFINIR COM O HUMANO (ADR-0015 A-16 a A-21; Q5 sem decisao). Provisorio = padroes do software CometBFT (3000/1000/1000 ms, delta 500 ms) como CONVENCAO (Q5, opcao B), igual para todo n. Justificativa unica: condicao 'zero timeouts disparados sem falha' com folga: o pior atraso analitico de entrega da proposta e ~0,4 s em n=31 (PREREGISTRO secao 4). Se alguma celula integra disparar timeout, o n e INCONCLUSIVO; nao reparametrizar depois de ver dado.",
+  "assinatura_voto_B": "64 B = fixture SEM FONTE (ADR-0015 Q1/A-01; mesmo valor do HotStuff, decisao de 10/11 'mesmo valor do Tendermint'); valor numerico segue a definir com o humano",
+  "assinatura_proponente_B": "64 B = IGUAL ao voto por escolha PROVISORIA (A-02 pede decidir explicitamente; nao decidido); a definir com o humano",
+  "overhead_msg_B": "10 B = fixture sem fonte (A-03/Q3; mesmo valor de pBFT e HotStuff); a definir com o humano",
+  "timeout_commit": "AUSENTE no modelo (Q6 sem decisao; A-22): a vazao do Tendermint simulado e LIMITE SUPERIOR",
+  "POL_na_proposta": "NAO modelada (Q9/A-27 sem decisao): subdimensiona propostas com validRound>=0; irrelevante sem falha (round 0)"
+ },
+ "L_origem": "L=100, s_tx=512: registro de 12/11 e 10/11 (caso central; 512 B sem medicao propria)"
+}

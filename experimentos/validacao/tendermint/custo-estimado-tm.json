@@ -1,0 +1,57 @@
+{
+ "fonte_proxy": "validacao/hotstuff/custo-vb-e7.json (MEDIDO no HotStuff) x r(n)=(2n+1)/8",
+ "fator_r": {
+  "4": 1.125,
+  "7": 1.875,
+  "10": 2.625,
+  "13": 3.375,
+  "16": 4.125,
+  "31": 7.875
+ },
+ "limites": [
+  "NENHUMA celula de Tendermint medida",
+  "taxa de alturas/s do Tendermint desconhecida (assumida igual a do HotStuff)",
+  "custo com ataque nao medido",
+  "n=13 nao medido (max entre n=10 e n=16 no HotStuff)",
+  "build nao incluido"
+ ],
+ "blocos": {
+  "va": {
+   "celulas": 25,
+   "cpu_s_media_x_r": 818,
+   "cpu_s_teto_x_r": 949,
+   "cpu_s_sem_fator_r(HotStuff)": 194,
+   "parede_min_8_paralelos_media": 1.8,
+   "parede_min_8_paralelos_teto": 2.1
+  },
+  "vc": {
+   "celulas": 10,
+   "cpu_s_media_x_r": 179,
+   "cpu_s_teto_x_r": 244,
+   "cpu_s_sem_fator_r(HotStuff)": 59,
+   "parede_min_8_paralelos_media": 0.4,
+   "parede_min_8_paralelos_teto": 0.5
+  },
+  "vb": {
+   "celulas": 180,
+   "cpu_s_media_x_r": 8880,
+   "cpu_s_teto_x_r": 10321,
+   "cpu_s_sem_fator_r(HotStuff)": 3376,
+   "parede_min_8_paralelos_media": 19.9,
+   "parede_min_8_paralelos_teto": 23.2
+  }
+ },
+ "total": {
+  "celulas": 215,
+  "cpu_s_media": 9876,
+  "cpu_s_teto": 11515,
+  "parede_min_8_paralelos_media": 22.2,
+  "parede_min_8_paralelos_teto": 25.8,
+  "parede_min_teto_x3": 77.5
+ },
+ "determinismo_extra": {
+  "celulas_repetidas": 4,
+  "nota": "va_n31_s01, va_n7_s01, vc_n16_s01, vb_n13_f05_s01 (mesma semente, 2a execucao), fora das estatisticas"
+ },
+ "memoria": "RSS maximo medido no HotStuff 501 MB; o Tendermint retem O(n) votos por (altura, round): 8 paralelos de n<=31 devem caber; NAO medido"
+}

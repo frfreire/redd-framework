@@ -109,23 +109,26 @@ public class ByzantineSweep {
         // validadores/votantes do protocolo (Q30 A, Q32 A). Faixa BFT: f > floor(|universo|-1)/3) falha ALTO antes de gravar
         // qualquer coisa, salvo --allow-beyond-bft-threshold=true (modo explicito, rotulado no CSV).
         final int step = Math.max(1, n / 100); // step corresponds to ~1% of N
-        final java.util.List<Integer> fValues = new java.util.ArrayList<>();
-        fValues.add(0); // include the 0-byzantine case
-        for (int v = step; v <= maxByz; v += step) {
-            fValues.add(v);
-        }
         final boolean allowBeyond = ByzantineConfig.parseAllowBeyondBftThreshold(cli.get(ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD));
         final int universeSize = universeSize(type, n, sizing);
+        // Divida aceita (ADR-0015, BYZ-UNICA parte 3 -> D2): o teto do laco e ANTES de montar fValues. max-byz > universo falha
+        // ALTO aqui, com mensagem clara, e nunca chega a iterar: sem `v += step` perto de Integer.MAX_VALUE (overflow para
+        // negativo = laco sem fim e memoria esgotada). A flag --allow-beyond-bft-threshold NAO libera f > universo (so f >
+        // floor((n-1)/3), mais abaixo): nao ha sorteio possivel de mais bizantinos que validadores. Para max-byz <= universo o
+        // laco e o mesmo de antes (mesmos f, mesma ordem, mesma saida).
+        if (maxByz > universeSize) {
+            throw new IllegalArgumentException("contagem bizantina f=" + maxByz + " (--max-byz) maior que o universo de sorteio ("
+                    + universoRotulo(type) + ", " + universeSize + " no(s)) no tipo " + type
+                    + ": so validadores/votantes sao sorteados (ADR-0015 Q30/Q32). Reduza --max-byz; a flag --"
+                    + ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD + " nao libera f > universo");
+        }
+        final java.util.List<Integer> fValues = new java.util.ArrayList<>();
+        fValues.add(0); // include the 0-byzantine case
+        for (long v = step; v <= maxByz; v += step) { // long: v + step nao estoura int mesmo com n proximo de Integer.MAX_VALUE
+            fValues.add((int) v); // v <= maxByz <= universo <= Integer.MAX_VALUE
+        }
         final java.util.List<String> beyondLines = new java.util.ArrayList<>();
         final StringBuilder fora = new StringBuilder();
-        for (int f : fValues) {
-            if (f > universeSize) {
-                throw new IllegalArgumentException("contagem bizantina f=" + f + " maior que o universo de sorteio ("
-                        + universoRotulo(type) + ", " + universeSize + " no(s)) no tipo " + type
-                        + ": so validadores/votantes sao sorteados (ADR-0015 Q30/Q32). Reduza --max-byz; a flag --"
-                        + ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD + " nao libera f > universo");
-            }
-        }
         if (bftApplies(type)) {
             for (int f : fValues) {
                 if (ByzantineConfig.beyondBftThreshold(universeSize, f)) {

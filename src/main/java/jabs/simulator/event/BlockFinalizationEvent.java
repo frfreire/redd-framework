@@ -17,6 +17,8 @@ public class BlockFinalizationEvent extends AbstractLogEvent {
     private final Block block;
     private final long trafficUntilFinalization; // in bytes, C_B_total
     private final long consensusMessageTraffic;  // in bytes, C_B_consenso, or NOT_MEASURED
+    private final long selfDeliveryTraffic;           // in bytes, autoentrega (D2), or NOT_MEASURED
+    private final long selfDeliveryConsensusTraffic;  // in bytes, parte so-consenso da autoentrega, or NOT_MEASURED
 
     public BlockFinalizationEvent(double time, Node node, Block block, long trafficUntilFinalization) {
         this(time, node, block, trafficUntilFinalization, NOT_MEASURED);
@@ -24,11 +26,25 @@ public class BlockFinalizationEvent extends AbstractLogEvent {
 
     public BlockFinalizationEvent(double time, Node node, Block block, long trafficUntilFinalization,
                                   long consensusMessageTraffic) {
+        this(time, node, block, trafficUntilFinalization, consensusMessageTraffic, NOT_MEASURED, NOT_MEASURED);
+    }
+
+    /**
+     * D2 (ADR-0015, registro de 10/11/2026): {@code selfDeliveryTraffic} e a parte do trafego que o PROPRIO no
+     * entregou a si mesmo (Packet.getFrom() == receptor), FORA de {@code trafficUntilFinalization} (C_B principal), e
+     * {@code selfDeliveryConsensusTraffic} a parte so-consenso dela. {@link #NOT_MEASURED} (-1) = o protocolo produtor
+     * nao separa a autoentrega (nunca zero: zero e zero medido).
+     */
+    public BlockFinalizationEvent(double time, Node node, Block block, long trafficUntilFinalization,
+                                  long consensusMessageTraffic, long selfDeliveryTraffic,
+                                  long selfDeliveryConsensusTraffic) {
         super(time);
         this.node = node;
         this.block = block;
         this.trafficUntilFinalization = trafficUntilFinalization;
         this.consensusMessageTraffic = consensusMessageTraffic;
+        this.selfDeliveryTraffic = selfDeliveryTraffic;
+        this.selfDeliveryConsensusTraffic = selfDeliveryConsensusTraffic;
     }
 
     public Node getNode() {
@@ -50,5 +66,15 @@ public class BlockFinalizationEvent extends AbstractLogEvent {
      */
     public long getConsensusMessageTraffic() {
         return consensusMessageTraffic;
+    }
+
+    /** Autoentrega (D2) do bloco neste no, em bytes (total), ou {@link #NOT_MEASURED} se o protocolo nao a separa. */
+    public long getSelfDeliveryTraffic() {
+        return selfDeliveryTraffic;
+    }
+
+    /** Parte so-consenso da autoentrega (D2), ou {@link #NOT_MEASURED}. */
+    public long getSelfDeliveryConsensusTraffic() {
+        return selfDeliveryConsensusTraffic;
     }
 }

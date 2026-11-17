@@ -597,6 +597,37 @@ public class SimulationMetrics {
     public List<Long> getBlockFinalizationTimes() { return blockFinalizationTimes; }
     public List<Long> getBlockTraffics() { return blockTraffics; }
 
+    // ===== D2 (ADR-0015, registro de 10/11/2026): AUTOENTREGA fora do C_B principal, coluna propria =====
+    // Aditivo: mesma populacao do Cb (primeiro no a finalizar cada altura). -1 = nao medido, nunca zero.
+    public static final double SELF_DELIVERY_NOT_MEASURED = -1.0;
+    private long totalSelfDelivery;
+    private int selfDeliveryBlockCount;
+    private long totalSelfDeliveryConsensus;
+    private int selfDeliveryConsensusBlockCount;
+
+    /** Autoentrega (bytes) do no que finalizou primeiro a altura; {@code <0} (sentinela) = protocolo nao a separa: ignora. */
+    public void recordSelfDelivery(long totalBytes, long consensusBytes) {
+        if (totalBytes >= 0) {
+            totalSelfDelivery += totalBytes;
+            selfDeliveryBlockCount++;
+        }
+        if (consensusBytes >= 0) {
+            totalSelfDeliveryConsensus += consensusBytes;
+            selfDeliveryConsensusBlockCount++;
+        }
+    }
+
+    /** Media (bytes/bloco) da autoentrega, ou {@link #SELF_DELIVERY_NOT_MEASURED} se nao medida (nunca 0). */
+    public double getAverageSelfDeliveryBytesPerBlock() {
+        return selfDeliveryBlockCount == 0 ? SELF_DELIVERY_NOT_MEASURED : totalSelfDelivery / (double) selfDeliveryBlockCount;
+    }
+
+    /** Media (bytes/bloco) da parte so-consenso da autoentrega, ou a sentinela. */
+    public double getAverageSelfDeliveryConsensusBytesPerBlock() {
+        return selfDeliveryConsensusBlockCount == 0 ? SELF_DELIVERY_NOT_MEASURED
+                : totalSelfDeliveryConsensus / (double) selfDeliveryConsensusBlockCount;
+    }
+
     // ===== HS-CB-fase2 (parte A): C_B do primeiro no por altura e SOMA DA REDE =====
     // Aditivo: nao altera recordBlockTraffic nem os acumuladores acima. Chave int (altura); TreeMap por valor.
     private final TreeMap<Integer, Long> firstNodeCbByHeight = new TreeMap<>();

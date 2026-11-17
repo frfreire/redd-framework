@@ -1,0 +1,28 @@
+{
+ "id": "conf_rotating_L100_n128_cargaestacionaria_f00_s07",
+ "protocolo": "HOTSTUFF",
+ "n": 128,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 170352,
+ "replicacao": 7,
+ "duracao_s": 1807,
+ "simulador_commit": "d574e6048314c1d131979807b54814231e29c82d",
+ "gerado_em": "2026-11-13T17:18:54+00:00",
+ "variante": {
+  "max_future_view_horizon": 1000,
+  "s_tx": 512,
+  "sig_individual_B": 64,
+  "sig_agregada_B": 96,
+  "share_agregada_B": 96,
+  "overhead_msg_B": 10,
+  "signature_mode": "INDIVIDUAL",
+  "voter_encoding": "BITMAP",
+  "view_timeout_s": 3.396,
+  "L": 100,
+  "leader_policy": "ROTATING",
+  "attack": null
+ },
+ "grupo": "ROTATING_L100_n128",
+ "fatores_origem": "experimentos/piloto-timeout-hotstuff/confirmacao/config/fatores-confirmacao-L100.json"
+}

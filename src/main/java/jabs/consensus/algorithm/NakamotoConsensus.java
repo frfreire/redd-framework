@@ -18,6 +18,7 @@ public class NakamotoConsensus<B extends SingleParentBlock<B>, T extends Tx<T>>
     private final int confirmationDepth;
     // Track traffic per block (in bytes) until finalization
     private final Map<B, Long> blockTraffic = new HashMap<>();
+    private final Map<B, Long> selfDeliveryTraffic = new HashMap<>(); // D2: autoentrega, fora do C_B
 
     public NakamotoConsensus(LocalBlockTree<B> localBlockTree, NakamotoConsensusConfig nakamotoConsensusConfig) {
         super(localBlockTree);
@@ -61,7 +62,9 @@ public class NakamotoConsensus<B extends SingleParentBlock<B>, T extends Tx<T>>
             // Also emit a BlockFinalizationEvent so metrics collectors receive finalization notifications
             long traffic = blockTraffic.getOrDefault(highestConfirmedBlock, 0L);
             simulator.putEvent(
-                    new BlockFinalizationEvent(currentTime, this.peerDLTNode, highestConfirmedBlock, traffic),
+                    new BlockFinalizationEvent(currentTime, this.peerDLTNode, highestConfirmedBlock, traffic,
+                            BlockFinalizationEvent.NOT_MEASURED, getSelfDeliveryTraffic(highestConfirmedBlock),
+                            BlockFinalizationEvent.NOT_MEASURED),
                     0);
             // Record acceptance for BFT metrics
             recordBlockAcceptance(highestConfirmedBlock);
@@ -71,6 +74,31 @@ public class NakamotoConsensus<B extends SingleParentBlock<B>, T extends Tx<T>>
     // Allow network/node code to report bytes observed for a block
     public void addBlockTraffic(B block, long bytes) {
         blockTraffic.put(block, blockTraffic.getOrDefault(block, 0L) + bytes);
+    }
+
+    @Override
+    public boolean separatesSelfDelivery() {
+        return true;
+    }
+
+    /**
+     * D2 (ADR-0015, registro de 10/11/2026): AUTOENTREGA = o bloco que o produtor entrega a si mesmo por chamada direta
+     * (Packet(self, self), sem fila de envio nem latencia). Nao e C_B (regra 6 do AGENTS.md): fica FORA de
+     * {@link #addBlockTraffic} e vai para este contador proprio, lido na emissao do BlockFinalizationEvent (coluna
+     * propria; o C_B principal = total antigo - autoentrega). So contabilidade: nenhum evento muda de tempo ou de ordem.
+     */
+    public void addSelfDeliveryBlockTraffic(B block, long bytes) {
+        selfDeliveryTraffic.put(block, selfDeliveryTraffic.getOrDefault(block, 0L) + bytes);
+    }
+
+    /** C_B acumulado neste no para o bloco (so pacote que passou pela rede simulada; 0 se nada). */
+    public long getBlockTraffic(B block) {
+        return blockTraffic.getOrDefault(block, 0L);
+    }
+
+    /** Autoentrega acumulada para o bloco neste no (0 se nada: zero medido). */
+    public long getSelfDeliveryTraffic(B block) {
+        return selfDeliveryTraffic.getOrDefault(block, 0L);
     }
 
     public double getAverageBlockMiningInterval() {

@@ -141,6 +141,11 @@ public class MVPComparison {
         // a saida dos demais e byte a byte a de antes (mvp-results.csv nunca muda).
         String cbCsv = cbCsvPath(csvOut);
         boolean cbCsvStarted = false;
+        // D2 (ADR-0015): coluna PROPRIA de autoentrega, num terceiro arquivo ADITIVO (mvp-results-autoentrega.csv), so para
+        // os protocolos que a contavam (ARQ, MCO2, TREE, AMBIFY, OFFSET, EARTH). mvp-results.csv nao ganha coluna: a saida
+        // de DAGSPER/HOTSTUFF/TENDERMINT segue byte a byte a de antes. Sem esses protocolos o arquivo nem e criado.
+        String selfCsv = selfDeliveryCsvPath(csvOut);
+        boolean selfCsvStarted = false;
 
         for (int validators : validatorsList) {
             System.out.println("\n╔═══════════════════════════════════════╗");
@@ -178,6 +183,8 @@ public class MVPComparison {
                             metrics.getAverageTrafficPerBlock(),
                             metrics.getAverageTransactionConfirmationLatency()
                         );
+                        acc.addSelfDelivery(metrics.getAverageSelfDeliveryBytesPerBlock(),
+                            metrics.getAverageSelfDeliveryConsensusBytesPerBlock());
                         
                         if (cbPool != null && metrics.getCbRede() != null) {
                             cbPool.add(metrics.getCbRede());
@@ -193,6 +200,13 @@ public class MVPComparison {
                 // After all trials for this protocol/validators, write to CSV
                 System.out.println("    → Writing results for " + protocol + " (n=" + validators + ") to CSV");
                 writeSingleResultToCSV(csvOut, protocol, validators, trials, acc);
+                if (hasSelfDeliveryColumn(protocol)) {
+                    if (!selfCsvStarted) {
+                        initializeSelfDeliveryCSV(selfCsv);
+                        selfCsvStarted = true;
+                    }
+                    appendSelfDeliveryCSV(selfCsv, protocol, validators, trials, acc);
+                }
                 if (hasCbRede(protocol)) {
                     if (!cbCsvStarted) {
                         initializeCbCSV(cbCsv, cbHeaderLines);
@@ -919,6 +933,64 @@ public class MVPComparison {
         return csvOut.endsWith(".csv") ? csvOut.substring(0, csvOut.length() - 4) + "-cb.csv" : csvOut + "-cb.csv";
     }
 
+    /** {@code .../mvp-results.csv} -&gt; {@code .../mvp-results-autoentrega.csv} (D2; mesma regra de {@link #cbCsvPath}). */
+    static String selfDeliveryCsvPath(String csvOut) {
+        // StringBuilder, nao '+': roda ANTES da simulacao e uma concatenacao nova (invokedynamic) consome hash de identidade
+        return csvOut.endsWith(".csv")
+                ? new StringBuilder(csvOut.substring(0, csvOut.length() - 4)).append("-autoentrega.csv").toString()
+                : new StringBuilder(csvOut).append("-autoentrega.csv").toString();
+    }
+
+    /**
+     * D2: protocolos que CONTAVAM a autoentrega e agora a separam (PBFT = ARQ; Casper = MCO2/TREE; Parlia = AMBIFY;
+     * Nakamoto = OFFSET/EARTH). DAGSPER, HOTSTUFF e TENDERMINT ja a filtravam: sem coluna, saida inalterada.
+     */
+    static boolean hasSelfDeliveryColumn(String protocol) {
+        String p = normalizeProtocol(protocol);
+        return "ARQ".equals(p) || "MCO2".equals(p) || "TREE".equals(p) || "AMBIFY".equals(p)
+                || "OFFSET".equals(p) || "EARTH".equals(p);
+    }
+
+    static final String[] SELF_DELIVERY_COMMENTS = {
+        "# mvp-results-autoentrega.csv: coluna PROPRIA e ADITIVA da AUTOENTREGA (D2, ADR-0015 registro de 10/11/2026) so para ARQ, MCO2, TREE, AMBIFY, OFFSET e EARTH; os demais protocolos NAO tem linha aqui (ja filtravam a autoentrega; mvp-results.csv segue como era). Separador ';'. -1 = nao medido (nunca zero).",
+        "# Autoentrega = pacote que o proprio no entrega a si mesmo (Packet.getFrom() == receptor). NAO e C_B (regra 6 do AGENTS.md: so conta pacote que passou pela rede simulada) e por isso esta FORA de Cb_avg/Cb_std do mvp-results.csv. Unidade: bytes (Cb_avg e em MB).",
+        "# Cb_autoentrega_avg_B / _std_B: media e desvio (amostral, entre trials) da media por bloco da autoentrega do no que finalizou primeiro cada altura (a MESMA populacao do Cb_avg). Cb_autoentrega_consenso_avg_B: parte so-consenso; -1 para Casper/Parlia/Nakamoto (nao decompoem consenso) e para o PBFT quando nada foi medido.",
+        "# Contabilidade apenas: o pacote de autoentrega continua percorrendo o simulador como antes (PBFT: fila de envio e latencia; blocos: chamada direta); so o destino do byte contado muda."
+    };
+    static final String SELF_DELIVERY_HEADER =
+            "project;n;trials;Cb_autoentrega_avg_B;Cb_autoentrega_std_B;Cb_autoentrega_consenso_avg_B";
+
+    private static void initializeSelfDeliveryCSV(String path) throws IOException {
+        try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(path))) {
+            for (String c : SELF_DELIVERY_COMMENTS) {
+                bw.write(c);
+                bw.write('\n');
+            }
+            bw.write(SELF_DELIVERY_HEADER);
+            bw.write('\n');
+        }
+    }
+
+    /** Uma linha por (protocolo, n); sem trial medido, tudo -1 (nao medido), nunca zero. */
+    private static void appendSelfDeliveryCSV(String path, String protocol, int n, int trials, MetricsAccumulator acc)
+            throws IOException {
+        try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(path),
+                java.nio.file.StandardOpenOption.APPEND)) {
+            bw.write(selfDeliveryLine(protocol, n, trials, acc.selfAvg(), acc.selfStd(), acc.selfConsensusAvg()));
+            bw.write('\n');
+        }
+    }
+
+    /** Formata a linha de autoentrega; {@code -1} (sentinela) sai como inteiro {@code -1}. */
+    static String selfDeliveryLine(String protocol, int n, int trials, double avg, double std, double consensusAvg) {
+        return String.format(java.util.Locale.ROOT, "%s;%d;%d;%s;%s;%s", protocol, n, trials,
+                selfFmt(avg), selfFmt(std), selfFmt(consensusAvg));
+    }
+
+    private static String selfFmt(double v) {
+        return v < 0 ? "-1" : String.format(java.util.Locale.ROOT, "%.3f", v);
+    }
+
     /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): so HOTSTUFF e TENDERMINT. Os demais: nao medido. */
     static boolean hasCbRede(String protocol) {
         String p = normalizeProtocol(protocol);
@@ -1019,6 +1091,30 @@ public class MVPComparison {
         private double sumCb = 0.0, sumCbSq = 0.0;
         private double sumTt = 0.0, sumTtSq = 0.0;
         private int count = 0;
+        // D2: autoentrega (bytes por bloco, media do trial); trial sem medida (sentinela <0) nao entra
+        private double sumSelf = 0.0, sumSelfSq = 0.0, sumSelfCons = 0.0;
+        private int selfCount = 0, selfConsCount = 0;
+
+        void addSelfDelivery(double selfAvgBytes, double selfConsensusAvgBytes) {
+            if (selfAvgBytes >= 0) {
+                sumSelf += selfAvgBytes;
+                sumSelfSq += selfAvgBytes * selfAvgBytes;
+                selfCount++;
+            }
+            if (selfConsensusAvgBytes >= 0) {
+                sumSelfCons += selfConsensusAvgBytes;
+                selfConsCount++;
+            }
+        }
+
+        double selfAvg() { return selfCount > 0 ? sumSelf / selfCount : -1.0; }
+        double selfConsensusAvg() { return selfConsCount > 0 ? sumSelfCons / selfConsCount : -1.0; }
+        double selfStd() {
+            if (selfCount == 0) return -1.0;
+            if (selfCount == 1) return 0.0;
+            double var = (sumSelfSq - (sumSelf * sumSelf) / selfCount) / (selfCount - 1);
+            return Math.sqrt(Math.max(0, var));
+        }
 
         void addTrial(double tb, double cb, double tt) {
             sumTb += tb;

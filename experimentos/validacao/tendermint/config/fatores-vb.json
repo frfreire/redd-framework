@@ -1,0 +1,26 @@
+{
+ "_comentario": "ESPECIFICACAO de V-B do Tendermint (RASCUNHO; NAO executar antes do pino e do commit do pre-registro). Ataque EQUIVOCATION do Tendermint (D3b-tendermint-equivocation) com particao por INDICE provisoria (Q28: B-34/B-35/B-36). V-B mede VIVACIDADE sob equivocacao com essa particao, NAO seguranca e NAO ruptura em 1/3 em geral.",
+ "bloco": "vb",
+ "n": [4, 7, 10, 13],
+ "f_de": 0,
+ "f_ate": "floor((n-1)/3)+1",
+ "L": 100,
+ "sementes": 10,
+ "semente_base": 820345,
+ "duracao_s": 300,
+ "t_viva_s": 20.0,
+ "min_exec": 6,
+ "attack": "EQUIVOCATION",
+ "flag_fora_da_faixa": "--allow-beyond-bft-threshold=true (no ObservadorTm; o MVPComparison NAO le --attack para TENDERMINT, ver PREREGISTRO secao 6)",
+ "prefixo": "tvb",
+ "jvm_flags": ["-Xmx2g", "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"],
+ "tm": {
+  "s_tx": 512,
+  "assinatura_voto_B": 64,
+  "assinatura_proponente_B": 64,
+  "overhead_msg_B": 10,
+  "timeouts_s": {"propose": 3.0, "propose_delta": 0.5, "prevote": 1.0, "prevote_delta": 0.5, "precommit": 1.0, "precommit_delta": 0.5}
+ },
+ "tm_a_definir": "idem fatores-va.json. Sob falha o criterio 'zero timeouts' NAO se aplica; os timeouts so fixam o tempo de recuperacao por round (3 s + ~1 s por round falho).",
+ "tolerancia": "criterio inteiro: ruptura em f* = floor((n-1)/3)+1 (decisao do humano, 16/11/2026, ja vigente para o HotStuff; aplicar ao Tendermint e PROPOSTA, aguarda confirmacao); 1 p.p. nao testavel com n<=13"
+}

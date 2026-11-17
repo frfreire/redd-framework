@@ -1,0 +1,14 @@
+{
+ "id": "conf_rotating_L100_n128_cargaestacionaria_f00_s06",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 45.9,
+ "tempo_parede_observador_s": 47.47,
+ "max_rss_mb": 735.9,
+ "csv_mvp": "hotstuff-128v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "aa23a9633af8bbfed18e5765b29c0235",
+ "blocos_mvp": 2213,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "aa23a9633af8bbfed18e5765b29c0235",
+ "blocos_obs": 2213
+}

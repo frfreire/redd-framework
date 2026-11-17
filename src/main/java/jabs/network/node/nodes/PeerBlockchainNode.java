@@ -48,18 +48,32 @@ public abstract class PeerBlockchainNode<B extends SingleParentBlock<B>, T exten
             Data data = ((DataMessage) message).getData();
             if (data instanceof Block) {
                 B block = (B) data;
-                // Track traffic for this block (Parlia)
+                // Track traffic for this block (Parlia). D2 (ADR-0015): o bloco que o produtor entrega a si mesmo
+                // (EthereumMinerNode/BitcoinMinerNode#generateNewBlock, Packet(self, self) por chamada direta, sem fila)
+                // NAO e C_B; vai para a coluna propria de autoentrega.
                 if (this.consensusAlgorithm instanceof Parlia) {
-                    ((Parlia<B, T>) this.consensusAlgorithm).addBlockTraffic(block, packet.getSize());
+                    if (isLocalSelfDelivery(packet)) {
+                        ((Parlia<B, T>) this.consensusAlgorithm).addSelfDeliveryBlockTraffic(block, packet.getSize());
+                    } else {
+                        ((Parlia<B, T>) this.consensusAlgorithm).addBlockTraffic(block, packet.getSize());
+                    }
                 }
-                // Track traffic for this block (CasperFFG)
+                // Track traffic for this block (CasperFFG); mesma regra de autoentrega
                 if (this.consensusAlgorithm instanceof CasperFFG) {
-                    ((CasperFFG<B, T>) this.consensusAlgorithm).addBlockTraffic(block, packet.getSize());
+                    if (isLocalSelfDelivery(packet)) {
+                        ((CasperFFG<B, T>) this.consensusAlgorithm).addSelfDeliveryBlockTraffic(block, packet.getSize());
+                    } else {
+                        ((CasperFFG<B, T>) this.consensusAlgorithm).addBlockTraffic(block, packet.getSize());
+                    }
                 }
-                    // Track traffic for this block (Nakamoto / Bitcoin)
-                    if (this.consensusAlgorithm instanceof NakamotoConsensus) {
+                // Track traffic for this block (Nakamoto / Bitcoin); mesma regra de autoentrega
+                if (this.consensusAlgorithm instanceof NakamotoConsensus) {
+                    if (isLocalSelfDelivery(packet)) {
+                        ((NakamotoConsensus<B, T>) this.consensusAlgorithm).addSelfDeliveryBlockTraffic(block, packet.getSize());
+                    } else {
                         ((NakamotoConsensus<B, T>) this.consensusAlgorithm).addBlockTraffic(block, packet.getSize());
                     }
+                }
                 // Track traffic for this block (DAGsper, ADR-0006 tarefa 4): todo pacote que chegou a este no PELA
                 // REDE SIMULADA conta (packet.getSize()), antes do filtro de duplicata. O bloco que o minerador
                 // entrega a si mesmo (EthereumMinerNode#generateNewBlock, Packet(self, self) direto) nao e trafego.
@@ -165,14 +179,22 @@ public abstract class PeerBlockchainNode<B extends SingleParentBlock<B>, T exten
                 PBFT<B, T> pbft = (PBFT<B, T>) this.consensusAlgorithm;
                 PBFTBlockVote<B> blockVote = (PBFTBlockVote<B>) vote;
                 B votedBlock = blockVote.getBlock();
-                // C_B_total: pacote inteiro (PRE_PREPARE carrega o bloco).
-                pbft.addBlockTraffic(votedBlock, packet.getSize());
                 // C_B_consenso: PRE_PREPARE so conta o overhead fixo do anuncio; PREPARE/COMMIT carregam
                 // apenas o hash do bloco e contam inteiros.
                 long consensusOnlyBytes = (blockVote.getVoteType() == PBFTBlockVote.VoteType.PRE_PREPARE)
                         ? PBFTBlockVote.PBFT_VOTE_SIZE_OVERHEAD
                         : packet.getSize();
-                pbft.addConsensusMessageTraffic(votedBlock, consensusOnlyBytes);
+                if (isLocalSelfDelivery(packet)) {
+                    // D2 (ADR-0015): a autoentrega NAO e C_B (regra 6 do AGENTS.md). No PBFT ela PERCORRE a rede
+                    // simulada (o broadcast do PBFTP2P inclui o remetente), entao o pacote segue ocupando fila e
+                    // latencia: so a CONTABILIDADE muda, o byte vai para a coluna propria.
+                    pbft.addSelfDeliveryBlockTraffic(votedBlock, packet.getSize());
+                    pbft.addSelfDeliveryConsensusTraffic(votedBlock, consensusOnlyBytes);
+                } else {
+                    // C_B_total: pacote inteiro (PRE_PREPARE carrega o bloco).
+                    pbft.addBlockTraffic(votedBlock, packet.getSize());
+                    pbft.addConsensusMessageTraffic(votedBlock, consensusOnlyBytes);
+                }
             }
             // DAGsper (ADR-0006 tarefa 4): conta antes do filtro alreadySeenVotes (duplicata tambem consumiu
             // banda), mas so pacote que chegou pela rede simulada. O voto que o no entrega a si mesmo em
@@ -260,11 +282,11 @@ public abstract class PeerBlockchainNode<B extends SingleParentBlock<B>, T exten
     }
 
     /**
-     * Convencao de trafego recebido do DAGsper (ADR-0006, tarefa 4): so conta pacote que percorreu a rede
-     * simulada. Entrega local direta (Packet com from == este no, passada por chamada a processIncomingPacket
-     * sem passar pela fila de envio) nao e trafego. Usado SOMENTE pelo hook do DAGsper; PBFT/Parlia/Casper/
-     * Nakamoto mantem a contagem anterior (no PBFT o broadcast de rede inclui o remetente, entao
-     * from == this ali e trafego de rede e nao pode ser filtrado).
+     * Regra UNIFORME de autoentrega (D2, ADR-0015 registro de 10/11/2026; antes, so DAGsper/HotStuff/Tendermint):
+     * pacote com {@code from == este no} NAO e C_B (regra 6 do AGENTS.md: so conta pacote que passou pela rede
+     * simulada). Vale para TODOS os protocolos. Onde o protocolo antes contava a autoentrega (PBFT, Parlia, Casper,
+     * Nakamoto) o byte agora vai para a COLUNA PROPRIA de autoentrega, nunca some. No PBFT o pacote de autoentrega
+     * ainda percorre a fila de envio (o broadcast inclui o remetente): a regra e de contabilidade, nao de dinamica.
      */
     private boolean isLocalSelfDelivery(Packet packet) {
         return packet.getFrom() == this;

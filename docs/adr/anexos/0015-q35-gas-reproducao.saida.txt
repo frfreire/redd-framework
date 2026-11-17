@@ -1,0 +1,21 @@
+== Gas (tabela com 20 probs e 21 bins) ==
+soma das 20 entradas: 0.799744; soma das 19 testadas pelo laco: 0.776623
+P(gas == bins[ultimo]=12475587) = 1 - soma das testadas = 0.2234  (22.34%)
+gas medio por tx (exato, sob a regra do laco): 2909772
+12_500_000 / gas medio = 4.30 tx por bloco (razao de medias, NAO o numero amostrado)
+duas tx de gas maximo cabem? 2*12475587 = 24951174 > 12500000: NAO
+
+== Tamanho (tabela com 13 probs e 14 bins) ==
+soma das 13 entradas: 0.992104; soma das 12 testadas: 0.991692
+P(tamanho == 296985 B) = 0.0083 (0.83%); tamanho medio por tx: 2873 B
+
+== Monte Carlo (Python random; ordem de grandeza) ==
+semente 1: gigantes=0.2240 ; tx por bloco: media=3.73 mediana=2 p10=1 p90=9 min=1 max=53
+semente 2: gigantes=0.2220 ; tx por bloco: media=3.71 mediana=2 p10=1 p90=9 min=1 max=43
+semente 3: gigantes=0.2234 ; tx por bloco: media=3.70 mediana=2 p10=1 p90=9 min=1 max=37
+
+== Trava g*L <= limite (Q35 A (i)) ==
+L=10: g maximo = floor(12500000/L) = 1250000
+L=100: g maximo = floor(12500000/L) = 125000
+L=500: g maximo = floor(12500000/L) = 25000
+menor bin da tabela: 21001; menor bin <= 25000? True

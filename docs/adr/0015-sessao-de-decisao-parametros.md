@@ -834,3 +834,372 @@ Contexto do pedido: tarefa `D3a-2a-2c-3-hotstuff-troca-visao` (commit `45eb3e7`)
 6. **Bytes sem fonte:** o overhead de 10 B tem sensibilidade baixa (0,31 % a 0,69 % em D) e não bloqueia. O tamanho da assinatura ECDSA no Fabric será medido pelo `redd-ponte` em transação real (substitui o 64 B e a estimativa DER). INDIVIDUAL é o modo principal; AGGREGATED só com fonte do esquema BLS.
 
 **Continua com o humano:** valor final de `--hs-view-timeout` (após a confirmação), SILENT e backoff, fonte dos tamanhos agregados.
+
+
+---
+## Registro 16/11/2026 — K40 do timeout, V-ABC do HotStuff, flag fora da faixa BFT e Q32/Q29/Q15/Q14/Q33 (humano)
+
+**Natureza deste registro.** Anexo datado, como os anteriores: não reescreve nada acima. Registra decisões do humano de 16/11/2026 e resultados que as motivaram. Rótulos: **[FONTE]** = li o arquivo citado nesta data; **[C]** = cálculo meu; **ESCOLHIDO** = decisão de projeto sem fonte externa (como no registro de 10/11). Onde digo "não confirmado", não achei a afirmação em fonte lida. As decisões do humano constam em `.ia/rodadas/loop2-jabs-codigo.jsonl` e `.ia/rodadas/loop3-resultado-decisao.jsonl` (entradas de 2026-11-16, citadas por tarefa); os números vêm dos pareceres do proponente (`jabs-experimento`), citados por caminho. Este registro não aceita o ADR-0000 nem fixa valor de pesquisa que o humano não tenha fixado.
+
+### (a) K40: confirmação do timeout do HotStuff em n = 64 e 128 (loop 3, impacto ALTO, sem arbiter)
+
+**Fonte do resultado:** [FONTE] `experimentos/piloto-timeout-hotstuff/confirmacao-k40/PARECER-TECNICO.json` (proponente, 13/11/2026; pré-registro `experimentos/piloto-timeout-hotstuff/confirmacao-k40/PREREGISTRO.md`, commit `06c67b5`, simulador de código igual ao de `9f305dd`). **Fonte das decisões:** `.ia/rodadas/loop3-resultado-decisao.jsonl`, tarefa `PILOTO-timeout-hotstuff-K40`, entrada do humano de 2026-11-16T13:52:24Z. [FONTE] O parecer de K40 aparece como arquivo **não versionado** em `git status` em 16/11/2026 (o pré-registro e os scripts estão versionados).
+
+**Resultado medido (resumo; ROTATING, L=100, f=0, carga estacionária saturada, 80 células, 0 timeouts disparados):**
+
+| n | T do piloto (s) | T/2 (s) | UB primário (s) | Veredito pré-registrado | Células com M_c > T/2 |
+|---|---|---|---|---|---|
+| 64 | 2,065 | 1,0325 | 0,7400 | PASSA | 0 de 40 |
+| 128 | 3,396 | 1,698 | 1,1397 | PASSA | 0 de 40 |
+
+[FONTE] K40-3 e K40-4. O secundário (N efetivo) em n = 128 ficou **INCONCLUSIVO** (N_eff 5 299 < 36 887; DEFF 16,33), previsto no pré-registro; em n = 64 passou (N_eff 51 066) (K40-6). O rótulo descritivo **H-cel** (θ̂ ≈ 1,0 em p99,9) é "NÃO CONTRADITA pela evidência descritiva" e **não é prova** (K40-5, ameaça A1). O parecer afirma que, pela regra pré-registrada, o veredito é "PASSA" e não "PASSA condicionado a H-cel"; a redação "condicionado a H-cel" é a do critic (entrada de 14/11 no mesmo `.jsonl`) e foi a adotada pelo humano abaixo.
+
+**Decisões do humano (16/11/2026), ESCOLHIDO:**
+
+1. **O critério primário por célula decide.** Resultado: **PASSA condicionado a H-cel** em n = 64 e n = 128, com H-cel como **hipótese de trabalho** (evidência descritiva, não prova). Isso responde a pergunta aberta do parecer sobre o peso do secundário (`a_definir_com_o_humano`, itens 2 e 3): em n = 128 o PASSA depende só do primário.
+2. **T candidatos (m = 3, L = 100): 0,918 / 1,090 / 2,065 / 3,396 s para n = 4 / 16 / 64 / 128.** Candidatos, não valor final. Segundo o registro do humano, n = 4 e n = 16 ficam fixados **por decisão, sem nova rodada** (o parecer K40-10 diz que n = 16 falhou na confirmação anterior, com UB 0,6856 s > 0,545 s, e que n = 4 e n = 16 não foram tratados na K40).
+3. **T é circular** (sai do D̂ p99,99 do próprio piloto) e **não houve teste com T menor** (K40-7, ameaça A2). O T mínimo "exigido pelo método" (2·UB: 1,480 s em n = 64 e 2,279 s em n = 128) é circular e **não é recomendação** (K40-7). Nada se afirma sobre o regime com T menor.
+4. **Dispensa do V-ABC nesta rodada, registrada por escrito.** O humano já a havia comunicado em 13/11 (mesmo `.jsonl`, entrada de 2026-11-13T23:40:12Z: a rodada só mede D sem ataque, não compara protocolos, e o resultado não vai ao artigo antes do V-ABC). Este item fecha o desvio D1 do parecer K40 (que não achou registro escrito em `.ia/` nem em `docs/adr/`). O V-ABC do HotStuff foi aceito depois, na mesma data (item b); se a restrição "não vai ao artigo antes do V-ABC" já está satisfeita, é decisão do humano, **não registrada**.
+5. As rodadas anteriores de confirmação (`PILOTO-timeout-hotstuff-confirmacao` e `-v2`) ficam **superadas** pela K40 e por esta decisão (mesmo `.jsonl`, entradas de 2026-11-16T13:52:24Z). O critério A3 de 13/11 continua registrado como falha em n = 16 (não foi reescrito).
+
+**Limites que continuam valendo (K40, ameaças A5 a A9):** Java 25 (alvo do pom: 17); LAN simulada; sem falha injetada; só ROTATING e L = 100; sem `-XX:hashCode=2` na K40 (equivalência de saída conferida entre as duas JVMs, não contra uma execução com a flag); o resultado descreve o timeout de visão do HotStuff simulado, **não o Fabric** (Raft não é BFT, AGENTS.md).
+
+### (b) V-ABC-hotstuff: resultado e decisões (loop 3, impacto ALTO, sem arbiter)
+
+**Fontes:** [FONTE] `experimentos/validacao/hotstuff/PARECER-TECNICO.json` (V-A, V-A por nó, V-C ordinal; 16/11/2026), `experimentos/validacao/hotstuff/PARECER-TECNICO-VB.json` (V-B; 16/11/2026), `experimentos/validacao/hotstuff/PREREGISTRO.md` (emenda 1b e E7). Commits: pré-registro v2 `5b99d3e`; dados e parecer de V-A e V-C `26c98f6`; pré-registro E7 (libera V-B) `933813b`; dados e parecer de V-B `bc07355`. Simulador pinado: `76932b9` (`src/` tree `a1b464ee…`). `-XX:hashCode=2` nas duas JVMs de todas as células. Decisões do humano: `.ia/rodadas/loop3-resultado-decisao.jsonl` (tarefas `V-ABC-hotstuff-VA-VC`, `V-ABC-hotstuff-VB-preregistro`, `V-ABC-hotstuff-VB`) e `.ia/rodadas/loop2-jabs-codigo.jsonl` (tarefa `V-ABC-hotstuff`), entradas de 16/11/2026.
+
+**P4a (ADR-0009/ADR-0015) fechado, modo INDIVIDUAL, ESCOLHIDO pelo humano:** **"O(n) em pacotes por bloco e O(n²) em bytes de consenso"**.
+
+| Item | Medido [FONTE] PARECER-TECNICO.json | Papel |
+|---|---|---|
+| Pacotes por bloco (`rede_msgs`), n = 4, 7, 10, 16, 31 | 24, 48, 72, 120, 240 em todas as 25 células (= 8(n−1), erro 0); b = 1,11998; classe O(n) (VABC-3) | **decide** (A1) |
+| Bytes de consenso (sem a carga do bloco) | 4 983; 13 806; 26 514; 63 390; 223 080 (erro 0 contra a fórmula); b = 1,85568; classe O(n²) (VABC-4) | **decide** (A2) |
+| Bytes totais (com a carga do bloco) | b = 1,17026; classe O(n); termo quadrático 11,7 % em n = 31 (VABC-5) | **só rótulo** |
+
+Veredito mecânico pré-registrado de V-A: CONSISTENTE (VABC-6). Por ser impacto ALTO, a aprovação é do humano; ele aceitou (item abaixo).
+
+**Decisões do humano (16/11/2026), ESCOLHIDO:**
+
+1. **P4a fechado como acima.** Os **bytes de consenso decidem**; os **bytes totais são O(n) e valem só como rótulo** (a pergunta "bytes de consenso ou totais?" do parecer, `a_definir_com_o_humano` item 2, fica respondida: consenso).
+2. **A contagem de assinaturas nos QC NÃO é medida: só fórmula.** O número de assinaturas individuais por bloco, 3(n−1) + 5(n−1)q = 54, 168, 342, 870, 3 240 para n = 4, 7, 10, 16, 31 (q = 2f+1), é **fórmula do pré-registro, não saída do simulador**, e não decide. "O(n) em autenticadores" foi medido como **pacotes por bloco**, não como assinaturas (PARECER-TECNICO.json, ameaça A2; critic, entrada de 19:26:46Z do `.jsonl`).
+3. **A fórmula foi derivada do mesmo código que gera o dado** (mesmo agente, mesmo `HotStuff.java`/`computeSize`). O erro 0 em 90 células mostra que o simulador faz o que o código diz; **não** mostra que o modelo reproduz o HotStuff do artigo nem que os tamanhos de assinatura (64 B; 96 B agregada, fixture sem fonte) são os de uma implementação real (ameaça A1).
+4. **5 valores de n (4, 7, 10, 16, 31) bastam** para V-A. Limite declarado: expoente efetivo em n ≤ 31 é sensível às constantes (ameaça A4); não há n ≥ 64 nesta rodada. **t0 = 20 s aceito** (não derivado de Welch). V-B segue com n ∈ {4, 7, 10, 13} (entrada de 21:06:07Z).
+5. **V-A por nó** (STABLE, líder = nó 0, 3 sementes por (modo, n); secundário): INDIVIDUAL **líder O(n²)** (b = 1,67350), **réplica O(1)** (b = 0,04043) (VABC-8). AGGREGATED fica como sensibilidade rotulada (O(n), fixture 96 B sem fonte; não decide).
+6. **V-C numérico declarado INVIÁVEL** (nenhum número VERIFICADO de Yin et al. 2019, figuras ilegíveis; PREREGISTRO.md, E4). Fica **só o teste ordinal fraco**: Tb(n = 16) = 0,16737 s > Tb(n = 4) = 0,12965 s e vazão 481,0 < 600,8 tx/s, `ordem_ok = true` (VABC-11). **Não é confronto numérico, não valida magnitude** e não entra no veredito de V-A.
+
+**V-B (limiar bizantino): resultado.** [FONTE] PARECER-TECNICO-VB.json. 180 células (n ∈ {4, 7, 10, 13} × f de 0 a ⌊(n−1)/3⌋+1 × 10 sementes, EQUIVOCATION, INDIVIDUAL, L = 100, ROTATING, 300 s): **176 VIVA, 4 NAO_EXECUTAVEL_POR_REGRA_DO_ATAQUE, 0 SEM_VIVACIDADE, 0 OUTRA_FALHA** (VB-3). As 4 células que abortam são todas n = 4, f = 2, pela regra `requireEquivocationSplit` (sementes 424348, 424349, 424352, 424354), exatamente as previstas na E7 antes dos dados (VB-2). `MIN_EXEC = 6`: n = 4, f = 2 ficou com k_exec = 6, ponto decidido. **Veredito mecânico no critério pré-registrado: INCONSISTENTE** nos quatro n e global, porque L(f*) = 1 (vivacidade mantida em f* = ⌊(n−1)/3⌋+1) onde o critério esperava L(f*) = 0 (VB-4).
+
+**Decisão do humano (16/11/2026, entrada de 21:27:55Z), ESCOLHIDO:** V-ABC-hotstuff **fechado como "sem perda de vivacidade sob EQUIVOCATION com partição por índice (Q28)"**. Leitura que o humano acatou e que fica registrada com as ressalvas:
+
+- **Não demonstra ruptura em ~1/3.** O resultado diz que, neste modelo de ataque, o HotStuff do simulador não perdeu vivacidade (≥ 1 altura finalizada com Fmin_s ≥ 20 s) em f* (VB-5). **Não mede segurança** (dois commits conflitantes não foram verificados). A teoria não garante vivacidade com f ≥ n/3; este resultado não a contradiz nem a confirma.
+- **O ataque não é o pior de vivacidade.** A partição é por índice dos vizinhos (B-34 a B-36, provisória); com f* o líder pode cair na metade que recebe o voto real, e o voto bizantino conta (ameaça A1). A regra do ataque (`requireEquivocationSplit`) foi **mantida** pelo humano (entrada de 21:06:07Z); não encontrei decisão que torne B-34 a B-36 definitivos.
+- **Vazão em f\* (descritivo, pós-hoc, não decide):** 5,7 % a 8,0 % da de f = 0 (n = 4: 0,057; n = 7: 0,072; n = 10: 0,066; n = 13: 0,080) (VB-6; ameaça A3). O critério binário não distingue isso de vazão normal; **limiar de vazão acima do binário só com pré-registro novo**.
+- **Ataque mais forte** (silêncio ou voto dirigido ao líder): fica como **tarefa posterior, com novo pré-registro**. Não foi aberta por este registro.
+- **n = 4, f = 2 vale condicionado ao nó 0 honesto:** as 6 células executáveis cobrem só 3 conjuntos bizantinos ({2,3}, {1,3}, {1,2}), todos com o nó 0 honesto; os 3 pares que contêm o nó 0 abortam pela regra para qualquer semente e não são observáveis neste desenho (VB-8; E7 a). O humano aceitou essa limitação em 16/11 (entrada de 21:06:07Z).
+- **Resolução:** com n ≤ 13 a tolerância de 1 p.p. do PROTOCOLO não é testável; V-B só testa a igualdade inteira f* = ⌊(n−1)/3⌋+1 (E3; ameaça A5). f > f* não foi varrido.
+
+**Rótulo do critic gravado de forma diferente do emitido.** O critic do loop 3 emitiu o rótulo **`DIVERGE`**; o script `registrar-rodada.py` **não aceita** esse valor, e a entrada de 2026-11-16T21:24:17Z foi gravada como **`CONFIRMADO`**, com a nota "ROTULO ORIGINAL DO CRITIC: DIVERGE (valor invalido no script)". A leitura de que o "DIVERGE" se refere a V-B não confirmar a ruptura esperada, e não a discordância com o proponente, **é do orquestrador**, não do critic. O critic reproduziu do bruto 176 VIVA, 0 SEM_VIVACIDADE, 4 NAO_EXECUTAVEL e k_exec 6/10, e alertou que o critério binário esconde degradação (alturas vivas 42 a 186 em 300 s). Quem lê o `.jsonl` deve usar este registro para não tomar "CONFIRMADO" por concordância plena. Fonte: `.ia/rodadas/loop3-resultado-decisao.jsonl`, tarefa `V-ABC-hotstuff-VB`. No V-A o critic tinha emitido `INCONCLUSIVO` (entrada de 19:26:46Z), pela lacuna das assinaturas nos QC (item 2 acima).
+
+**Dados não commitados.** [FONTE] PARECER-TECNICO.json (D5) e PARECER-TECNICO-VB.json (D7, H7): os dados brutos e células eram não commitados nas etapas 2 e 3b; os commits `26c98f6` e `bc07355` os trazem segundo as mensagens. **Não confirmado** que `dados-brutos/` completo esteja versionado: `git status --short experimentos/validacao/hotstuff` não mostra pendência em 16/11/2026, mas não distingui "versionado" de "ignorado" (não rodei `git ls-files` sobre ele).
+
+### (c) Flag `--allow-beyond-bft-threshold` (commit `76932b9`): emenda à decisão 3 de 10/11 e à D3(a)
+
+**Fonte:** [FONTE] commit `76932b925719a2b83d6165b5a84d30f5501896ee` ("HotStuff: modo explicito fora da faixa BFT (--allow-beyond-bft-threshold) no MVPComparison (BYZ-fora-da-faixa-hotstuff, ADR-0015 decisao 3)"); código em `src/main/java/jabs/example/MVPComparison.java` (`resolveByzantineCount`, `beyondThresholdLines`); evidência `scripts/jabs/nr_byz_fora_faixa.py`; revisão do critic: `.ia/rodadas/loop2-jabs-codigo.jsonl`, tarefa `BYZ-fora-da-faixa-hotstuff` (APROVADO, 16/11).
+
+**Texto de emenda.** A decisão 3 de 10/11 ("`f > ⌊(n−1)/3⌋` é declarado 'fora da faixa', nunca arredondado para baixo em silêncio") e o ajuste D3(a) (modo explícito, rotulado, com flag própria, não falha alta incondicional) ficam **implementados** assim, **só para o HOTSTUFF no `MVPComparison`**:
+
+1. **Sem a flag**, `f > ⌊(n−1)/3⌋` para algum `n` **falha alto** antes de criar saída; a mensagem cita `n`, `f` e o limite.
+2. **Com `--allow-beyond-bft-threshold=true`**, o modo roda e é **rotulado**: uma linha `# fora_da_faixa=true n=<n> byzantine_count=<f> limite_bft=<⌊(n−1)/3⌋>` por `n` fora da faixa, no cabeçalho de **`mvp-results.csv` (agregado) e de `mvp-results-cb.csv`** (o código acrescenta, depois do limite, um texto fixo de explicação na mesma linha `#`; os campos acima vêm primeiro). A linha também é impressa no stdout como `AVISO`.
+3. **A flag não rotula o que está dentro da faixa:** com todo `f` dentro do limite, a saída é byte a byte a de antes (caso C de `nr_byz_fora_faixa.py`). O `nao_regressao.py` ignora linhas `#`; o `nr_byz_fora_faixa.py` **não** as ignora.
+4. **`=true` sem ataque ativo falha alto** (seria ignorada em silêncio). Sem HOTSTUFF na lista de protocolos, a flag é **ignorada com aviso** no stderr, como `--attack`. Aritmética inteira.
+5. **O V-B usa a flag de propósito** nos pontos f = f* (n = 4 f = 2, n = 7 f = 3, n = 10 f = 4, n = 13 f = 5; 40 das 180 células) e só neles (PREREGISTRO.md, E7 d).
+
+**O que a flag não faz:** não resolve o aborto de `requireEquivocationSplit` em n = 4, f = 2 (PREREGISTRO.md, E6); não cobre ARQ, Parlia, Casper nem Tendermint (a decisão 3 vale para eles quando houver a tarefa `BYZ-contagem-inteira-legado`, **não iniciada**; registro de 10/11).
+
+### (d) Q32, Q7/Q24, Q29, Q15, Q14, Q33 (decisões do humano de 16/11/2026, ESCOLHIDO)
+
+**Fonte:** `.ia/rodadas/loop2-jabs-codigo.jsonl`, tarefa `Q32-Q29-Q15-Q14-Q33-decisoes`, entrada de 2026-11-16T21:27:55Z ("humano acatou"). Texto de cada pergunta: seções A.6 e B.12 deste ADR. Nenhum valor numérico novo além do já registrado em 12/11.
+
+| Q | Decisão (como o humano acatou) | Observação |
+|---|---|---|
+| **Q32 A** | `--n-semantics=nodes` como semântica do estudo, **obrigatória na bateria**; `legacy` só em não regressão. "Validador" declarado por protocolo: **Casper, todos votam; Parlia, só mineradores**. **PoSA = Parlia e PoS = CasperFFG confirmados como correspondência.** | A **variante MCO2 × TREE segue a confirmar** (B-45; auditoria B.2: diferem só em `averageBlockInterval`, 15 s × 60 s). A Q32 destrava a condição da Q30-A (universo do sorteio = validadores/votantes, registro de 10/11). A decomposição 30/70 do modo `nodes` e a verificação da finalização com poucos stakeholders (PI-19) **não constam** na decisão registrada: seguem como estavam. |
+| **Q7 e Q24** | **Resolvidas por L = 100 (varrer {10, 100, 500}) e T = 2 s (varrer {1, 2})**, os valores do registro de 12/11 deste ADR. | A decisão **não indica a letra** de Q7/Q24. L = 100 não é a opção A (espelhar o `configtx` do Fabric, 10 mensagens). O T = 2 s coincide com o `BatchTimeout 2s` do `configtx` (ADR-0015 A-23). Q7, Q24 e A-23/A-25 são o mesmo parâmetro (B-50). A cadência de 5,0 s do pBFT é descartada (B-55; registro de 12/11) e `tamanho_bloco_kb` sai do pré-registro (B-56, recomendação da Q24). |
+| **Q29 A** | Fila de pendentes: **FIFO**; capacidade **sem limite, com alarme medido**; **relógio de T desde a chegada da primeira tx pendente**; fila **nos proponentes**, com a **difusão da tx contada no tráfego**. | "Sem descarte silencioso" segue valendo (ADR-0013). Fecha B-48, B-49, B-52, B-53. A implementação **não foi iniciada** (ver nota no ADR-0013). |
+| **Q15 A** | **Compressão temporal declarada**: P e W_janela em escala de simulação, **preservando a razão W/P e η** (não o calendário); **nº de períodos por corrida decidido no piloto**. | Fecha o aspecto de forma de B-04/B-06/B-32. Os valores de P, W_janela e `duracao_sim_s` seguem **a definir** (piloto). |
+| **Q14 C** | **Faixa de sensibilidade sem ponto central**; resultado **declarado condicional**. | Troca para A (valor de λ_B de dado real) só se o humano trouxer fonte (recomendação da própria Q14). B-02, B-03, B-05, B-07 ficam como faixa, sem número. |
+| **Q33 A** | **Piloto de custo antes de fixar o n do E2**, validação e contagem de células. | O custo de n = 800 segue `NAO_MEDIDO`. A decisão de 10/11 de não usar n = 64, 128, 800 antes do piloto de custo continua valendo para V-A/V-B/V-C. |
+
+### (e) O que continua com o humano (nada disto foi decidido neste registro)
+
+1. **Aceite formal do ADR-0000** (Q40; o ADR-0000 continua `Proposta` até o humano declarar o aceite, registro de 10/11).
+2. **Pré-registro das baterias** (Bateria 2 e Bateria 1; ordem de execução do registro de 10/11).
+3. **Limiares do ADR-0005** (descritivos, Q19; nenhum limiar normativo foi fixado).
+4. **Q1 e Q10:** valores de assinatura e de modo agregado, com fonte. 64 B, 96 B e 10 B seguem fixtures sem fonte onde não houver medição do `redd-ponte`.
+5. **Q17:** banda uniforme por nó e níveis de W_nó.
+6. **Variante MCO2 × TREE** da correspondência PoS = CasperFFG (item Q32).
+7. **Valor final de `--hs-view-timeout`.** Os 4 T da decisão (a) são candidatos; o parecer K40 deixa em aberto aceitar o T candidato ou exigir validação em regime com T menor.
+8. **SILENT (crash) e backoff do timeout:** tarefa posterior, depois do timeout fixado (registro de 13/11).
+9. **Verificação da citação da Lei 15.042/2024** (índice 6.7, item 9; ADR-0000), ainda **não verificada**.
+
+**Tarefas que este registro NÃO abre** (continuam listadas como não iniciadas nos `.jsonl`): ataque mais forte de V-B, tarefa única de código (autoentrega + contagem inteira + gerador único de conjuntos + paridade de teto), gerador de carga e fila (ADR-0013), piloto de custo.
+
+## Opções para decisão, 17/11/2026
+
+Esta seção reúne opções com recomendação para o humano decidir; **nada aqui está decidido**. Fatia 1 de 2 (Q13 e Q35); a fatia 2 acrescenta as demais questões abaixo. Rótulos: **[L]** lido no código ou no ADR (caminho:linha, árvore de trabalho de 17/11/2026), **[C]** calculado (à mão, salvo indicação), **[FONTE]** o que um ADR já registra, **ESCOLHIDO** o que o humano já decidiu, **NÃO VERIFICADO** o que não confirmei. **Nada foi executado nesta seção**: não compilei, não rodei o simulador nem script; as contas [C] foram feitas à mão sobre constantes lidas e precisam de conferência por script antes de virarem número de pesquisa. Nenhum valor numérico novo é escolhido aqui.
+
+### Q13 (detalhamento). Gerador único de transações: entrada no JABS, RNG, regimes e o que continua aberto (B-01, B-11, B-57)
+
+A Q13 original (seção B.12, `0015:492-497`) pedia só "aceitar MMPP-2 + RNG dedicado + Poisson primeiro". Ela segue **não decidida**: o registro de 16/11 decidiu Q14 C, Q15 A e Q29 A (`0015:919-930`), não a Q13 (`0013:185`, item 3: "para Q13, Q35 e Q36 não encontrei decisão registrada"). Abaixo a Q13 é aberta em quatro decisões, para o humano responder cada uma.
+
+**Fatos lidos (todos [L]) que condicionam as opções**
+
+1. **Hoje o gerador é Poisson homogêneo, por cenário, e só existe em 4 cenários.** `AbstractPoissonProcess` guarda um intervalo médio e um `RandomnessEngine` recebido no construtor; o próximo instante é `sampleExponentialDistribution(média)` (`AbstractPoissonProcess.java:7-31`, em :27-29). `TxGenerationProcessRandomNetworkNode` sorteia o nó com `network.getRandomNode()` e chama `node.generateNewTransaction()` (`TxGenerationProcessRandomNetworkNode.java:16-19`). Instanciado em `CasperEthereumNetworkScenario.java:122-127`, `ParliaBSCNetworkScenario.java:109-114`, `BitcoinGlobalNetworkScenario.java:176-182` e `DAGsperNetworkScenario.java:160-165`. Os cenários pBFT, HotStuff e Tendermint **não têm gerador** e `generateNewTransaction()` é vazio nos três nós (`PBFTNode.java:46-48`, `HotStuffNode.java:91-93`, `TendermintNode.java:72-74`). Não há MMPP em `src/main/java` (busca por "MMPP" e "Poisson" no fonte: só as classes acima e `BlockMiningProcess`).
+2. **O fluxo de aleatoriedade é um só, compartilhado.** O cenário cria um `RandomnessEngine(seed)` (`AbstractScenario.java:74-76`), que é passado à rede (`Network.java:15,19-21`; no Casper, `CasperEthereumNetworkScenario.java:68-69`) e ao processo de tx (`:126`). A rede o usa para latência (`LAN100MNetworkStats.java:25`, Pareto), para sortear o nó de origem (`Network.java:24-26`), para o conteúdo da tx (`EthereumNode.java:72-77`) e para o peso do bloco (`EthereumMinerNode.java:61`). `RandomnessEngine` é um `MersenneTwister` (`RandomnessEngine.java:12-14`). Logo, variar λ muda quantos sorteios saem do fluxo e **desloca** latência, mineração e conteúdo. É o que o ADR-0013 quer evitar (`0013:72`) e o que B-11 registra (`0015:224`).
+3. **Existe precedente de fluxo dedicado no próprio código:** `ByzantineConfig.byzantineStream(seed)` devolve `new RandomnessEngine(seed ^ BYZANTINE_STREAM_SALT)`, com o sal fixo `0x425A414E54494E45L`, "independente do engine do cenário (rede, blocos, transações)" (`ByzantineConfig.java:236-251`). O gerador poderia seguir o mesmo padrão, com sal próprio.
+4. **A fórmula do MMPP-2 está no ADR-0010 (PI-10, proposta do humano, não aceita)** (`0010:104-125`): estado 1 base, estado 2 alto; `1/σ2 = W_janela`, `1/σ1 = P − W_janela`; `π_alto = W_janela/P`; `λ2 = η·N_op·κ/W_janela`; `λ1 = (1−η)·N_op·κ/(P−W_janela)`. A média estacionária confere exatamente com λ̄ (conferência de álgebra, `0010:114-119`). Validade: `0 < W_janela < P` e `W_janela/P < η < 1`; com `η = W_janela/P` o MMPP-2 **degenera em Poisson** (`0010:121`). Limite: durações de estado exponenciais, "uma janela por período" só vale em média (`0010:123`). Dispersão teórica **não calculada** (`0010:125`).
+5. **O simulador só enxerga λ̄, η, W_janela/P e a escala absoluta de tempo** (descoberta [C] do ADR-0015, `0015:206`). Com Q14 C (faixa sem ponto central) e Q15 A (compressão temporal, razão W/P e η preservadas, nº de períodos por corrida decidido no piloto) o gerador **recebe** esses quatro como entrada; nenhum tem valor decidido.
+6. **O estado inicial do MMPP-2 não está definido.** Busca por "estado inicial" e "initial state" em `0010`, `0013`, `0015`, `.experimento/*.md` e `especificacoes/*.md`: nenhuma ocorrência [L, busca feita por mim; não li `especificacoes/` inteira]. É lacuna real, tratada em Q13.3.
+7. **Casper e Parlia hoje ignoram `--tx-interval`.** O ADR-0013 diz que o intervalo é o `--tx-interval` (padrão 5,0 s) (`0013:19`). No código, os cenários fixam o intervalo: 0,5 s no Casper (`CasperEthereumNetworkScenario.java:123`) e 0,1 s no Parlia (`ParliaBSCNetworkScenario.java:110`), e as chamadas de MCO2 e AMBIFY em `MVPComparison.java:1182-1189` e `:1239-1247` **não passam** `txInterval`. Só EARTH, OFFSET e DAGsper o recebem (`MVPComparison.java:992,1000,1004`). Correção de fato ao ADR-0013 (linha 19), a registrar na nota; não altero o ADR-0013 aqui.
+
+#### Q13.1 Como o gerador entra no JABS
+
+- A) **Um processo de chegada único** (classe nova em `jabs.simulator.event`), com regime selecionável (Poisson ou MMPP-2), instanciado por todos os cenários do estudo no lugar de `TxGenerationProcessRandomNetworkNode`. O núcleo é uma classe pura que, dados (semente, regime, λ̄, η, W/P, P), produz a sequência (instante, nó de origem) e é testável sem simulador. As classes Poisson atuais ficam, sob flag de legado, para protocolos fora do estudo (Nakamoto/OFFSET, EARTH e DAGsper) e para a não regressão;
+- B) **Subclasse de `AbstractTxPoissonProcess`** que sobrescreve `timeToNextGeneration()` com taxa dependente de estado. Menor alteração aparente, mas o estado do MMPP-2 fica escondido num método chamado também pelos cenários para agendar o primeiro evento (`CasperEthereumNetworkScenario.java:127`), e a classe base amarra o gerador a "um nó" (`AbstractTxPoissonProcess.java:7-13`);
+- C) **Pré-computar a trajetória de chegadas** antes da simulação (lista de instantes e origens por semente) e só agendar. Contagem por semente e verificação de média (ADR-0013, verificação 1 e 2, `0013:165-166`) viram triviais, mas a memória cresce com λ (nível de 100λ_B, valor ainda sem número) e a corrida longa de Q15 A;
+- outra.
+
+**Recomendação: A.** Razão: B esconde estado e herda um acoplamento que o ADR-0013 quer desfazer (gerador único, não por nó); C custa memória e não traz ganho que o núcleo puro de A já não dê, pois a classe pura também permite contar e conferir a média sem rodar a simulação. Em A, ligar o gerador aos três cenários sem gerador (pBFT, HotStuff, Tendermint) é a tarefa de fila de Q29 A; este item só fixa a **forma** de entrada.
+
+#### Q13.2 Fluxo de aleatoriedade do gerador (B-11)
+
+- A) **Fluxo dedicado** `RandomnessEngine(seed ^ SAL_TX)`, no padrão de `ByzantineConfig` (`:241-251`), com sal constante próprio, cobrindo **instantes, estado do MMPP-2 e nó de origem**. O conteúdo da tx não consome sorteio (tamanho fixo s_tx, ADR-0013 decisão 4, `0013:75`);
+- B) Dedicado só para instantes e estado; o **nó de origem** continua em `network.getRandomNode()` (`Network.java:24-26`), no fluxo da rede. Contra: o nº de sorteios de origem no fluxo da rede passa a depender de λ e desloca latência e mineração, o mesmo problema que o fluxo dedicado resolve;
+- C) Manter o fluxo **compartilhado** (como hoje). Contra: efeito de carga e mudança de trajetória se confundem (B-11, `0015:224`); quebra o pareamento por semente de PI-13;
+- outra: **um sub-fluxo por componente** (instantes, estado, origem), cada um com sal próprio. Ganho: trocar o regime não altera a sequência de origens sorteadas nem o estado de um componente por causa de outro. Custo: três sais e mais código; o ganho só aparece se alguém quiser comparar sequências de origem entre regimes, o que não é requisito registrado.
+
+**Recomendação: A.** Razão: atende o que o ADR-0013 pede (`0013:72`) com o padrão já testado no repositório. O pareamento que importa (rede e mineração iguais entre λ e regimes) vale em A. A sequência de chegadas **não** é a mesma entre Poisson e MMPP-2 (o MMPP-2 consome sorteios de troca de estado), e isso é inerente a regimes distintos, não defeito de A. **Limite que A não resolve:** código novo executado antes da simulação desloca a sequência de `System.identityHashCode` e muda a saída de Casper, Parlia e Nakamoto mesmo com fluxo dedicado (achado de 31/10, `0013:99-104`); a prova de não regressão desses protocolos segue dependente da Q36. NÃO VERIFICADO: se sementes irmãs com XOR de constante dão fluxos suficientemente independentes no `MersenneTwister` do commons-math (a decisão do ByzantineConfig já usa essa construção; não li o `setSeed` da biblioteca).
+
+#### Q13.3 Regimes: aceitar o MMPP-2, ordem de implementação e estado inicial (B-01, B-57)
+
+- A) **Poisson estacionário primeiro, depois MMPP-2 de PI-10**, com o MMPP-2 iniciando no estado sorteado da distribuição estacionária (`P(alto) = W_janela/P`), que custa um sorteio do fluxo dedicado e elimina o viés de início na média por semente. Poisson e MMPP-2 de mesma λ̄. O limite exponencial (`0010:123`) vai para o pré-registro;
+- B) Igual a A, mas o MMPP-2 **inicia sempre no estado base** (fora da janela). Determinístico e simples; contra: a média por semente na parte inicial fica abaixo de λ̄, e a conferência "média de cada semente contra λ̄" (`0010:221`) passa a depender de t0 (Q25) e do nº de períodos (Q15 A);
+- C) **Rejeitar o MMPP-2** e usar outro regime de mesma média, por exemplo periódico determinístico. Isso **reverte** a decisão B3 de 29/10 que tirou o perfil sazonal (`0010:127`, PI-11 "NÃO USADO"); só se o humano considerar a periodicidade exata essencial (`0010:123`);
+- outra.
+
+**Recomendação: A.** Razão: a álgebra de PI-10 vale para a média estacionária; começar nela evita um transiente que a análise teria de remover (Q25) só por causa do gerador. Dois cuidados, **ambos [C] qualitativos, NÃO VERIFICADOS neste repositório** (a dispersão do MMPP-2 não foi calculada, `0010:125`): (i) com poucos períodos por corrida (Q15 A deixa o nº para o piloto), a contagem por semente de um MMPP-2 varia mais que a de um Poisson de mesma média, pois a duração de cada estado é aleatória; a tolerância da igualdade de média tem de vir da dispersão do próprio gerador (Q16 A), não do erro-padrão de Poisson; (ii) a primeira entrega é só Poisson, e o fator R do E1 fica vazio até o MMPP-2 existir (B-57, `0015:308`).
+
+#### Q13.4 Nós de origem das transações
+
+- A) **Todos os nós da rede, uniforme**, como `getRandomNode()` faz hoje (`Network.java:24-26`), e a difusão até os proponentes entra no tráfego (Q29 A, `0015:919-930`);
+- B) **Só os nós que votam ou propõem** (validadores, conforme Q32: no Casper todos votam, no Parlia só mineradores), uniforme entre eles;
+- C) **Um nó cliente fixo** (origem única). Simples; contra: concentra o custo de difusão num nó e não representa muitos participantes (N_op);
+- outra.
+
+**Recomendação: A**, por manter o comportamento do código e a regra de universo do tráfego "difusão contada" sem criar um segundo universo de sorteio. Ressalva: com `--n-semantics=nodes` (Q32 A) o n do estudo é o total de nós, então A e B coincidem onde todos os nós são validadores (pBFT, HotStuff, Tendermint, Casper); só diferem no Parlia, onde `nodes` inclui não mineradores [L parcial: a composição mineradores/stakeholders vem de `MVPComparison.java:1239-1247`; não li `NetworkSizing`]. NÃO VERIFICADO: o efeito de A × B no tráfego.
+
+**O que a Q13 continua a deixar aberto (nenhum valor é escolhido aqui):** λ̄ (faixa, Q14 C), η e W_janela/P e nº de períodos por corrida (Q15 A; piloto), tolerância da média e janela do índice de dispersão (Q16), o t0 único (Q25), a forma da não regressão (Q36). L = 100 {10, 100, 500} e T = 2 s {1, 2} e a fila FIFO sem limite com alarme, relógio de T desde a 1ª tx pendente, fila nos proponentes com difusão contada, **seguem como decididos** (`0015:804-830`, `0015:919-930`) e não são reabertos.
+
+### Q35 (detalhamento). Limite de gás do Ethereum frente a L = 100 e s_tx = 512 B comuns (B-54)
+
+A Q35 original (`0015:647-654`) recomendava A (gás constante, L substitui o limite) sem mostrar o tamanho do problema. Ela segue **não decidida** (`0013:185`, item 3). Abaixo, os fatos do código que mostram por que o limite **não é neutro** e as três opções pedidas.
+
+**Fatos lidos (todos [L], salvo marcação)**
+
+1. **O limite e o laço.** `MAXIMUM_BLOCK_GAS = 12500000` (`EthereumMinerNode.java:27`). `generateNewBlock()` percorre o `memPool` (um `HashSet<EthereumTx>`, `:23`) e **interrompe na primeira tx que estoura** o limite (`:51-59`, o `break` em `:54-56`). Não há regra de lote nem de tempo nesse laço. Parlia e Casper usam o mesmo método: o Parlia chama `creator.generateNewBlock()` (`Parlia.java:364-366`); o Casper herda a classe (`EthereumCasperMiner.java:10`). **DAGsper** também herda `EthereumMinerNode` (`EthereumDAGsperMiner.java:12`), então mexer ali o atinge; fora do estudo, mas entra na não regressão.
+2. **Cada tx traz tamanho e gás de distribuições próprias.** `sampleEthereumTransaction` (`TransactionFactory.java:50-56`): tamanho de `ETHEREUM_TRANSACTION_SIZE_DISTRIBUTION`/`_BINS` (`:27-30`, `:43-45`) e gás de `BITCOIN_TRANSACTION_GAS_DISTRIBUTION` com `ETHEREUM_TRANSACTION_GAS_BINS` (`:32-41`; o nome da tabela de gás diz "BITCOIN" e é usada para o gás do Ethereum, `:55`). Os bins de gás vão de 21 001 a 12 475 587 (`:32-35`). O tamanho do bloco é `543 + Σ tamanho das tx + 36 por tio` (`EthereumBlockWithTx.java:21-26`; cabeçalho 543 em `BlockFactory.java:32`, hash+id de rede 36 em `:33`). **O gás não entra no tamanho do bloco**; `getTotalGas()` só é definido, sem chamador em `src/` (busca por `getTotalGas`: só a definição, `EthereumBlockWithTx.java:44`).
+3. **A tabela de gás põe uma massa enorme no valor máximo.** `sampleDistributionWithBins` percorre `dist.length-1` entradas e, se o sorteio passa de todas, **devolve `bins[último]`** (`RandomnessEngine.java:30-41`). A tabela de gás tem 20 probabilidades (`TransactionFactory.java:37-41`) e 21 bins. **[C, à mão, NÃO EXECUTADO]** as 20 entradas somam ≈ 0,7997 (não 1) e as 19 testadas somam ≈ 0,7766; logo ≈ **22,3%** das tx saem com gás = **12 475 587**, quase o limite de bloco (12 500 000). Conta feita somando a tabela lida; precisa de conferência por script antes de citar o percentual.
+4. **Consequência [C, à mão]: o limite de gás encolhe o bloco para uns poucos tx, não para 100.** Só as ≈22,3% de tx "gigantes" já dão gás médio ≥ 0,223 × 12 475 587 ≈ 2,8 milhões por tx; o gás médio por tx fica da ordem de 3 milhões (as demais bins contribuem pouco, por ordem de grandeza). Logo, em média cabem **da ordem de 4 tx** em 12,5 milhões, e o `break` na primeira estourada (item 1) pode encerrar antes. O limite, portanto, **governa** o tamanho do bloco do Casper e do Parlia, em vez de L = 100. Isso é estimativa de ordem de grandeza, **NÃO VERIFICADA por execução**. Complemento: a mesma regra de "resíduo no último bin" vale para o tamanho (13 probabilidades somam ≈ 0,9923; as 12 testadas, ≈ 0,9917 [C à mão]); ≈ 0,8% das tx sairiam com 296 985 B. Relevante só se a distribuição própria do Ethereum for mantida (opção ii).
+5. **Capacidade que o gás deixa, comparada ao ritmo de geração.** O intervalo de bloco do MCO2 é 15,0 s e o do AMBIFY, 3,0 s (`MVPComparison.java:1182-1189` e `:1239-1247`); os cenários geram tx a cada 0,5 s e 0,1 s (`CasperEthereumNetworkScenario.java:123`, `ParliaBSCNetworkScenario.java:110`). **[C]** isso é cerca de 30 tx chegando por bloco em cada um, contra poucas unidades que cabem pelo gás (item 4): o `memPool` cresce e o Tt (submissão `EthereumNode.java:72-77` até finalização, `EnhancedBlockFinalizationLogger.java:179-185`) é dominado por espera na fila. Os valores de Tt do MCO2 (de 304 a 445 s, base e atual, em `n1-conversao-n/saida-final/termina-Casper-MCO2_50_600-s*.txt:7`) são compatíveis com isso mas **não provam** a causa (não rodei nada; Tb e Tt dependem também da finalização do Casper).
+6. **A ordem de seleção é a do `HashSet`, não FIFO.** O laço itera o `HashSet` cuja ordem depende de `System.identityHashCode` (`EthereumDAGsperMiner.java:18-24` explica; o ADR-0013 registra o efeito, `0013:99-104`); só o DAGsper usa `LinkedHashSet` (`EthereumDAGsperMiner.java:24`). Em qualquer opção abaixo, **a fila FIFO da Q29 A só vale para o Casper e o Parlia se o contêiner mudar**, e trocar o `HashSet` muda a saída do Casper e exige ADR próprio (`0013:103`; Q36 B). Esta interação não é decidida aqui: afeta qual das tx da fila entra no bloco, não quantas.
+
+**Q35. O que fazer com o limite de gás em Casper e Parlia**
+
+- A (i) **Gás constante por tx, com limite inerte por construção.** Todo tx tem o mesmo gás g (valor `a definir com o humano`, com fonte). O limite de 12 500 000 permanece no código, mas a configuração **falha alto** se `g × L_max` > limite (isto é, g ≤ ⌊12 500 000 / L⌋: **[C]** 1 250 000 com L = 10, 125 000 com L = 100, 25 000 com L = 500, logo **g ≤ 25 000 cobre toda a varredura {10, 100, 500}**). Assim o bloco fecha por L (e pelo tempo, ADR-0013 dec. 2) e nunca pelo gás. O cabeçalho do CSV traz `#` com g e "limite de gás inerte". Efeito: bloco de L tx de 512 B ≈ 543 + L·512 B (**[C]** 51 743 B para L = 100, mais 36 B por tio), igual ao critério do bloco dos outros protocolos exceto pelo cabeçalho de 543 B;
+- B (ii) **Manter a distribuição própria do Ethereum** (tamanho e gás), com o gás como segundo limite (lote OU gás OU tempo, Q35 B original). Contra: derruba as decisões 3 e 4 do ADR-0013 (mesmo s_tx, bloco dimensionado pela fila, `0013:74-75`); pelo item 4 o gás passaria a ditar o bloco (da ordem de 4 tx, não 100), e o Tt e o Cb do Casper e do Parlia deixam de ser comparáveis aos de pBFT, HotStuff e Tendermint. Só como **ablação rotulada** "Ethereum nativo", fora do E1;
+- C (iii) **Desligar o limite**, com rótulo. O laço deixa de olhar o gás; o bloco fecha por L e T. O gás fica ignorado (campo sem uso, como `getTotalGas()` hoje). Cabeçalho `#`: "limite de gás desligado". Igual a A em efeito quando g × L ≤ limite, **sem a trava de configuração**: se o humano subir L (por exemplo L = 2048, já descartado como caso base, `0013:183`), o desvio passa **sem aviso**;
+- outra.
+
+**Efeito em Cb, Tt e comparabilidade entre protocolos**
+
+| | Cb (tráfego por bloco) | Tt (latência da tx) | Comparável com pBFT, HotStuff, Tendermint? |
+|---|---|---|---|
+| **A (i)** | termo de disseminação ∝ L·s_tx, como nos demais ([C]; equação de decomposição, `0013:12`) | espera pela fila governada por L/T e pela cadência do protocolo | **Sim, no tamanho do bloco.** A cadência de bloco do Casper (15,0 s) e do Parlia (3,0 s) é do protocolo, não de T (`0013:118`, leitura do ADR, não confirmada pelo humano): diferença que o gás não resolve |
+| **B (ii)** | ∝ unidades de tx (item 4) × tamanho amostrado; ordem de grandeza menor e variável | domina a espera por limite de gás | **Não**; ablação |
+| **C (iii)** | igual a A | igual a A | Igual a A, sem a trava |
+
+**Recomendação: A (i), com a trava de configuração.** Razão: mantém a regra de fechamento comum (ADR-0013 dec. 2), preserva o atributo de gás como invariante verificada (a configuração falha se g × L_max passar do limite), em vez do silêncio da opção C, e **não** deixa o gás ditar um bloco de uns poucos tx (item 4). O valor de g e a fonte ficam `a definir com o humano`; **não escolho número**. Dado de partida para a pesquisa de fonte: o menor bin da tabela do simulador é 21 001 (`TransactionFactory.java:32-35`), compatível com g ≤ 25 000; que 21 000 seja o gás base de uma transferência simples no Ethereum é conhecimento meu, **NÃO VERIFICADO em fonte neste repositório**. B só como ablação rotulada, se o humano quiser mostrar o desvio. C só se o humano preferir não ter a trava.
+
+**Fica aberto (não decidido, fora desta questão):** (a) **ordem de seleção do memPool** (FIFO × `HashSet`), ligada à Q29 A e à Q36 B (item 6); (b) **cadência de bloco do Casper e do Parlia versus T** (o ADR-0013 deixa como "minha leitura a confirmar", `0013:118`): decide se o Tt do Casper e do Parlia se compara ao dos protocolos de lote e tempo; (c) **cabeçalho de 543 B** do Ethereum (`BlockFactory.java:32`) contra o cabeçalho dos outros protocolos, que não li; (d) **não regressão**: tocar `EthereumMinerNode` muda a saída de Casper, Parlia e DAGsper, e a prova segue dependente da Q36 (`-XX:hashCode=2`, ADR-0016 também exige a flag nas células Ethereum).
+
+**Não confirmei / não executei (Q13 e Q35):** nada foi compilado nem rodado. Os percentuais e médias de gás e de tamanho do item 3 e do item 4 da Q35 vêm de soma manual das tabelas lidas; a conta precisa ser repetida por script. Não li `NetworkSizing`, o `setSeed` do `MersenneTwister` (independência de fluxos por XOR de semente), `hotStuffBlockSize` e o cabeçalho de bloco dos protocolos BFT (item (c)), `EthereumGethP2P` (efeito da difusão de tx no tráfego), nem as normas citadas na fatia. Não verifiquei por execução que os cenários Casper/Parlia ignoram `--tx-interval` (leitura de `MVPComparison.java:1182-1189`, `:1239-1247`); a leitura sustenta que a flag não chega a eles, mas não rodei. Não consegui confirmar o `git diff` das alterações não commitadas de `CasperEthereumNetworkScenario.java` e `ParliaBSCNetworkScenario.java` (a ferramenta bloqueou o comando); os trechos citados foram lidos na árvore de trabalho, não no `HEAD`.
+
+---
+
+## Fatia 2 de 2 (17/11/2026): decisões do humano já tomadas e questões Q36, variante PoS, Parlia/universo
+
+**Decisões do humano de 17/11/2026 (ESCOLHIDO; registradas aqui sem alteração):**
+
+1. **Parlia/universo = opção C:** f como percentual do **universo** de validadores de cada protocolo, rotulado com `# fora_da_faixa` quando exceder o limite BFT; tabela de f efetivo por n e protocolo no pré-registro; limitação declarada.
+2. **Q13.1 a Q13.4 = opção A** (em cada uma): gerador adiado para depois da Bateria 2; MMPP-2 começa em estado sorteado da distribuição estacionária.
+3. **Q35 = gás constante por tx com trava g·L ≤ limite** (opção A (i) acima): o valor de g fica **a definir com o humano**; o achado dos ≈22% de tx com gás máximo deve ser **repetido por script antes de ser aceito** (ver a nota em "Pendências" no fim desta fatia).
+
+As questões abaixo seguem **não decididas**, salvo o que está nesta lista.
+
+### Q36 (detalhamento). Forma da prova de não regressão e veredito da N1 (B-66)
+
+**O texto define a Q36 com clareza**: `0015:654-659` (opções A, B, C, recomendação A), `0015:309` (B-66) e `0015:392` (1º na ordem; 8 dependentes: B-22, B-23, B-24, B-27, B-41, B-44, B-50, B-51). A Q36 tem três perguntas distintas, que a redação original junta e que abaixo separo. Nenhuma está decidida (`0013:185`, item 3).
+
+**Fatos lidos [L] que mudam o enunciado da Q36 (o texto do ADR-0015 está parcialmente defasado)**
+
+1. **O "veredito da N1" já existe no registro de rodadas.** `.ia/rodadas/loop2-jabs-codigo.jsonl:117` (2026-11-09T20:20:16Z): critic **APROVADO**, "nao-regressao IDENTICO base 325f4e3 x atual, **JVM padrao**, sementes 1 e 2: MCO2:10/50, AMBIFY:10/12, OFFSET:40, ARQ:10; ByzantineSweep POS/POSA/POW IDENTICO". Antes: rodada 1 rejeitada (`:89`, 12/18 divergentes sem a flag) e rodada 2 que removeu `CliArgs` e zerou as chamadas extras a `identityHashCode` no modo `legacy` (`:90`; `src/test/resources/nao-regressao/n1-conversao-n/README.txt:346-400`, "18 de 18 IDENTICO" com JVM padrão). O ADR-0013 (`0013:110`) e o ADR-0012 (`0012:124`) ainda dizem "N1 sem veredito"; o texto do 0015 (`0015:655`) idem. **Divergência de documentos, a registrar:** o `.jsonl` diz aprovada; os ADRs dizem pendente. Não alterei o ADR-0013 nem o ADR-0012.
+2. **O modo `nodes` não tem baseline.** O README da N1 diz que o caminho `--n-semantics=nodes` "muda o n de propósito e não tem baseline" (`README.txt`, seção 5, linha "Limite", e seção 8). A prova de identidade vale só para o modo `legacy`. O que valida o `nodes` é a tabela executada de dimensionamento (`diagnostico-executado.txt`, 63 linhas OK, `README.txt` seção 1.3).
+3. **A forma já está sendo praticada.** O ADR-0016 (Aceito em 13/11) adota que baterias e `GarantiaHashCode` exigem `-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` e que "nenhum resultado de pesquisa pode vir de execução sem a flag" nos protocolos Ethereum (`0016`, Decisão e Consequências). O humano decidiu em 12/11 que a garantia de não regressão do registro (M1a) **vale com `-XX:hashCode` fixado** (`.ia/rodadas/loop2-jabs-codigo.jsonl:199`). `nao_regressao.py` aceita a flag repetível (`scripts/jabs/nao_regressao.py:67-72`, `:382`) e recusa o registro ligado sem ela (`:114-120`). Ou seja, A é de fato a prática desde 12/11; falta o **ato de decisão formal** (a Q36 pede essa formalização) e o escopo.
+4. **O hash `325f4e3` não é confirmável hoje.** `git log --oneline -1 325f4e3` falha neste repositório ("unknown revision"): o histórico visível tem 39 commits, o mais antigo é `964e0ab` (2026-10-31), posterior à criação declarada de `325f4e3` (2026-10-30, `0006:125`). O worktree `/tmp/opencode/base-325f4e3` **não existe** (existe `/tmp/opencode/base-8c68084`, com `BASELINE.txt`: commit `8c680840925899e6fb3cbcf790b80a89e0ad3356`, árvore limpa). A baseline operacional recente é, portanto, o HEAD do momento (o ADR-0016 e `comparar-chave-tx.py` exigem build do HEAD como base). **Não consegui confirmar `325f4e3`**; é plausível que o histórico tenha sido reescrito, mas isso é inferência minha, **NÃO VERIFICADO**.
+5. **Escopo da evidência.** Hash fixo foi testado em AMBIFY, MCO2 e OFFSET, semente 1 (`0012:36`); `hashCode=3` ainda diverge no AMBIFY (mesma fonte). A identidade da N1 em JVM padrão cobre 6 casos × 3 sementes + sweep POS/POSA/POW (`README.txt:420-440`), não HotStuff, Tendermint, TREE, EARTH, DAGsper (`README.txt`, seção 8). O mecanismo interno do JDK que faz carga de classe consumir `identityHashCode` **não foi investigado**, só o efeito foi medido (`README.txt:407-409`); depende do JDK 25 desta máquina (o pom mira 17).
+
+**Q36.1 Forma da prova de não regressão para Casper, Parlia e Nakamoto**
+
+- A) **`-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` nos dois lados**, como regra permanente das provas de não regressão desses três e de DAGsper (herda `EthereumMinerNode`, ver Q35), com o relatório dizendo "com flag". Prova só a lógica; não elimina a sensibilidade (`0013:101-105`). Já é a prática (fatos 3);
+- B) **Corrigir a causa**: `memPool` em `LinkedHashSet`. Muda a saída do Casper, exige ADR e nova baseline (`0013:103`); interage com a fila FIFO da Q29 A e com a ordem de seleção do Q35 item 6. Eliminaria a dependência da flag, ao custo de invalidar as saídas anteriores. O ADR-0016 trata a correção análoga do `Hash` por valor como "tarefa posterior, só se esta não bastar" (opção 3);
+- C) **Declarar PENDENTE e seguir**, sem prova de identidade para os três. Contra: o `nao_regressao.py` e as baterias já exigem a flag; ficar sem prova trava todas as tarefas que tocam `MVPComparison`, `EthereumMinerNode`, gerador e fila;
+- outra: **A + execução cruzada em JVM padrão** (como a N1 rodada 2) como evidência adicional, onde o código novo não roda antes da simulação; custo: dobra as execuções.
+
+**Recomendação: A.** Razão: é a única forma testada com sucesso, já é exigida pelo ADR-0016 e pelo M1a, e é barata. Ressalvas: (i) a evidência é de uma semente por caso no hash fixo; a recomendação inclui **ampliar para 3 sementes e os 4 casos antes de generalizar** (o que a N1 em JVM padrão já tem, `README.txt:420-440`); (ii) B só com ADR próprio e só se o humano quiser eliminar a dependência da flag; (iii) a flag **muda a saída em relação a JVM padrão** nos protocolos Ethereum, então os números de pesquisa devem ser comparados só entre execuções com a flag (ADR-0016, Consequências).
+
+**Q36.2 Veredito da N1**
+
+- A) **Registrar a N1 como aprovada para o modo `legacy`** com base em `.jsonl:117` e `README.txt:420-440`, declarando como limites os fatos 2 e 5 (sem baseline para `nodes`; sem HotStuff, Tendermint, TREE, EARTH, DAGsper);
+- B) **Reabrir a N1** e exigir uma segunda baseline (HEAD atual) em JVM padrão e com flag, para todos os protocolos do estudo;
+- C) Manter "sem veredito" nos ADRs 0012 e 0013 (status quo);
+- outra.
+
+**Recomendação: A.** Razão: o critic aprovou com contexto limpo e o gap único da rodada 1 foi tratado. **Isto não é aprovação minha**: o veredito é do critic e do humano; a recomendação é só a de **fechar o registro**. Fica a conferir que `.jsonl:117` se aplica ao código hoje no HEAD (NÃO VERIFICADO: a N1 foi aprovada em 09/11 e `MVPComparison.java` mudou depois, p. ex. `--allow-beyond-bft-threshold` em `76932b9` e o `BYZ-UNICA` em `99d50cc`). Uma verificação de nova baseline (Q36.3) cobre isso.
+
+**Q36.3 Baseline e dono da extensão de `nao_regressao.py`**
+
+- A) **Baseline = o commit imediatamente anterior à tarefa** (HEAD no momento), construído de `git archive`, como já faz `comparar-chave-tx.py` (o ADR-0016 diz que o script recusa base que não seja o HEAD). O hash `325f4e3` é abandonado como baseline e mantido como histórico. Dono da extensão do script (colunas 15 e 16 do registro, B-27): o orquestrador atribui a uma tarefa do loop 2 com escopo em `scripts/jabs/` (o `jabs-builder` escreve em `src/` e `pom.xml`; o ADR-0012 registra que `scripts/` está **fora do escopo** do builder, `0012:160`);
+- B) **Recuperar `325f4e3`** (se existir em outro clone ou remoto) e manter como baseline única. Contra: os 39 commits visíveis não o contêm; recuperar depende de algo que não sei se existe;
+- C) **Baseline por tarefa e por protocolo**, sem baseline global: cada tarefa declara base e flag. Mais flexível; contra: perde a comparação entre tarefas e o pareamento da Bateria 2;
+- outra.
+
+**Recomendação: A.** Razão: usa só o que existe e reproduz a prática do ADR-0016. **Não decide** o dono do script: isso é da Q27 (ADR-0015, B-27), pendente. Limite: base × atual pelo HEAD só mede a tarefa corrente, não o acumulado desde a N1.
+
+**O que a Q36 destrava, na ordem de `0015:392`:** B-22, B-23, B-24, B-27, B-41, B-44, B-50, B-51. Nenhum valor numérico é escolhido.
+
+### Variante PoS = CasperFFG: MCO2 × TREE (B-45; índice 6.1; auditoria B.2)
+
+A correspondência PoSA = Parlia e PoS = CasperFFG já está **ESCOLHIDA** (Q32 A, `0015:925`). O que segue aberto é **qual variante** do CasperFFG entra no fator A. Abaixo, o que a leitura do código mostra que de fato diferencia as duas.
+
+**Fatos lidos [L] (árvore de trabalho de 17/11/2026)**
+
+1. **As duas variantes constroem a mesma classe de cenário com os mesmos argumentos, exceto um.** `runMCO2Scenario` (`MVPComparison.java:1182-1189`) e `runTreeCycleScenario` (`:1210-1217`) chamam `new CasperEthereumNetworkScenario(nome, (int) seed, duration, **intervalo**, 14, sizing[0], sizing[1])`. Mesmos: classe, semente, duração, `checkpointSpace = 14`, mineradores e stakeholders (`mvpSizing`, `:993-996`). Diferem em: **intervalo médio de bloco 15,0 s (MCO2, `:1186`) contra 60,0 s (TREE, `:1214`)**; o nome do cenário (`"MCO2 - …"` contra `"TreeCycle - …"`, `:1183`, `:1211`); o rótulo passado ao registro de carga (`"MCO2"`/`"TREE"`, `:1191`, `:1220`).
+2. **Há uma diferença que a auditoria B.2 não cita: TREE liga um segundo logger.** `scenario.AddNewLogger(new BlockFinalizationLogger(Paths.get(outputPath.replace(".csv", "-basic-log.csv"))))` (`MVPComparison.java:1219`); o MCO2 não faz isso. É um arquivo extra de saída. NÃO VERIFICADO: se esse logger consome `identityHashCode` ou altera a ordem de eventos (não li `BlockFinalizationLogger`); com `-XX:hashCode=2` a pergunta perde importância (Q36 A).
+3. **O intervalo vira a escala de tempo da mineração.** `GlobalProofOfWorkNetwork.populateNetwork` calcula `hashPowerScale = dificuldadeGênese / (poderTotal × intervalo)` (`GlobalProofOfWorkNetwork.java:82-88`): o intervalo escala o poder de hash dos mineradores, e o bloco médio sai a cada `intervalo` s. Os cenários Casper herdam essa rede (`CasperFFGGlobalBlockchainNetwork.java:14`, estende `EthereumGlobalProofOfWorkNetwork`).
+4. **Consequência declarável para o rótulo "PoS".** No JABS o CasperFFG é uma cadeia **minerada por prova de trabalho** (mineradores com poder de hash) com votos de finalização por checkpoint; os blocos não são propostos por validadores sorteados por estaca. [L] `CasperEthereumNetworkScenario.java:68-73` (rede PoW + `CasperFFGConfig`) e `GlobalProofOfWorkNetwork.java:72-83`. O pré-registro deve chamar a âncora de "CasperFFG do JABS (blocos minerados, finalização por checkpoint)", e não de "PoS" sem ressalva. A leitura de que isso afeta a validade externa da âncora é minha, **NÃO VERIFICADA**.
+5. **Interação intervalo × tempo de finalização [C, qualitativa, NÃO MEDIDA]:** com `checkpointSpace = 14` blocos (`:1187`, `:1215`), a ordem de grandeza do tempo até um checkpoint é 14 × intervalo: ≈ 210 s com 15 s e ≈ 840 s com 60 s. Os 304 a 445 s de Tt do MCO2 com `duracao` de 600 s (`0015:1012`, `n1-conversao-n/saida-final/…:7`) já são metade da duração padrão; com TREE a duração padrão de 600 s (`MVPComparison.java:92`) mal cobriria um checkpoint. Os testes e scripts do repositório usam duração maior para TREE (3000 a 6000 s: `scripts/jabs/nr_byz_unica.py:102`, `nr_hscb_fase2.py:60`), o que é compatível, mas não prova nada.
+6. **O sweep bizantino usa 15,0 s no POS:** `ByzantineSweep.java:219` (`15.0, 14`). Se a Bateria 2 usar o `ByzantineSweep` como motor do ataque para o CasperFFG, a variante implícita é a do MCO2. Não existe `TREE` no sweep (tipos: VOTING, POS, POW, POSA, DAGSPER, `ByzantineSweep.java:380-387`).
+7. **Parlia, para comparação:** 3,0 s de bloco (`MVPComparison.java:1243`; `ByzantineSweep.java:265`). O YAML da Bateria 2 lista `casperffg` como um só nível (`.experimento/bateria2.yaml:15`), sem dizer a variante.
+8. **O que a auditoria B.2 diz está confirmado, com o acréscimo do item 2.** MCO2 e TREE diferem em `averageBlockInterval` (15 × 60 s); mais o logger extra e o nome. Nada em `CasperFFG`, `EthereumCasperMiner` ou na rede muda entre as duas (as duas passam pelo mesmo `createNetwork`, `CasperEthereumNetworkScenario.java:66-99`). **NÃO VERIFICADO:** que `MVPComparison.java` e `Main.java:25-50` (onde "casper-ethereum" = 15 s e "casper-ignis" = 60 s) sejam as únicas diferenças em todo o repositório; li o caminho do estudo, não a suíte de testes inteira.
+
+**Q-PoS. Qual variante do CasperFFG entra no fator A**
+
+- A) **MCO2 (15,0 s)** como o nível `casperffg`. É a variante do `ByzantineSweep` (item 6), a das medições citadas em Q35 e a mais barata em duração de simulação (item 5);
+- B) **TREE (60,0 s)**. Mesmo código, bloco 4× mais lento; só se o humano tiver motivo de domínio para essa cadência (nenhum registrado nos ADRs lidos);
+- C) **As duas, com o intervalo de bloco como fator ou ablação rotulada** dentro de `casperffg` (uma só classe, um parâmetro). Mostra a sensibilidade ao intervalo, ao custo de células e de duração (item 5); exigiria decidir se a Bateria 2 recebe esse fator;
+- D) **Outro intervalo** como parâmetro livre do cenário (o construtor aceita qualquer `double`, `CasperEthereumNetworkScenario.java:39-41`), declarado no pré-registro, com valor `a definir com o humano` e fonte;
+- outra.
+
+**Recomendação: A (MCO2), declarando o intervalo de 15,0 s no pré-registro e a nota do item 4 (blocos minerados).** Razão: é a variante que o motor de ataque já usa, e a diferença para TREE é só o intervalo (item 1), então a escolha **não** muda a estrutura do protocolo; ela muda a escala de tempo. Se o humano quiser mostrar a sensibilidade ao intervalo, C é a extensão natural, depois do piloto de custo (Q33 A). Isto **não escolhe** nenhum número novo: 15,0 e 60,0 s são constantes que o código já tem, **sem fonte de domínio** registrada (se 15 s representa algo do Ethereum real é conhecimento meu, **NÃO VERIFICADO neste repositório**).
+
+**Efeito no pareamento:** o intervalo de bloco do Casper (15,0 s) e o do Parlia (3,0 s) já são constantes diferentes do protocolo (`0013:118`; Q35 "Fica aberto" (b)); a escolha A ou B não resolve essa assimetria entre protocolos.
+
+### Parlia/universo (decisão C de 17/11/2026): tabela de f efetivo por n e protocolo para a Bateria 2
+
+**O que isto é.** Implementação da decisão C (ESCOLHIDO acima): `f = ceil(pct × universo / 100)` em inteiros, com o **universo de cada protocolo**, e marca "dentro" ou "fora da faixa" contra `floor((u−1)/3)`. **Nada decide n**: n = 16, 64 e 100 são **ilustração declarada** (o n do E2 está `a definir`, Q33 A; 16 e 64 são níveis do E1 citados em Q33 B, 100 é o `n` do YAML, `.experimento/bateria2.yaml:9`). Os percentuais e os protocolos são os de `.experimento/bateria2.yaml:15-16`.
+
+**Script e hash.** `docs/adr/anexos/0015-tabela-f-efetivo.py` (Python, biblioteca padrão), saída em `docs/adr/anexos/0015-tabela-f-efetivo.saida.txt`.
+- sha256 do script: `f045ed56c1de4df3dcb72f2d359ddf9a0cf7db7b50c7714a00104e9da7842767`
+- sha256 da saída: `b4baaf45a425da28d905f0dd9e88fa32c10b56b96eab3a9c8b9a3f1884f7eb72`
+- Executado em 17/11/2026 com `python3 docs/adr/anexos/0015-tabela-f-efetivo.py` (rótulo: [C], **executado por script**, ao contrário das contas à mão das fatias anteriores). O script **não chama o simulador**: reproduz as fórmulas do código lido; a conferência contra o Java está nos itens de "Universos" abaixo, por leitura, não por execução.
+
+**Universos usados (Q32 A) e a leitura que os sustenta [L]**
+
+| Protocolo (nível YAML) | Universo u | Onde está no código |
+|---|---|---|
+| pbft, hotstuff, tendermint | n (todos os nós votam) | `ByzantineSweep.java:508-512` (`configFor`, VOTING: universo `[0,n)`) e `:533-541` (`universeSize` devolve `n` por padrão) |
+| casperffg | n no modo `nodes` (todos os nós votam; `n` = mineradores + stakeholders) | `NetworkSizing.java:86-89` (`casperVoters` = `totalNodes`); `ByzantineSweep.java:513-516` (`configFor`, POS: todos os nós) e `:535-536` (`universeSize`) |
+| parlia | **só os mineradores**: `max(1, (3n+5)/10)` em inteiros no modo `nodes` | `NetworkSizing.java:96-99` (`parliaValidators` = `miners`), `:133-139` (`nodes`: `(3L*n+5L)/10`, mínimo 1; `n<2` falha); `ByzantineSweep.java:517-520` (`configFor`, POSA: ids `[0, miners)`) e `:537-538` (`universeSize`) |
+| nakamoto | n mineradores; o limiar BFT 1/3 **não se aplica** (`bftApplies` falso para POW) | `ByzantineSweep.java:510-511` (POW usa `[0,n)`) e `:562-564` (`bftApplies`) |
+
+**O modo `nodes` é o que o estudo usa**, pela Q32 A (`0015:925`; `--n-semantics=nodes` obrigatória na bateria). A tabela do modo `nodes` coincide com o `legacy` em n = 64 e n = 100 para o Parlia (19 e 30 mineradores) e **difere em n = 16** (5 contra 4): o `legacy` é `(int)(n*0.3)` em `double` (`NetworkSizing.java:113-115`; teste no script, que usa `float` IEEE do Python igual ao `double` do Java).
+
+**Tabela (saída do script, modo `nodes`).** "fora" = f > floor((u−1)/3): no código isso aciona o rótulo `# fora_da_faixa` e exige a flag `--allow-beyond-bft-threshold=true` (`ByzantineConfig.java:181-221`; `ByzantineSweep.java:129-146`; `MVPComparison.java:594-611`). No Nakamoto a coluna é só a contagem (sem faixa BFT).
+
+| n | protocolo | universo u | limite BFT floor((u-1)/3) | f=0% | f=10% | f=20% | f=33% | f=40% | f=51% |
+|---|---|---|---|---|---|---|---|---|---|
+| 16 | pbft | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | hotstuff | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | tendermint | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | casperffg | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | parlia | 5 | 1 | 0 dentro | 1 dentro | 1 dentro | **2 fora** | **2 fora** | **3 fora** |
+| 16 | nakamoto | 16 | n/a | 0 (n/a) | 2 (n/a) | 4 (n/a) | 6 (n/a) | 7 (n/a) | 9 (n/a) |
+| 64 | pbft | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | hotstuff | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | tendermint | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | casperffg | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | parlia | 19 | 6 | 0 dentro | 2 dentro | 4 dentro | **7 fora** | **8 fora** | **10 fora** |
+| 64 | nakamoto | 64 | n/a | 0 (n/a) | 7 (n/a) | 13 (n/a) | 22 (n/a) | 26 (n/a) | 33 (n/a) |
+| 100 | pbft | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | hotstuff | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | tendermint | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | casperffg | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | parlia | 30 | 9 | 0 dentro | 3 dentro | 6 dentro | **10 fora** | **12 fora** | **16 fora** |
+| 100 | nakamoto | 100 | n/a | 0 (n/a) | 10 (n/a) | 20 (n/a) | 33 (n/a) | 40 (n/a) | 51 (n/a) |
+
+**Leituras diretas da tabela [C, do script]**
+
+1. **Em n = 100 o PBFT, o HotStuff, o Tendermint e o CasperFFG têm f = 33 dentro da faixa e 40 e 51 fora**; em n = 16 e n = 64, **f = 33% já fica fora** (6 > 5; 22 > 21). O nível "33%" do YAML só é "no limite" em n = 100. A menor porcentagem inteira que excede a faixa é 32% (n = 16), 33% (n = 64) e 34% (n = 100) nos protocolos com universo n.
+2. **O Parlia fica fora da faixa já em 33%** em todos os três n (2 > 1; 7 > 6; 10 > 9), e em n = 16 passa a 21% (f = 2 de 5 validadores). Em n = 16 o universo tem 5 validadores e limite 1: **f = 10% e 20% dão o mesmo f = 1**, e 33% e 40% dão o mesmo f = 2 (os níveis colapsam).
+3. **Com universos pequenos os níveis percentuais colapsam e o `ceil` sobe o f real.** Ex.: Parlia n = 16, f = 10% → 1 de 5 = **20% do universo**; PBFT n = 16, f = 10% → 2 de 16 = 12,5%. A porcentagem pedida não é a efetiva. [C, do script: f/u]
+4. **Sem a decisão C, o mesmo percentual sobre n levaria ao f absoluto idêntico em todos os protocolos**, que no Parlia seria f > u em n pequeno (por exemplo, f = 10 de 5 validadores em n = 16). A decisão C evita isso, ao custo das limitações abaixo.
+5. **Parlia com n pequeno (fora da tabela principal):** n = 4 → 1 validador (limite 0); n = 7 → 2 (limite 0); n = 10 → 3 (limite 0); só em n ≥ 13 há limite ≥ 1 (saída completa no anexo). Isto é o achado da N1 de que Parlia em n = 4 tem 1 único validador, com quórum `votos > (V·2)/3` e, portanto, 1 voto finaliza (`n1-conversao-n/README.txt`, seção 1.3). Quando o limite é 0, **qualquer f ≥ 1 está fora da faixa**; o piloto (Q33 A) deve dizer se n < 13 entra no Parlia.
+
+**Limitações que o pré-registro deve declarar**
+
+L1. **A comparação entre protocolos é pelo mesmo percentual do universo de cada um, não pelo mesmo f absoluto, nem pelo mesmo percentual dos nós da rede.** Em n = 100 o PBFT recebe f = 10 e o Parlia f = 3 com "10%": são 10 contra 3 nós bizantinos, e 3% dos nós totais no Parlia. Diferenças de resultado entre os dois **misturam** efeito do protocolo e efeito do tamanho do universo. O pré-registro deve apresentar f e u por célula, não só o percentual.
+L2. **Parlia: universo pequeno e níveis colapsados** (leitura 2, 3 e 5). Resultados de Parlia em f% distintos podem ser a mesma célula (mesmo f); a contagem de células independentes é menor que a do desenho fatorial. O número de sementes (YAML: 10, "PROVISÓRIO", `bateria2.yaml:17`) não compensa isso.
+L3. **"Fora da faixa" é por protocolo**, e o limite `floor((u−1)/3)` é o do PBFT/HotStuff/Tendermint aplicado ao universo de cada um. Para o CasperFFG o quórum real **não** é 2/3 de todos os nós: o denominador S exclui os mineradores (dívida C1, `NetworkSizing.java:91-94`; `README.txt` seção 1.1), então o limite 1/3 de n **não é** o limiar do mecanismo de finalização do JABS; declarar como convenção de comparação. **NÃO VERIFICADO** o limiar efetivo do Casper em S = stakeholders (não li `CasperFFG`).
+L4. **Nakamoto:** o percentual é de nós mineradores, mas o poder de hash é amostrado por minerador (`GlobalProofOfWorkNetwork.java:72-77`, `sampleHashPower`); a fração de nós **não** é a fração de poder de hash. O limiar de Nakamoto está `a definir com o humano` (comentário em `ByzantineSweep.java:557-561`); a tabela não marca faixa. O YAML inclui o nível `nakamoto` e o ADR-0000 o excluiu do plano (`index:16`); a decisão sobre mantê-lo é do humano.
+L5. **Rótulo `# fora_da_faixa` não é uniforme no código.** No `ByzantineSweep` ele usa o **universo do tipo** (mineradores no POSA; todos os nós no POS) (`ByzantineSweep.java:129-146`), que é a decisão C. No `MVPComparison` o rótulo e o guarda usam `n` e só existem para HOTSTUFF (`MVPComparison.java:594-611`; `0015:910-917`): Tendermint, PBFT e o Parlia no `MVPComparison` não têm esse caminho de ataque, e o rótulo, se aplicado ali, usaria `n` em vez de `u`. Se a Bateria 2 usar o `MVPComparison` para algum protocolo além do HotStuff, o rótulo do Parlia estaria no universo errado. NÃO VERIFICADO qual dos dois motores a Bateria 2 usará (o YAML não diz); é decisão de implementação ligada às tarefas do loop 2.
+L6. **O arredondamento é o teto (`ceil`) em inteiros** (Q34 A recomendada; ESCOLHIDO só no que a decisão C declara). O teto sobe o f efetivo (leitura 3); a tabela mostra o f efetivo, e o pré-registro deve declarar também f/u por célula.
+L7. **O n é ilustrativo.** Trocar n muda a tabela inteira; refazer o script com o n do E2 quando Q33 A fechar. O script aceita editar `NS`.
+L8. **A semântica `nodes` decompõe 30/70** sem fonte (`NetworkSizing.java:16-17`, "a definir com o humano"; B-44, `0015:288`); o universo do Parlia **herda** essa proporção. Mudar a proporção muda a tabela do Parlia.
+L9. **Posições dos bizantinos:** o universo do sorteio no Parlia é só os mineradores (ids `[0, miners)`), no Casper todos os nós, no HotStuff os n; o sorteio é pelo gerador único (BYZ-UNICA, commit `99d50cc`). A seleção não é pareada entre protocolos (universos diferentes), só reproduzível por semente em cada um.
+
+**O que isto NÃO decide:** n do E2, nível `nakamoto` no plano, o limiar de Nakamoto, a proporção 30/70, o motor da Bateria 2.
+
+### Pendências desta fatia: repetição por script do achado de gás (Q35) e o que não confirmei
+
+**Q35, achado dos ≈22%: repetido por script, CONFIRMADO.** `docs/adr/anexos/0015-q35-gas-reproducao.py` (biblioteca padrão), saída em `0015-q35-gas-reproducao.saida.txt`. sha256 do script `8eebdac5c134af947700335f9a47b00c1d665ab0bca44eade0572a39e94add87`; da saída `aa1ff07df04fadbc3fcb043af53d5750a95d51d739f10843c183e0e8d0485833`. As tabelas foram copiadas de `TransactionFactory.java:27-45` e a regra de sorteio de `RandomnessEngine.java:30-41`. Resultados [C, executado por script, 17/11/2026]:
+
+| Grandeza | Conta à mão (Q35 itens 3 e 4) | Script |
+|---|---|---|
+| soma das 20 entradas da tabela de gás | ≈ 0,7997 | 0,799744 |
+| soma das 19 testadas pelo laço | ≈ 0,7766 | 0,776623 |
+| P(gás = 12 475 587) | ≈ 22,3% | **22,34%** (exato); Monte Carlo 22,2% a 22,4% em 3 sementes |
+| gás médio por tx | "da ordem de 3 milhões" | **2 909 772** (exato) |
+| tx por bloco pelo limite de gás | "da ordem de 4" | razão de médias 4,30; **simulado (Python, parada na primeira que estoura, como `EthereumMinerNode.java:54-56`): média ≈ 3,7, mediana 2, p10 = 1, p90 = 9** |
+| P(tamanho = 296 985 B) | ≈ 0,8% | 0,83% (tamanho médio 2 873 B) |
+| g máximo com g·L ≤ 12 500 000 | 1 250 000 / 125 000 / 25 000 | idem (L = 10 / 100 / 500) |
+
+Duas observações que **corrigem ou refinam** o texto da Q35: (i) a "ordem de 4 tx por bloco" é a razão de médias; o que o laço produz é uma distribuição **muito assimétrica** (mediana 2; bloco com 1 tx em ≥ 10% dos casos; máximo na casa de dezenas), e duas tx de gás máximo nunca cabem juntas (2 × 12 475 587 > 12 500 000); (ii) o Monte Carlo usa o gerador do Python, não o `MersenneTwister` do JABS, portanto os 3,7 e a mediana valem só como ordem de grandeza, e **não** modelam a ordem de iteração do `HashSet` do `memPool` (a seleção real não é uma amostra independente; Q35 item 6). A condição pedida pelo humano ("repetir por script o achado dos 22% antes de aceitar") está **cumprida para o percentual**; o valor de g continua `a definir com o humano`. O menor bin (21 001) é ≤ 25 000, compatível com a trava para L = 500 (o que a Q35 já dizia).
+
+**O que não consegui confirmar nesta fatia**
+
+1. **Q36:** o hash `325f4e3`. `git log` no repositório atual não o encontra (39 commits, o mais antigo `964e0ab`, de 31/10; o `325f4e3` seria de 30/10) e o worktree `/tmp/opencode/base-325f4e3` não existe. É inferência minha que o histórico foi reescrito; NÃO VERIFICADO. Não verifiquei que o veredito `APROVADO` da N1 (`.jsonl:117`) vale para o código de hoje (a N1 é de 09/11; o `MVPComparison` mudou depois). Não li `nao_regressao.py` por inteiro.
+2. **Variante PoS:** não li `BlockFinalizationLogger` (o logger extra do TREE, `MVPComparison.java:1219`): se ele afeta a saída é NÃO VERIFICADO. Não li `CasperFFG.java` (limiar efetivo de finalização). Não verifiquei por busca em todo o repositório de testes que MCO2 e TREE só diferem nos pontos listados. Não rodei nem compilei nada.
+3. **Parlia/universo:** a tabela reproduz fórmulas lidas (`NetworkSizing`, `ByzantineConfig.bftLimit`), **não executa o Java**; a conferência por execução do dimensionamento já existe no `diagnostico-executado.txt` da N1 (63 linhas OK) para n = 4, 16, 64, 128, 256, 400, 800, **não** para n = 100 (que a tabela usa). `nodes(100) = 30` por fórmula: `(3·100+5)/10 = 30`. Não li a tabela de f feita para o `ByzantineConfig.forUniverse` quanto ao tratamento de `f > u`. Qual motor (`MVPComparison` ou `ByzantineSweep`) a Bateria 2 usará **não consta** no YAML; isso muda a limitação L5.
+4. **Não tocei** em `src/`, nos outros ADRs nem em `.experimento/`. O `git status` mostra `docs/adr/0013-formacao-de-bloco-e-demanda.md` modificado: **não foi por mim** (modificação anterior, da fatia 1 ou de sessão anterior; não conferi o diff).
+5. **Citações de linha:** conferi as de `ByzantineSweep.java`, `NetworkSizing.java`, `ByzantineConfig.java` e `MVPComparison.java` por leitura nesta sessão; as do ADR-0013 e do README da N1 vêm das leituras acima, sem reabrir cada trecho citado.
+
+**Decisões que o humano ainda deve tomar nesta fatia** (nenhuma foi tomada por mim): Q36.1 (forma da prova; recomendação A), Q36.2 (veredito da N1; recomendação A, a ser confirmada contra o código atual), Q36.3 (baseline; recomendação A), Q-PoS (variante; recomendação A = MCO2 15,0 s), n do E2 e o nível `nakamoto` (limitações L4 e L7), motor da Bateria 2 (L5), valor de g (Q35).

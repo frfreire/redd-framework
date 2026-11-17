@@ -226,6 +226,79 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
         consensusTraffic.put(block, consensusTraffic.getOrDefault(block, 0L) + bytes);
     }
 
+    @Override
+    public boolean separatesSelfDelivery() {
+        return true;
+    }
+
+    // D2 (ADR-0015, registro de 10/11/2026): AUTOENTREGA = pacote que este no entrega a si mesmo (Packet.getFrom() == este
+    // no). No PBFT ela PERCORRE a rede simulada (o broadcast do PBFTP2P inclui o remetente: fila de envio, latencia,
+    // fila de recepcao), logo o pacote continua ocupando a fila e a dinamica NAO muda; muda so a CONTABILIDADE: o byte
+    // sai de C_B_total/C_B_consenso (regra 6 do AGENTS.md) e vai para estes contadores PROPRIOS, mesma regra de destino
+    // (aberto por bloco; posterior; conflitante) e mesmo livro:
+    //   bytes de voto entregues a este no = getAccountedVoteBytes() + getAccountedSelfDeliveryBytes()
+    private final HashMap<B, Long> selfBlockTraffic = new HashMap<>();
+    private final HashMap<B, Long> selfConsensusTraffic = new HashMap<>();
+    private long selfAttributedTotalBytes;
+    private long selfAttributedConsensusBytes;
+    private long selfAfterFinalizationTotalBytes;
+    private long selfAfterFinalizationConsensusBytes;
+    private long selfConflictingTotalBytes;
+    private long selfConflictingConsensusBytes;
+
+    /** Autoentrega, parte C_B_total (pacote inteiro). Mesma regra de destino de {@link #addBlockTraffic}, contadores proprios. */
+    public void addSelfDeliveryBlockTraffic(B block, long bytes) {
+        if (block instanceof PBFTConflictingBlock) {
+            selfConflictingTotalBytes += bytes;
+            return;
+        }
+        if (committedBlocks.contains(block)) {
+            selfAfterFinalizationTotalBytes += bytes;
+            return;
+        }
+        selfAttributedTotalBytes += bytes;
+        selfBlockTraffic.put(block, selfBlockTraffic.getOrDefault(block, 0L) + bytes);
+    }
+
+    /** Autoentrega, parte C_B_consenso. Mesma regra de destino de {@link #addConsensusMessageTraffic}. */
+    public void addSelfDeliveryConsensusTraffic(B block, long bytes) {
+        if (block instanceof PBFTConflictingBlock) {
+            selfConflictingConsensusBytes += bytes;
+            return;
+        }
+        if (committedBlocks.contains(block)) {
+            selfAfterFinalizationConsensusBytes += bytes;
+            return;
+        }
+        selfAttributedConsensusBytes += bytes;
+        selfConsensusTraffic.put(block, selfConsensusTraffic.getOrDefault(block, 0L) + bytes);
+    }
+
+    /** Fecha o livro da autoentrega (C_B_total): atribuido + posterior + conflitante. */
+    public long getAccountedSelfDeliveryBytes() {
+        return selfAttributedTotalBytes + selfAfterFinalizationTotalBytes + selfConflictingTotalBytes;
+    }
+
+    /** Fecha o livro da autoentrega (C_B_consenso). */
+    public long getAccountedSelfDeliveryConsensusBytes() {
+        return selfAttributedConsensusBytes + selfAfterFinalizationConsensusBytes + selfConflictingConsensusBytes;
+    }
+
+    /** Autoentrega acumulada (aberta) para o bloco, total; 0 se nada. */
+    public long getSelfDeliveryTraffic(B block) {
+        return selfBlockTraffic.getOrDefault(block, 0L);
+    }
+
+    /** Autoentrega acumulada (aberta) para o bloco, so-consenso; 0 se nada. */
+    public long getSelfDeliveryConsensusTraffic(B block) {
+        return selfConsensusTraffic.getOrDefault(block, 0L);
+    }
+
+    /** Entradas abertas nos mapas de autoentrega por bloco (nunca inclui bloco conflitante). */
+    public int getOpenSelfDeliveryEntryCount() {
+        return selfBlockTraffic.size() + selfConsensusTraffic.size();
+    }
+
     /** Bytes (pacote inteiro) de votos que nomeiam um bloco conflitante (PREPARE equivocado) recebidos por este no. */
     public long getConflictingBlockTraffic() {
         return conflictingTotalBytes;
@@ -405,13 +478,20 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                             long consensusOnlyTraffic = consensusTraffic.getOrDefault(block, 0L);
                             blockTraffic.remove(block);
                             consensusTraffic.remove(block);
+                            // D2: autoentrega do bloco neste no (medida, fora do C_B principal); zero e zero medido
+                            long selfTotalTraffic = selfBlockTraffic.getOrDefault(block, 0L);
+                            long selfConsensusOnlyTraffic = selfConsensusTraffic.getOrDefault(block, 0L);
+                            selfBlockTraffic.remove(block);
+                            selfConsensusTraffic.remove(block);
                             this.peerBlockchainNode.getSimulator().putEvent(
                                 new BlockFinalizationEvent(
                                     this.peerBlockchainNode.getSimulator().getSimulationTime(),
                                     this.peerBlockchainNode,
                                     block,
                                     totalTraffic,
-                                    consensusOnlyTraffic
+                                    consensusOnlyTraffic,
+                                    selfTotalTraffic,
+                                    selfConsensusOnlyTraffic
                                 ),
                                 0
                             );

@@ -91,14 +91,73 @@ class MVPComparisonNaoRegressaoTest {
         }
     }
 
+    /**
+     * D2 (ADR-0015, registro de 10/11/2026): a autoentrega do PBFT saiu do C_B e foi para a coluna propria
+     * {@code Cb_autoentrega_B} (ao FIM do CSV por trial). A referencia (HEAD antes do D2) continua sendo a verdade da
+     * DINAMICA e da CONSERVACAO do byte: o gerado, sem a coluna nova, e identico a ela em toda coluna que nao e de
+     * trafego, e {@code TrafficUntilFinalization(ref) == TrafficUntilFinalization(gerado) + Cb_autoentrega_B(gerado)} em
+     * cada linha. {@code Cb_AvgTraffic_MB} (media corrente de trafego) e {@code Cb_avg/Cb_std} (agregado) sao derivados do
+     * trafego: so podem CAIR; {@code Tb_*} e {@code Tt_*} do agregado sao identicos.
+     */
+    private static void confereComAutoentrega(String csvGerado, String csvReferencia, String rotulo) {
+        List<List<String>> g = normaliza(csvGerado);
+        List<List<String>> r = normaliza(csvReferencia);
+        assertEquals(r.get(0).size() + 1, g.get(0).size(), rotulo + ": uma coluna a mais");
+        assertEquals("Cb_autoentrega_B", g.get(0).get(g.get(0).size() - 1), rotulo + ": a coluna nova e a ULTIMA");
+        assertEquals(r.get(0), g.get(0).subList(0, r.get(0).size()), rotulo + ": colunas existentes: nome e posicao");
+        assertEquals(r.size(), g.size(), rotulo + ": numero de linhas");
+        int iTraf = r.get(0).indexOf("TrafficUntilFinalization");
+        int iAvg = r.get(0).indexOf("Cb_AvgTraffic_MB");
+        int iCons = r.get(0).indexOf("TrafficConsensusUntilFinalization");
+        int iAuto = g.get(0).size() - 1;
+        assertTrue(iTraf >= 0 && iAvg >= 0, rotulo);
+        for (int i = 1; i < r.size(); i++) {
+            for (int c = 0; c < r.get(i).size(); c++) {
+                if (c == iTraf) {
+                    assertEquals(Long.parseLong(r.get(i).get(c)),
+                            Long.parseLong(g.get(i).get(c)) + Long.parseLong(g.get(i).get(iAuto)),
+                            rotulo + ": linha " + i + ": o byte mudou de coluna, nao sumiu");
+                } else if (c == iCons) {
+                    // so o TOTAL da autoentrega e exposto por linha; a parte so-consenso dela saiu do C_B_consenso: so cai
+                    assertTrue(Long.parseLong(g.get(i).get(c)) <= Long.parseLong(r.get(i).get(c)),
+                            rotulo + ": linha " + i + ": C_B_consenso so pode cair");
+                } else if (c == iAvg) {
+                    assertTrue(Double.parseDouble(g.get(i).get(c)) <= Double.parseDouble(r.get(i).get(c)) + 1e-12,
+                            rotulo + ": linha " + i + ": media de trafego so pode cair");
+                } else {
+                    assertEquals(r.get(i).get(c), g.get(i).get(c), rotulo + ": linha " + i + " coluna " + r.get(0).get(c));
+                }
+            }
+        }
+    }
+
+    /** D2: {@code mvp-results.csv} do ARQ: so {@code Cb_avg}/{@code Cb_std} podem diferir (e so cair). */
+    private static void confereAgregadoComAutoentrega(String csvGerado, String csvReferencia, String rotulo) {
+        List<List<String>> g = normaliza(csvGerado);
+        List<List<String>> r = normaliza(csvReferencia);
+        assertEquals(r.get(0), g.get(0), rotulo + ": cabecalho (mvp-results.csv nao ganha coluna)");
+        assertEquals(r.size(), g.size(), rotulo + ": numero de linhas");
+        for (int i = 1; i < r.size(); i++) {
+            for (int c = 0; c < r.get(i).size(); c++) {
+                String col = r.get(0).get(c);
+                if (col.equals("Cb_avg")) {
+                    assertTrue(Double.parseDouble(g.get(i).get(c)) < Double.parseDouble(r.get(i).get(c)),
+                            rotulo + ": Cb_avg cai (a autoentrega do PBFT deixou de ser C_B)");
+                } else if (!col.equals("Cb_std")) {
+                    assertEquals(r.get(i).get(c), g.get(i).get(c), rotulo + ": " + col + " identico");
+                }
+            }
+        }
+    }
+
     @Test
     void arqMesmaSaidaQueABaseline45eb3e7(@TempDir Path tmp) throws Exception {
         MVPComparison.main(new String[] {"--protocols=ARQ", "--validators=7", "--trials=1", "--duration=60",
                 "--seed=1", "--output=" + tmp});
-        confere(Files.readString(tmp.resolve("arq-7v-t0.csv")), referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"),
-                "ARQ n=7 seed=1 (arq-7v-t0.csv)");
-        confere(Files.readString(tmp.resolve("mvp-results.csv")), referencia("ARQ-7v-60s/base-a/mvp-results.csv"),
-                "ARQ n=7 seed=1 (mvp-results.csv)");
+        confereComAutoentrega(Files.readString(tmp.resolve("arq-7v-t0.csv")),
+                referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"), "ARQ n=7 seed=1 (arq-7v-t0.csv)");
+        confereAgregadoComAutoentrega(Files.readString(tmp.resolve("mvp-results.csv")),
+                referencia("ARQ-7v-60s/base-a/mvp-results.csv"), "ARQ n=7 seed=1 (mvp-results.csv)");
     }
 
     @Test
@@ -118,8 +177,8 @@ class MVPComparisonNaoRegressaoTest {
         // A normalizacao compartilhada (trim + maiusculas) e o que o diff de 45eb3e7 tocou: "  arq " tem de rodar como ARQ.
         MVPComparison.main(new String[] {"--protocols=  arq ", "--validators=7", "--trials=1", "--duration=60",
                 "--seed=1", "--output=" + tmp});
-        confere(Files.readString(tmp.resolve("arq-7v-t0.csv")), referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"),
-                "ARQ via '  arq '");
+        confereComAutoentrega(Files.readString(tmp.resolve("arq-7v-t0.csv")),
+                referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"), "ARQ via '  arq '");
     }
 
     @Test

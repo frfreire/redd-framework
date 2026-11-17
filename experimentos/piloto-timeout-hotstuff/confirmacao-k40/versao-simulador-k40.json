@@ -1,0 +1,28 @@
+{
+ "commit_construido": "06c67b51d93edcc08d9fe90432a3ed9498a8f2c9",
+ "tree_src": "38820851e622b76a9f60e1a67520c60b48e2e6a5",
+ "blob_pom": "32f934e332097d6bfed46830ff03132c36763670",
+ "blob_observador": "4024e15b53b8939458c22ae9d04f107b422e3cd0",
+ "origem": "git archive (arvore de trabalho NAO usada)",
+ "mudancas_nao_commitadas_em_src_pom_na_arvore_de_trabalho_(excluidas_do_build)": [
+  "M src/main/java/jabs/ledgerdata/Tx.java",
+  " M src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java",
+  "?? src/main/java/jabs/ledgerdata/TxSequencer.java",
+  "?? src/test/java/jabs/ledgerdata/TxSequencerTest.java",
+  "?? src/test/java/jabs/log/EnhancedLoggerChaveTxTest.java",
+  "?? src/test/java/jabs/log/TempoChaveTxFilho.java"
+ ],
+ "copia_de_build": "/tmp/opencode/k40-hs",
+ "classes": "/tmp/opencode/k40-hs/target/classes",
+ "classpath_arquivo": "/tmp/opencode/k40-hs/cp.txt",
+ "observador_classes": "/tmp/opencode/k40-hs/harness-classes",
+ "java_version": [
+  "openjdk version \"25.0.5.0.3\" 2026-10-24",
+  "OpenJDK Runtime Environment (build 25.0.5.0.3+1-1-24.04.1-Ubuntu)",
+  "OpenJDK 64-Bit Server VM (build 25.0.5.0.3+1-1-24.04.1-Ubuntu, mixed mode, sharing)"
+ ],
+ "mvn_v": [
+  "\u001b[1mApache Maven 3.8.7\u001b[m",
+  "Maven home: /usr/share/maven"
+ ]
+}

@@ -499,10 +499,13 @@ class PBFTPrepareEquivocationTest {
             long entregue = no.getNodeNetworkInterface().getLoadCounters().getRecvBytes();
             PBFT<PBFTBlock, ?> pbft = pbftDe(no);
             assertTrue(entregue > 0, "no " + no.nodeID + " recebeu algo");
-            assertEquals(entregue, pbft.getAccountedVoteBytes(),
-                    "no " + no.nodeID + " (" + ataque + "): bytes entregues pela rede != bytes contabilizados");
+            // D2 (ADR-0015): a autoentrega (o broadcast do PBFTP2P inclui o remetente; o pacote percorre o enlace) sai do C_B
+            // e vai para o livro proprio; o livro fecha SOMANDO os dois: nenhum byte some.
+            assertEquals(entregue, pbft.getAccountedVoteBytes() + pbft.getAccountedSelfDeliveryBytes(),
+                    "no " + no.nodeID + " (" + ataque + "): bytes entregues pela rede != C_B + autoentrega contabilizados");
+            assertTrue(pbft.getAccountedSelfDeliveryBytes() > 0, "no " + no.nodeID + ": o proprio voto chegou pelo enlace");
             assertEquals(entregue, pbft.getAttributedTraffic() + pbft.getAfterFinalizationTraffic()
-                    + pbft.getConflictingBlockTraffic());
+                    + pbft.getConflictingBlockTraffic() + pbft.getAccountedSelfDeliveryBytes());
             conflitanteTotal += pbft.getConflictingBlockTraffic();
             entregueTotal += entregue;
             assertEquals(0, pbft.getPendingConflictingPrepareBlockCount());

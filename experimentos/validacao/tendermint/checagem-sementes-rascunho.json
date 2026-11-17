@@ -1,0 +1,26 @@
+{
+ "sementes_ja_usadas_distintas": 374,
+ "min_usada": 16346,
+ "max_usada": 536350,
+ "sementes_novas_distintas": 75,
+ "min_nova": 624346,
+ "max_nova": 936350,
+ "faixa_por_bloco": {
+  "va": [
+   624346,
+   651350
+  ],
+  "vc": [
+   924346,
+   936350
+  ],
+  "vb": [
+   824346,
+   833355
+  ]
+ },
+ "colisoes_com_ja_usadas": {},
+ "duplicadas_entre_blocos": {},
+ "cfg_json_lidos": 1393,
+ "nota": "mesma semente entre valores de f (vb) e INTENCIONAL (pareamento); disjunta de K40, V-ABC-hotstuff e piloto (faixa ate 536350)"
+}

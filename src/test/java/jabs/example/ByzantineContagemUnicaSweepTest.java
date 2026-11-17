@@ -189,4 +189,36 @@ class ByzantineContagemUnicaSweepTest {
                 "--max-byz=3")));
         assertTrue(Files.readString(csv).startsWith("protocol,n,f,"), "legacy dentro da faixa: so o cabecalho de colunas");
     }
+
+    // ---------- divida aceita (ADR-0015, BYZ-UNICA parte 3 -> D2): teto do laco ANTES de montar fValues ----------
+
+    @Test
+    void sweep_max_byz_absurdo_falha_alto_sem_laco_e_sem_arquivo() {
+        // Antes: `for (v = step; v <= maxByz; v += step)` com maxByz = Integer.MAX_VALUE estoura v para negativo (laco sem
+        // fim, lista sem fim). Agora o teto min(maxByz, universo) e checado ANTES: falha alto, mensagem clara, nada gravado.
+        for (String max : new String[] {"2147483647", "2147483646", "11"}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                    () -> ByzantineSweep.run(sweep("absurdo-" + max, "--type=VOTING", "--validators=10", "--max-byz=" + max)), max);
+            assertTrue(e.getMessage().contains("--max-byz") && e.getMessage().contains("maior que o universo de sorteio")
+                    && e.getMessage().contains("f=" + max) && e.getMessage().contains("10 no(s)")
+                    && e.getMessage().contains("n_validadores") && e.getMessage().contains("tipo VOTING"), e.getMessage());
+            assertFalse(Files.exists(tmp.resolve("absurdo-" + max)), "nada gravado: " + max);
+        }
+        // a flag nao libera f > universo (so f > floor((n-1)/3))
+        IllegalArgumentException comFlag = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                sweep("absurdo-flag", "--type=VOTING", "--validators=10", "--max-byz=2147483647",
+                        "--allow-beyond-bft-threshold=true")));
+        assertTrue(comFlag.getMessage().contains("nao libera f > universo"), comFlag.getMessage());
+        // POW (sem faixa BFT) tambem: o limite de universo vale para todos os tipos
+        assertThrows(IllegalArgumentException.class,
+                () -> ByzantineSweep.run(sweep("absurdo-pow", "--type=POW", "--validators=10", "--max-byz=2147483647")));
+    }
+
+    @Test
+    void sweep_max_byz_igual_ao_universo_ainda_passa_pelo_teto() {
+        // max-byz == universo NAO e rejeitado pelo teto novo (cai na faixa BFT, como antes, com a mensagem de faixa)
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> ByzantineSweep.run(sweep("igual", "--type=VOTING", "--validators=10", "--max-byz=10")));
+        assertTrue(e.getMessage().contains("fora da faixa BFT"), e.getMessage());
+    }
 }

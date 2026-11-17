@@ -103,12 +103,43 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
         // Granularidade de C_B declarada no cabecalho (ADR-0006): bytes RECEBIDOS pelo no que finalizou
         // primeiro cada altura (nao e agregado de rede). TrafficUntilFinalization = C_B_total;
         // TrafficConsensusUntilFinalization = C_B_consenso, e -1 significa "nao medido" (nao e zero).
-        return String.format("Simulation name: %s      Number of nodes: %d      Network type: %s      "
+        String base = String.format("Simulation name: %s      Number of nodes: %d      Network type: %s      "
                 + "Cb granularity: bytes received by first-finalizing node per height; "
                 + "TrafficUntilFinalization=C_B_total, TrafficConsensusUntilFinalization=C_B_consenso (-1=not measured)",
             scenario.getName(),
             this.scenario.getNetwork().getAllNodes().size(), 
             this.scenario.getNetwork().getClass().getSimpleName());
+        if (selfDeliveryColumn()) {
+            // D2: so quando a coluna existe (PBFT, Parlia, Casper, Nakamoto); os demais protocolos mantem o comentario de antes
+            // String.concat (nao '+'): nenhum callsite de concatenacao por invokedynamic novo (consome hash de identidade)
+            base = base.concat("      Cb_autoentrega_B=bytes the node delivered to itself (no network hop counted), "
+                    .concat("EXCLUDED from TrafficUntilFinalization/TrafficConsensusUntilFinalization (D2, ADR-0015); same node and "
+                    .concat("height as the Cb columns; -1=not measured (never zero)")));
+        }
+        return base;
+    }
+
+    private Boolean selfDeliveryColumn;
+
+    /**
+     * D2: a coluna de autoentrega existe so se o consenso dos nos separa a autoentrega
+     * ({@link jabs.consensus.algorithm.AbstractChainBasedConsensus#separatesSelfDelivery}). Decidida uma vez, depois do
+     * cenario montado (initialLog roda apos createNetwork). Sem cenario/rede/no peer: sem coluna (saida de antes).
+     */
+    private boolean selfDeliveryColumn() {
+        if (selfDeliveryColumn == null) {
+            boolean on = false;
+            if (this.scenario != null && this.scenario.getNetwork() != null) {
+                for (Object o : this.scenario.getNetwork().getAllNodes()) {
+                    if (o instanceof PeerBlockchainNode) {
+                        on = ((PeerBlockchainNode<?, ?>) o).getConsensusAlgorithm().separatesSelfDelivery();
+                        break;
+                    }
+                }
+            }
+            selfDeliveryColumn = on;
+        }
+        return selfDeliveryColumn;
     }
 
     @Override
@@ -148,6 +179,9 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             long traffic = finalizationEvent.getTrafficUntilFinalization();
             metrics.recordBlockTraffic(traffic);
             metrics.recordFirstNodeCb(height, traffic); // HS-CB-fase2: mesmo valor, guardado por altura (aditivo)
+            // D2: autoentrega do mesmo no/altura, fora do Cb; sentinela (-1) e ignorada (protocolo nao a separa)
+            metrics.recordSelfDelivery(finalizationEvent.getSelfDeliveryTraffic(),
+                    finalizationEvent.getSelfDeliveryConsensusTraffic());
             
             metrics.recordBlockGenerated();
             
@@ -460,7 +494,7 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
 
     @Override
     protected String[] csvHeaderOutput() {
-        return new String[]{
+        String[] cols = new String[]{
             "Time", 
             "NodeID", 
             "BlockHeight", 
@@ -476,6 +510,11 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             "Pdv_DoubleSend_SuccessProbability_pct",
             "TrafficConsensusUntilFinalization"
         };
+        if (selfDeliveryColumn()) { // D2: coluna ADITIVA no fim; nome e posicao das existentes intactos
+            cols = java.util.Arrays.copyOf(cols, cols.length + 1);
+            cols[cols.length - 1] = "Cb_autoentrega_B";
+        }
+        return cols;
     }
 
     @Override
@@ -486,7 +525,7 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             Node node = finalizationEvent.getNode();
             Block block = finalizationEvent.getBlock();
 
-            return new String[]{
+            String[] row = new String[]{
                 Double.toString(this.scenario.getSimulator().getSimulationTime()),
                 Integer.toString(node.nodeID),
                 Integer.toString(block.getHeight()),
@@ -509,15 +548,15 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
                 // C_B_consenso (ADR-0006); -1 = protocolo nao mede a decomposicao
                 Long.toString(finalizationEvent.getConsensusMessageTraffic())
             };
+            if (selfDeliveryColumn()) { // D2: autoentrega do mesmo no e bloco; -1 = nao medido
+                row = java.util.Arrays.copyOf(row, row.length + 1);
+                row[row.length - 1] = Long.toString(finalizationEvent.getSelfDeliveryTraffic());
+            }
+            return row;
         }
 
         // Default: return empty row matching header length
-        return new String[new String[]{
-            "Time", "NodeID", "BlockHeight", "BlockHashCode", "BlockSize", "BlockCreationTime",
-            "BlockCreator", "BlockFinalizationTime", "TrafficUntilFinalization", "Tb_AvgFinalizationTime_s",
-            "Cb_AvgTraffic_MB", "BFT_ByzantineTolerance_pct", "Pdv_DoubleSend_SuccessProbability_pct",
-            "TrafficConsensusUntilFinalization"
-        }.length];
+        return new String[csvHeaderOutput().length];
     }
     
     /**

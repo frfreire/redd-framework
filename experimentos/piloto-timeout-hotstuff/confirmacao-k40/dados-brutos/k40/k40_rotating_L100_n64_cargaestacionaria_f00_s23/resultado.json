@@ -1,0 +1,14 @@
+{
+ "id": "k40_rotating_L100_n64_cargaestacionaria_f00_s23",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 23.68,
+ "tempo_parede_observador_s": 20.66,
+ "max_rss_mb": 628.9,
+ "csv_mvp": "hotstuff-64v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "0d057d0c76a360353bf65f380f50253c",
+ "blocos_mvp": 2213,
+ "csv_obs": "hotstuff-obs.csv.gz",
+ "md5_sem_hashcode_obs": "0d057d0c76a360353bf65f380f50253c",
+ "blocos_obs": 2213
+}

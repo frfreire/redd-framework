@@ -1,0 +1,10 @@
+{
+ "celulas": 80,
+ "max_rss_mb": 742.3,
+ "soma_parede_cpu_s": 3091.71,
+ "parede_do_lote_s": [
+  416.0
+ ],
+ "rc_mvp_nao0": 0,
+ "rc_obs_nao0": 0
+}

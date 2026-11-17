@@ -26,6 +26,7 @@ public class CasperFFG<B extends SingleParentBlock<B>, T extends Tx<T>> extends 
     private final Set<B> indirectlyFinalizedBlocks = new HashSet<>();
     private final Set<T> finalizedTxs = new HashSet<>();
     private final Map<B, Long> blockTraffic = new HashMap<>();
+    private final Map<B, Long> selfDeliveryTraffic = new HashMap<>(); // D2: autoentrega, fora do C_B
 
     private final int checkpointSpace;
     private final int numOfStakeholders;
@@ -123,6 +124,31 @@ public class CasperFFG<B extends SingleParentBlock<B>, T extends Tx<T>> extends 
         blockTraffic.put(block, blockTraffic.getOrDefault(block, 0L) + bytes);
     }
 
+    @Override
+    public boolean separatesSelfDelivery() {
+        return true;
+    }
+
+    /**
+     * D2 (ADR-0015, registro de 10/11/2026): AUTOENTREGA = o bloco que o produtor entrega a si mesmo por chamada direta
+     * (Packet(self, self), sem fila de envio nem latencia). Nao e C_B (regra 6 do AGENTS.md): fica FORA de
+     * {@link #addBlockTraffic} e vai para este contador proprio, lido na emissao do BlockFinalizationEvent (coluna
+     * propria; o C_B principal = total antigo - autoentrega). So contabilidade: nenhum evento muda de tempo ou de ordem.
+     */
+    public void addSelfDeliveryBlockTraffic(B block, long bytes) {
+        selfDeliveryTraffic.put(block, selfDeliveryTraffic.getOrDefault(block, 0L) + bytes);
+    }
+
+    /** C_B acumulado neste no para o bloco (so pacote que passou pela rede simulada; 0 se nada). */
+    public long getBlockTraffic(B block) {
+        return blockTraffic.getOrDefault(block, 0L);
+    }
+
+    /** Autoentrega acumulada para o bloco neste no (0 se nada: zero medido). */
+    public long getSelfDeliveryTraffic(B block) {
+        return selfDeliveryTraffic.getOrDefault(block, 0L);
+    }
+
     public void newIncomingVote(Vote vote) {
         if (vote instanceof CasperFFGVote) {
             CasperFFGVote<B> casperFFGVote = (CasperFFGVote<B>) vote;
@@ -208,7 +234,10 @@ public class CasperFFG<B extends SingleParentBlock<B>, T extends Tx<T>> extends 
                         this.peerBlockchainNode.getSimulator().getSimulationTime(),
                         this.peerBlockchainNode,
                         newlyFinalizedBlock,
-                        traffic
+                        traffic,
+                        BlockFinalizationEvent.NOT_MEASURED,
+                        getSelfDeliveryTraffic(newlyFinalizedBlock),
+                        BlockFinalizationEvent.NOT_MEASURED
                     ),
                     0
                 );
@@ -234,7 +263,10 @@ public class CasperFFG<B extends SingleParentBlock<B>, T extends Tx<T>> extends 
                             this.peerBlockchainNode.getSimulator().getSimulationTime(),
                             this.peerBlockchainNode,
                             block,
-                            traffic
+                            traffic,
+                            BlockFinalizationEvent.NOT_MEASURED,
+                            getSelfDeliveryTraffic(block),
+                            BlockFinalizationEvent.NOT_MEASURED
                         ),
                         0
                     );

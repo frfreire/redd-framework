@@ -1,0 +1,44 @@
+| n | protocolo | universo u | limite BFT floor((u-1)/3) | f=0% | f=10% | f=20% | f=33% | f=40% | f=51% |
+|---|---|---|---|---|---|---|---|---|---|
+| 16 | pbft | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | hotstuff | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | tendermint | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | casperffg | 16 | 5 | 0 dentro | 2 dentro | 4 dentro | **6 fora** | **7 fora** | **9 fora** |
+| 16 | parlia | 5 | 1 | 0 dentro | 1 dentro | 1 dentro | **2 fora** | **2 fora** | **3 fora** |
+| 16 | nakamoto | 16 | n/a | 0 (n/a) | 2 (n/a) | 4 (n/a) | 6 (n/a) | 7 (n/a) | 9 (n/a) |
+| 64 | pbft | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | hotstuff | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | tendermint | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | casperffg | 64 | 21 | 0 dentro | 7 dentro | 13 dentro | **22 fora** | **26 fora** | **33 fora** |
+| 64 | parlia | 19 | 6 | 0 dentro | 2 dentro | 4 dentro | **7 fora** | **8 fora** | **10 fora** |
+| 64 | nakamoto | 64 | n/a | 0 (n/a) | 7 (n/a) | 13 (n/a) | 22 (n/a) | 26 (n/a) | 33 (n/a) |
+| 100 | pbft | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | hotstuff | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | tendermint | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | casperffg | 100 | 33 | 0 dentro | 10 dentro | 20 dentro | 33 dentro | **40 fora** | **51 fora** |
+| 100 | parlia | 30 | 9 | 0 dentro | 3 dentro | 6 dentro | **10 fora** | **12 fora** | **16 fora** |
+| 100 | nakamoto | 100 | n/a | 0 (n/a) | 10 (n/a) | 20 (n/a) | 33 (n/a) | 40 (n/a) | 51 (n/a) |
+
+Contraste do universo do Parlia (nodes = semantica do estudo; legacy = int(n*0.3), NAO usar):
+  n=16: nodes=5 legacy=4  <- DIFERE
+  n=64: nodes=19 legacy=19
+  n=100: nodes=30 legacy=30
+
+Menor pct inteiro (0..100) cujo f efetivo excede o limite BFT, por universo:
+  n=16 pbft   u=16 limite=5 -> 32%
+  n=16 parlia u=5 limite=1 -> 21%
+  n=64 pbft   u=64 limite=21 -> 33%
+  n=64 parlia u=19 limite=6 -> 32%
+  n=100 pbft   u=100 limite=33 -> 34%
+  n=100 parlia u=30 limite=9 -> 31%
+
+Universos de Parlia (nodes) para n = 4..128, f por pct e limite:
+  n=  4 u= 1 limite= 0 f=[0, 1, 1, 1, 1, 1]
+  n=  7 u= 2 limite= 0 f=[0, 1, 1, 1, 1, 2]
+  n= 10 u= 3 limite= 0 f=[0, 1, 1, 1, 2, 2]
+  n= 13 u= 4 limite= 1 f=[0, 1, 1, 2, 2, 3]
+  n= 16 u= 5 limite= 1 f=[0, 1, 1, 2, 2, 3]
+  n= 25 u= 8 limite= 2 f=[0, 1, 2, 3, 4, 5]
+  n= 64 u=19 limite= 6 f=[0, 2, 4, 7, 8, 10]
+  n=100 u=30 limite= 9 f=[0, 3, 6, 10, 12, 16]
+  n=128 u=38 limite=12 f=[0, 4, 8, 13, 16, 20]

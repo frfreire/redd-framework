@@ -1,0 +1,2329 @@
+{
+ "aviso": "PREVISAO por leitura de codigo + sorteio do build de DRY-RUN (HEAD bc07355); NADA foi simulado. Regerar no commit pinado.",
+ "build": "/tmp/opencode/tm-dry",
+ "harness": "ObservadorTm --listar-byz-faixa (so sorteia e imprime)",
+ "f0": "f=0: 40 celulas sem bizantino (controle honesto); a regra nao e acionada",
+ "abortam_previsto": [
+  {
+   "id": "tvb_n4_f02_s01",
+   "semente": 824346,
+   "n": 4,
+   "f": 2,
+   "bizantinos": [
+    0,
+    3
+   ],
+   "nos_que_violam": {
+    "3": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s02",
+   "semente": 824347,
+   "n": 4,
+   "f": 2,
+   "bizantinos": [
+    0,
+    1
+   ],
+   "nos_que_violam": {
+    "0": "honestos 1a metade=0, 2a=2",
+    "1": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s03",
+   "semente": 824348,
+   "n": 4,
+   "f": 2,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s05",
+   "semente": 824350,
+   "n": 4,
+   "f": 2,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s06",
+   "semente": 824351,
+   "n": 4,
+   "f": 2,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s09",
+   "semente": 824354,
+   "n": 4,
+   "f": 2,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  }
+ ],
+ "resumo_por_n_f": {
+  "n4_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n4_f2": {
+   "fora_da_faixa": true,
+   "abortam": 6,
+   "de": 10,
+   "sementes_que_abortam": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    9
+   ],
+   "k_exec_previsto": 4,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": false
+  },
+  "n7_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n7_f2": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n7_f3": {
+   "fora_da_faixa": true,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n10_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n10_f2": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n10_f3": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n10_f4": {
+   "fora_da_faixa": true,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n13_f1": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n13_f2": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n13_f3": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n13_f4": {
+   "fora_da_faixa": false,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  },
+  "n13_f5": {
+   "fora_da_faixa": true,
+   "abortam": 0,
+   "de": 10,
+   "sementes_que_abortam": [],
+   "k_exec_previsto": 10,
+   "min_exec": 6,
+   "decidivel_pelo_MIN_EXEC": true
+  }
+ },
+ "exaustivo_todos_os_conjuntos_bizantinos_(independe_da_semente_e_do_gerador)": {
+  "n4_f1": {
+   "conjuntos_possiveis": 4,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n4_f2": {
+   "conjuntos_possiveis": 6,
+   "conjuntos_que_abortam": 3,
+   "fracao": 0.5
+  },
+  "n7_f1": {
+   "conjuntos_possiveis": 7,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n7_f2": {
+   "conjuntos_possiveis": 21,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n7_f3": {
+   "conjuntos_possiveis": 35,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n10_f1": {
+   "conjuntos_possiveis": 10,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n10_f2": {
+   "conjuntos_possiveis": 45,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n10_f3": {
+   "conjuntos_possiveis": 120,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n10_f4": {
+   "conjuntos_possiveis": 210,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n13_f1": {
+   "conjuntos_possiveis": 13,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n13_f2": {
+   "conjuntos_possiveis": 78,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n13_f3": {
+   "conjuntos_possiveis": 286,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n13_f4": {
+   "conjuntos_possiveis": 715,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  },
+  "n13_f5": {
+   "conjuntos_possiveis": 1287,
+   "conjuntos_que_abortam": 0,
+   "fracao": 0.0
+  }
+ },
+ "celulas": [
+  {
+   "id": "tvb_n4_f01_s01",
+   "n": 4,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 824346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s02",
+   "n": 4,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 824347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s03",
+   "n": 4,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 824348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s04",
+   "n": 4,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 824349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s05",
+   "n": 4,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 824350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s06",
+   "n": 4,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 824351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s07",
+   "n": 4,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 824352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s08",
+   "n": 4,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 824353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s09",
+   "n": 4,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 824354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f01_s10",
+   "n": 4,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 824355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f02_s01",
+   "n": 4,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 824346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    3
+   ],
+   "aborta_previsto": true,
+   "nos_que_violam": {
+    "3": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s02",
+   "n": 4,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 824347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1
+   ],
+   "aborta_previsto": true,
+   "nos_que_violam": {
+    "0": "honestos 1a metade=0, 2a=2",
+    "1": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s03",
+   "n": 4,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 824348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_previsto": true,
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s04",
+   "n": 4,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 824349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f02_s05",
+   "n": 4,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 824350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_previsto": true,
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s06",
+   "n": 4,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 824351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_previsto": true,
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s07",
+   "n": 4,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 824352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f02_s08",
+   "n": 4,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 824353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n4_f02_s09",
+   "n": 4,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 824354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_previsto": true,
+   "nos_que_violam": {
+    "2": "honestos 1a metade=0, 2a=2"
+   }
+  },
+  {
+   "id": "tvb_n4_f02_s10",
+   "n": 4,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 824355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s01",
+   "n": 7,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 827346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s02",
+   "n": 7,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 827347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s03",
+   "n": 7,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 827348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s04",
+   "n": 7,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 827349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s05",
+   "n": 7,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 827350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s06",
+   "n": 7,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 827351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s07",
+   "n": 7,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 827352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s08",
+   "n": 7,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 827353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s09",
+   "n": 7,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 827354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f01_s10",
+   "n": 7,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 827355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s01",
+   "n": 7,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 827346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s02",
+   "n": 7,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 827347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s03",
+   "n": 7,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 827348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    1
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s04",
+   "n": 7,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 827349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s05",
+   "n": 7,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 827350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s06",
+   "n": 7,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 827351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s07",
+   "n": 7,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 827352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s08",
+   "n": 7,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 827353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s09",
+   "n": 7,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 827354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f02_s10",
+   "n": 7,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 827355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    4
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s01",
+   "n": 7,
+   "f": 3,
+   "replicacao": 1,
+   "semente": 827346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s02",
+   "n": 7,
+   "f": 3,
+   "replicacao": 2,
+   "semente": 827347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s03",
+   "n": 7,
+   "f": 3,
+   "replicacao": 3,
+   "semente": 827348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s04",
+   "n": 7,
+   "f": 3,
+   "replicacao": 4,
+   "semente": 827349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s05",
+   "n": 7,
+   "f": 3,
+   "replicacao": 5,
+   "semente": 827350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s06",
+   "n": 7,
+   "f": 3,
+   "replicacao": 6,
+   "semente": 827351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    5,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s07",
+   "n": 7,
+   "f": 3,
+   "replicacao": 7,
+   "semente": 827352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    3,
+    4,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s08",
+   "n": 7,
+   "f": 3,
+   "replicacao": 8,
+   "semente": 827353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s09",
+   "n": 7,
+   "f": 3,
+   "replicacao": 9,
+   "semente": 827354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n7_f03_s10",
+   "n": 7,
+   "f": 3,
+   "replicacao": 10,
+   "semente": 827355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    4
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s01",
+   "n": 10,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 830346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s02",
+   "n": 10,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 830347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s03",
+   "n": 10,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 830348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s04",
+   "n": 10,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 830349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s05",
+   "n": 10,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 830350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    4
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s06",
+   "n": 10,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 830351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s07",
+   "n": 10,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 830352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s08",
+   "n": 10,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 830353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s09",
+   "n": 10,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 830354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f01_s10",
+   "n": 10,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 830355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s01",
+   "n": 10,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 830346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s02",
+   "n": 10,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 830347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s03",
+   "n": 10,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 830348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s04",
+   "n": 10,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 830349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s05",
+   "n": 10,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 830350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    4
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s06",
+   "n": 10,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 830351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s07",
+   "n": 10,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 830352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s08",
+   "n": 10,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 830353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s09",
+   "n": 10,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 830354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f02_s10",
+   "n": 10,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 830355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s01",
+   "n": 10,
+   "f": 3,
+   "replicacao": 1,
+   "semente": 830346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6,
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s02",
+   "n": 10,
+   "f": 3,
+   "replicacao": 2,
+   "semente": 830347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    2,
+    9
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s03",
+   "n": 10,
+   "f": 3,
+   "replicacao": 3,
+   "semente": 830348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    5,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s04",
+   "n": 10,
+   "f": 3,
+   "replicacao": 4,
+   "semente": 830349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    3,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s05",
+   "n": 10,
+   "f": 3,
+   "replicacao": 5,
+   "semente": 830350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    4,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s06",
+   "n": 10,
+   "f": 3,
+   "replicacao": 6,
+   "semente": 830351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s07",
+   "n": 10,
+   "f": 3,
+   "replicacao": 7,
+   "semente": 830352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s08",
+   "n": 10,
+   "f": 3,
+   "replicacao": 8,
+   "semente": 830353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s09",
+   "n": 10,
+   "f": 3,
+   "replicacao": 9,
+   "semente": 830354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    1,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f03_s10",
+   "n": 10,
+   "f": 3,
+   "replicacao": 10,
+   "semente": 830355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    3,
+    9
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s01",
+   "n": 10,
+   "f": 4,
+   "replicacao": 1,
+   "semente": 830346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    6,
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s02",
+   "n": 10,
+   "f": 4,
+   "replicacao": 2,
+   "semente": 830347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    5,
+    9
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s03",
+   "n": 10,
+   "f": 4,
+   "replicacao": 3,
+   "semente": 830348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    5,
+    6,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s04",
+   "n": 10,
+   "f": 4,
+   "replicacao": 4,
+   "semente": 830349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    3,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s05",
+   "n": 10,
+   "f": 4,
+   "replicacao": 5,
+   "semente": 830350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    3,
+    4,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s06",
+   "n": 10,
+   "f": 4,
+   "replicacao": 6,
+   "semente": 830351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    5,
+    6,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s07",
+   "n": 10,
+   "f": 4,
+   "replicacao": 7,
+   "semente": 830352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s08",
+   "n": 10,
+   "f": 4,
+   "replicacao": 8,
+   "semente": 830353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    5,
+    9
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s09",
+   "n": 10,
+   "f": 4,
+   "replicacao": 9,
+   "semente": 830354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    2,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n10_f04_s10",
+   "n": 10,
+   "f": 4,
+   "replicacao": 10,
+   "semente": 830355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    3,
+    4,
+    9
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s01",
+   "n": 13,
+   "f": 1,
+   "replicacao": 1,
+   "semente": 833346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s02",
+   "n": 13,
+   "f": 1,
+   "replicacao": 2,
+   "semente": 833347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s03",
+   "n": 13,
+   "f": 1,
+   "replicacao": 3,
+   "semente": 833348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s04",
+   "n": 13,
+   "f": 1,
+   "replicacao": 4,
+   "semente": 833349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s05",
+   "n": 13,
+   "f": 1,
+   "replicacao": 5,
+   "semente": 833350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s06",
+   "n": 13,
+   "f": 1,
+   "replicacao": 6,
+   "semente": 833351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s07",
+   "n": 13,
+   "f": 1,
+   "replicacao": 7,
+   "semente": 833352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s08",
+   "n": 13,
+   "f": 1,
+   "replicacao": 8,
+   "semente": 833353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s09",
+   "n": 13,
+   "f": 1,
+   "replicacao": 9,
+   "semente": 833354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f01_s10",
+   "n": 13,
+   "f": 1,
+   "replicacao": 10,
+   "semente": 833355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s01",
+   "n": 13,
+   "f": 2,
+   "replicacao": 1,
+   "semente": 833346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s02",
+   "n": 13,
+   "f": 2,
+   "replicacao": 2,
+   "semente": 833347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s03",
+   "n": 13,
+   "f": 2,
+   "replicacao": 3,
+   "semente": 833348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s04",
+   "n": 13,
+   "f": 2,
+   "replicacao": 4,
+   "semente": 833349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s05",
+   "n": 13,
+   "f": 2,
+   "replicacao": 5,
+   "semente": 833350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s06",
+   "n": 13,
+   "f": 2,
+   "replicacao": 6,
+   "semente": 833351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    5
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s07",
+   "n": 13,
+   "f": 2,
+   "replicacao": 7,
+   "semente": 833352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s08",
+   "n": 13,
+   "f": 2,
+   "replicacao": 8,
+   "semente": 833353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    10
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s09",
+   "n": 13,
+   "f": 2,
+   "replicacao": 9,
+   "semente": 833354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    2
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f02_s10",
+   "n": 13,
+   "f": 2,
+   "replicacao": 10,
+   "semente": 833355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s01",
+   "n": 13,
+   "f": 3,
+   "replicacao": 1,
+   "semente": 833346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    9,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s02",
+   "n": 13,
+   "f": 3,
+   "replicacao": 2,
+   "semente": 833347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    8,
+    10
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s03",
+   "n": 13,
+   "f": 3,
+   "replicacao": 3,
+   "semente": 833348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    5,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s04",
+   "n": 13,
+   "f": 3,
+   "replicacao": 4,
+   "semente": 833349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    1,
+    6
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s05",
+   "n": 13,
+   "f": 3,
+   "replicacao": 5,
+   "semente": 833350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s06",
+   "n": 13,
+   "f": 3,
+   "replicacao": 6,
+   "semente": 833351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s07",
+   "n": 13,
+   "f": 3,
+   "replicacao": 7,
+   "semente": 833352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s08",
+   "n": 13,
+   "f": 3,
+   "replicacao": 8,
+   "semente": 833353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    3,
+    10
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s09",
+   "n": 13,
+   "f": 3,
+   "replicacao": 9,
+   "semente": 833354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    2,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f03_s10",
+   "n": 13,
+   "f": 3,
+   "replicacao": 10,
+   "semente": 833355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    7,
+    8
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s01",
+   "n": 13,
+   "f": 4,
+   "replicacao": 1,
+   "semente": 833346,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    3,
+    9,
+    10,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s02",
+   "n": 13,
+   "f": 4,
+   "replicacao": 2,
+   "semente": 833347,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    7,
+    8,
+    10
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s03",
+   "n": 13,
+   "f": 4,
+   "replicacao": 3,
+   "semente": 833348,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    2,
+    5,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s04",
+   "n": 13,
+   "f": 4,
+   "replicacao": 4,
+   "semente": 833349,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    1,
+    6,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s05",
+   "n": 13,
+   "f": 4,
+   "replicacao": 5,
+   "semente": 833350,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    5,
+    7,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s06",
+   "n": 13,
+   "f": 4,
+   "replicacao": 6,
+   "semente": 833351,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s07",
+   "n": 13,
+   "f": 4,
+   "replicacao": 7,
+   "semente": 833352,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    1,
+    2,
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s08",
+   "n": 13,
+   "f": 4,
+   "replicacao": 8,
+   "semente": 833353,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    3,
+    6,
+    10
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s09",
+   "n": 13,
+   "f": 4,
+   "replicacao": 9,
+   "semente": 833354,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    0,
+    2,
+    5,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f04_s10",
+   "n": 13,
+   "f": 4,
+   "replicacao": 10,
+   "semente": 833355,
+   "fora_da_faixa": false,
+   "bizantinos": [
+    2,
+    7,
+    8,
+    9
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s01",
+   "n": 13,
+   "f": 5,
+   "replicacao": 1,
+   "semente": 833346,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    3,
+    7,
+    9,
+    10,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s02",
+   "n": 13,
+   "f": 5,
+   "replicacao": 2,
+   "semente": 833347,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    7,
+    8,
+    10,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s03",
+   "n": 13,
+   "f": 5,
+   "replicacao": 3,
+   "semente": 833348,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    4,
+    5,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s04",
+   "n": 13,
+   "f": 5,
+   "replicacao": 4,
+   "semente": 833349,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    1,
+    6,
+    10,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s05",
+   "n": 13,
+   "f": 5,
+   "replicacao": 5,
+   "semente": 833350,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    3,
+    5,
+    7,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s06",
+   "n": 13,
+   "f": 5,
+   "replicacao": 6,
+   "semente": 833351,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    3,
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s07",
+   "n": 13,
+   "f": 5,
+   "replicacao": 7,
+   "semente": 833352,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    1,
+    2,
+    4,
+    5,
+    7
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s08",
+   "n": 13,
+   "f": 5,
+   "replicacao": 8,
+   "semente": 833353,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    3,
+    5,
+    6,
+    10
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s09",
+   "n": 13,
+   "f": 5,
+   "replicacao": 9,
+   "semente": 833354,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    0,
+    2,
+    5,
+    6,
+    11
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  },
+  {
+   "id": "tvb_n13_f05_s10",
+   "n": 13,
+   "f": 5,
+   "replicacao": 10,
+   "semente": 833355,
+   "fora_da_faixa": true,
+   "bizantinos": [
+    2,
+    7,
+    8,
+    9,
+    12
+   ],
+   "aborta_previsto": false,
+   "nos_que_violam": {}
+  }
+ ]
+}

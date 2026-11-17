@@ -62,5 +62,15 @@ public abstract class AbstractChainBasedConsensus<B extends SingleParentBlock<B>
         this.peerBlockchainNode = peerBlockchainNode;
     }
 
+    /**
+     * D2 (ADR-0015, registro de 10/11/2026): {@code true} se este consenso SEPARA a autoentrega do C_B principal e a
+     * entrega ao {@code BlockFinalizationEvent} (coluna propria). Padrao {@code false}: os que ja filtravam a autoentrega
+     * (DAGsper, HotStuff, Tendermint) nao ganham coluna e a saida deles nao muda. So PBFT, Parlia, Casper e Nakamoto
+     * (os que a contavam) devolvem {@code true}.
+     */
+    public boolean separatesSelfDelivery() {
+        return false;
+    }
+
     abstract protected void updateChain();
 }

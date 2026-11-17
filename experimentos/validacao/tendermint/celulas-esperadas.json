@@ -1,0 +1,4067 @@
+{
+ "n_por_bloco": {
+  "va": 25,
+  "vc": 10,
+  "vb": 180
+ },
+ "n_total": 215,
+ "observacao": "RASCUNHO da etapa 1; vb listado para pre-registro; NAO executar antes do pino e do commit do pre-registro",
+ "celulas": {
+  "va": [
+   {
+    "id": "tva_n4_s01",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 624346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n4_s02",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 624347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n4_s03",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 624348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n4_s04",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 624349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n4_s05",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 624350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n7_s01",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 627346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n7_s02",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 627347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n7_s03",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 627348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n7_s04",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 627349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n7_s05",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 627350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n10_s01",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 630346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n10_s02",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 630347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n10_s03",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 630348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n10_s04",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 630349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n10_s05",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 630350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n16_s01",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 636346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n16_s02",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 636347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n16_s03",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 636348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n16_s04",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 636349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n16_s05",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 636350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n31_s01",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 651346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n31_s02",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 651347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n31_s03",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 651348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n31_s04",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 651349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tva_n31_s05",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 651350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   }
+  ],
+  "vc": [
+   {
+    "id": "tvc_n4_s01",
+    "bloco": "vc",
+    "n": 4,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 924346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n4_s02",
+    "bloco": "vc",
+    "n": 4,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 924347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n4_s03",
+    "bloco": "vc",
+    "n": 4,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 924348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n4_s04",
+    "bloco": "vc",
+    "n": 4,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 924349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n4_s05",
+    "bloco": "vc",
+    "n": 4,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 924350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n16_s01",
+    "bloco": "vc",
+    "n": 16,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 936346,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n16_s02",
+    "bloco": "vc",
+    "n": 16,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 936347,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n16_s03",
+    "bloco": "vc",
+    "n": 16,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 936348,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n16_s04",
+    "bloco": "vc",
+    "n": 16,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 936349,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   },
+   {
+    "id": "tvc_n16_s05",
+    "bloco": "vc",
+    "n": 16,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 936350,
+    "duracao_s": 120,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    }
+   }
+  ],
+  "vb": [
+   {
+    "id": "tvb_n4_f00_s01",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 824346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s02",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 824347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s03",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 824348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s04",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 824349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s05",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 824350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s06",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 6,
+    "semente": 824351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s07",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 7,
+    "semente": 824352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s08",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 8,
+    "semente": 824353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s09",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 9,
+    "semente": 824354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f00_s10",
+    "bloco": "vb",
+    "n": 4,
+    "f": 0,
+    "replicacao": 10,
+    "semente": 824355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s01",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 1,
+    "semente": 824346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s02",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 2,
+    "semente": 824347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s03",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 3,
+    "semente": 824348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s04",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 4,
+    "semente": 824349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s05",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 5,
+    "semente": 824350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s06",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 6,
+    "semente": 824351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s07",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 7,
+    "semente": 824352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s08",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 8,
+    "semente": 824353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s09",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 9,
+    "semente": 824354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f01_s10",
+    "bloco": "vb",
+    "n": 4,
+    "f": 1,
+    "replicacao": 10,
+    "semente": 824355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n4_f02_s01",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 1,
+    "semente": 824346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s02",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 2,
+    "semente": 824347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s03",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 3,
+    "semente": 824348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s04",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 4,
+    "semente": 824349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s05",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 5,
+    "semente": 824350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s06",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 6,
+    "semente": 824351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s07",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 7,
+    "semente": 824352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s08",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 8,
+    "semente": 824353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s09",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 9,
+    "semente": 824354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n4_f02_s10",
+    "bloco": "vb",
+    "n": 4,
+    "f": 2,
+    "replicacao": 10,
+    "semente": 824355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f00_s01",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 827346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s02",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 827347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s03",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 827348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s04",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 827349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s05",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 827350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s06",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 6,
+    "semente": 827351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s07",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 7,
+    "semente": 827352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s08",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 8,
+    "semente": 827353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s09",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 9,
+    "semente": 827354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f00_s10",
+    "bloco": "vb",
+    "n": 7,
+    "f": 0,
+    "replicacao": 10,
+    "semente": 827355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s01",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 1,
+    "semente": 827346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s02",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 2,
+    "semente": 827347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s03",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 3,
+    "semente": 827348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s04",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 4,
+    "semente": 827349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s05",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 5,
+    "semente": 827350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s06",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 6,
+    "semente": 827351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s07",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 7,
+    "semente": 827352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s08",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 8,
+    "semente": 827353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s09",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 9,
+    "semente": 827354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f01_s10",
+    "bloco": "vb",
+    "n": 7,
+    "f": 1,
+    "replicacao": 10,
+    "semente": 827355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s01",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 1,
+    "semente": 827346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s02",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 2,
+    "semente": 827347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s03",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 3,
+    "semente": 827348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s04",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 4,
+    "semente": 827349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s05",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 5,
+    "semente": 827350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s06",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 6,
+    "semente": 827351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s07",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 7,
+    "semente": 827352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s08",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 8,
+    "semente": 827353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s09",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 9,
+    "semente": 827354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f02_s10",
+    "bloco": "vb",
+    "n": 7,
+    "f": 2,
+    "replicacao": 10,
+    "semente": 827355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n7_f03_s01",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 1,
+    "semente": 827346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s02",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 2,
+    "semente": 827347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s03",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 3,
+    "semente": 827348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s04",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 4,
+    "semente": 827349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s05",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 5,
+    "semente": 827350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s06",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 6,
+    "semente": 827351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s07",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 7,
+    "semente": 827352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s08",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 8,
+    "semente": 827353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s09",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 9,
+    "semente": 827354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n7_f03_s10",
+    "bloco": "vb",
+    "n": 7,
+    "f": 3,
+    "replicacao": 10,
+    "semente": 827355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f00_s01",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 830346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s02",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 830347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s03",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 830348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s04",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 830349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s05",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 830350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s06",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 6,
+    "semente": 830351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s07",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 7,
+    "semente": 830352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s08",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 8,
+    "semente": 830353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s09",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 9,
+    "semente": 830354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f00_s10",
+    "bloco": "vb",
+    "n": 10,
+    "f": 0,
+    "replicacao": 10,
+    "semente": 830355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s01",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 1,
+    "semente": 830346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s02",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 2,
+    "semente": 830347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s03",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 3,
+    "semente": 830348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s04",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 4,
+    "semente": 830349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s05",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 5,
+    "semente": 830350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s06",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 6,
+    "semente": 830351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s07",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 7,
+    "semente": 830352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s08",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 8,
+    "semente": 830353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s09",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 9,
+    "semente": 830354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f01_s10",
+    "bloco": "vb",
+    "n": 10,
+    "f": 1,
+    "replicacao": 10,
+    "semente": 830355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s01",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 1,
+    "semente": 830346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s02",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 2,
+    "semente": 830347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s03",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 3,
+    "semente": 830348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s04",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 4,
+    "semente": 830349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s05",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 5,
+    "semente": 830350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s06",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 6,
+    "semente": 830351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s07",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 7,
+    "semente": 830352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s08",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 8,
+    "semente": 830353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s09",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 9,
+    "semente": 830354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f02_s10",
+    "bloco": "vb",
+    "n": 10,
+    "f": 2,
+    "replicacao": 10,
+    "semente": 830355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s01",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 1,
+    "semente": 830346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s02",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 2,
+    "semente": 830347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s03",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 3,
+    "semente": 830348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s04",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 4,
+    "semente": 830349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s05",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 5,
+    "semente": 830350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s06",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 6,
+    "semente": 830351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s07",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 7,
+    "semente": 830352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s08",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 8,
+    "semente": 830353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s09",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 9,
+    "semente": 830354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f03_s10",
+    "bloco": "vb",
+    "n": 10,
+    "f": 3,
+    "replicacao": 10,
+    "semente": 830355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n10_f04_s01",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 1,
+    "semente": 830346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s02",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 2,
+    "semente": 830347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s03",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 3,
+    "semente": 830348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s04",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 4,
+    "semente": 830349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s05",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 5,
+    "semente": 830350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s06",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 6,
+    "semente": 830351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s07",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 7,
+    "semente": 830352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s08",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 8,
+    "semente": 830353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s09",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 9,
+    "semente": 830354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n10_f04_s10",
+    "bloco": "vb",
+    "n": 10,
+    "f": 4,
+    "replicacao": 10,
+    "semente": 830355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f00_s01",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 833346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s02",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 833347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s03",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 833348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s04",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 833349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s05",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 833350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s06",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 6,
+    "semente": 833351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s07",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 7,
+    "semente": 833352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s08",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 8,
+    "semente": 833353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s09",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 9,
+    "semente": 833354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f00_s10",
+    "bloco": "vb",
+    "n": 13,
+    "f": 0,
+    "replicacao": 10,
+    "semente": 833355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s01",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 1,
+    "semente": 833346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s02",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 2,
+    "semente": 833347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s03",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 3,
+    "semente": 833348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s04",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 4,
+    "semente": 833349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s05",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 5,
+    "semente": 833350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s06",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 6,
+    "semente": 833351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s07",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 7,
+    "semente": 833352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s08",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 8,
+    "semente": 833353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s09",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 9,
+    "semente": 833354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f01_s10",
+    "bloco": "vb",
+    "n": 13,
+    "f": 1,
+    "replicacao": 10,
+    "semente": 833355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s01",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 1,
+    "semente": 833346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s02",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 2,
+    "semente": 833347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s03",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 3,
+    "semente": 833348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s04",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 4,
+    "semente": 833349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s05",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 5,
+    "semente": 833350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s06",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 6,
+    "semente": 833351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s07",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 7,
+    "semente": 833352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s08",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 8,
+    "semente": 833353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s09",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 9,
+    "semente": 833354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f02_s10",
+    "bloco": "vb",
+    "n": 13,
+    "f": 2,
+    "replicacao": 10,
+    "semente": 833355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s01",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 1,
+    "semente": 833346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s02",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 2,
+    "semente": 833347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s03",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 3,
+    "semente": 833348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s04",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 4,
+    "semente": 833349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s05",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 5,
+    "semente": 833350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s06",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 6,
+    "semente": 833351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s07",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 7,
+    "semente": 833352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s08",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 8,
+    "semente": 833353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s09",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 9,
+    "semente": 833354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f03_s10",
+    "bloco": "vb",
+    "n": 13,
+    "f": 3,
+    "replicacao": 10,
+    "semente": 833355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s01",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 1,
+    "semente": 833346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s02",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 2,
+    "semente": 833347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s03",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 3,
+    "semente": 833348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s04",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 4,
+    "semente": 833349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s05",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 5,
+    "semente": 833350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s06",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 6,
+    "semente": 833351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s07",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 7,
+    "semente": 833352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s08",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 8,
+    "semente": 833353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s09",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 9,
+    "semente": 833354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f04_s10",
+    "bloco": "vb",
+    "n": 13,
+    "f": 4,
+    "replicacao": 10,
+    "semente": 833355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": false
+   },
+   {
+    "id": "tvb_n13_f05_s01",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 1,
+    "semente": 833346,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s02",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 2,
+    "semente": 833347,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s03",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 3,
+    "semente": 833348,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s04",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 4,
+    "semente": 833349,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s05",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 5,
+    "semente": 833350,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s06",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 6,
+    "semente": 833351,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s07",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 7,
+    "semente": 833352,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s08",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 8,
+    "semente": 833353,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s09",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 9,
+    "semente": 833354,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   },
+   {
+    "id": "tvb_n13_f05_s10",
+    "bloco": "vb",
+    "n": 13,
+    "f": 5,
+    "replicacao": 10,
+    "semente": 833355,
+    "duracao_s": 300,
+    "L": 100,
+    "timeouts_s": {
+     "propose": 3.0,
+     "propose_delta": 0.5,
+     "prevote": 1.0,
+     "prevote_delta": 0.5,
+     "precommit": 1.0,
+     "precommit_delta": 0.5
+    },
+    "fora_da_faixa": true
+   }
+  ]
+ }
+}
