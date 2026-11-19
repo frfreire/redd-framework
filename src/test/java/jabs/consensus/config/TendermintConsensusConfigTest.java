@@ -12,6 +12,7 @@ class TendermintConsensusConfigTest {
     private static TendermintConsensusConfig.Builder semOverhead() {
         return TendermintConsensusConfig.builder()
                 .timeouts(new TendermintTimeouts(1.0, 0.5, 1.0, 0.5, 1.0, 0.5))
+                .maxFutureHorizon(1000L)
                 .batchSize(20)
                 .txSizeBytes(512)
                 .signatureSizeBytes(64) // FIXTURE somente de teste, nao e valor de pesquisa
@@ -21,6 +22,7 @@ class TendermintConsensusConfigTest {
     private static TendermintConsensusConfig.Builder semAssinaturaProponente() {
         return TendermintConsensusConfig.builder()
                 .timeouts(new TendermintTimeouts(1.0, 0.5, 1.0, 0.5, 1.0, 0.5))
+                .maxFutureHorizon(1000L)
                 .batchSize(20)
                 .txSizeBytes(512)
                 .messageOverheadBytes(10) // FIXTURE somente de teste, nao e valor de pesquisa
@@ -30,6 +32,7 @@ class TendermintConsensusConfigTest {
     private static TendermintConsensusConfig.Builder semAssinatura() {
         return TendermintConsensusConfig.builder()
                 .timeouts(new TendermintTimeouts(1.0, 0.5, 1.0, 0.5, 1.0, 0.5))
+                .maxFutureHorizon(1000L)
                 .batchSize(20)
                 .txSizeBytes(512)
                 .messageOverheadBytes(10) // FIXTURE somente de teste, nao e valor de pesquisa
@@ -38,7 +41,8 @@ class TendermintConsensusConfigTest {
 
     @Test
     void buildSemMessageOverheadFalhaAlto() {
-        IllegalStateException e = assertThrows(IllegalStateException.class, () -> semOverhead().build());
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> semOverhead()
+                .maxFutureHorizon(1000L).build());
         assertTrue(e.getMessage().contains("messageOverheadBytes"), e.getMessage());
     }
 

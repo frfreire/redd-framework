@@ -36,7 +36,7 @@ class MVPComparisonNaoRegressaoTest {
     private static final String[] TM_FIXTURE = {
             "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
             "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=10", "--tm-tx-size=512",
-            "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10"};
+            "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"};
 
     private static String referencia(String caminho) throws IOException {
         try (InputStream in = MVPComparisonNaoRegressaoTest.class.getResourceAsStream(RAIZ + caminho)) {
@@ -165,7 +165,7 @@ class MVPComparisonNaoRegressaoTest {
 
     @Test
     void arqMesmaSaidaQueABaseline45eb3e7(@TempDir Path tmp) throws Exception {
-        MVPComparison.main(new String[] {"--protocols=ARQ", "--validators=7", "--trials=1", "--duration=60",
+        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
                 "--seed=1", "--output=" + tmp});
         confereComAutoentrega(Files.readString(tmp.resolve("arq-7v-t0.csv")),
                 referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"), "ARQ n=7 seed=1 (arq-7v-t0.csv)");
@@ -188,7 +188,7 @@ class MVPComparisonNaoRegressaoTest {
     @Test
     void protocoloEmMinusculasEComEspacosEquivaleAoCanonico(@TempDir Path tmp) throws Exception {
         // A normalizacao compartilhada (trim + maiusculas) e o que o diff de 45eb3e7 tocou: "  arq " tem de rodar como ARQ.
-        MVPComparison.main(new String[] {"--protocols=  arq ", "--validators=7", "--trials=1", "--duration=60",
+        MVPComparison.main(new String[] {"--protocols=  arq ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
                 "--seed=1", "--output=" + tmp});
         confereComAutoentrega(Files.readString(tmp.resolve("arq-7v-t0.csv")),
                 referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"), "ARQ via '  arq '");

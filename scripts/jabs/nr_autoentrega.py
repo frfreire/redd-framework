@@ -47,8 +47,9 @@ HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch
       "--hs-voter-encoding=BITMAP"]
 TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
-      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10"]
-EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM}
+      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
+PBFT = ["--pbft-max-future-horizon=1000"]  # teto de retencao do PBFT: obrigatorio, sem padrao (a base antiga ignora o flag)
+EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM, "ARQ": PBFT}
 COLUNA_NOVA = "Cb_autoentrega_B"
 COLUNA_CONSENSO = "Cb_autoentrega_consenso_B"
 COL_TRAFEGO = {"TrafficUntilFinalization", "Cb_AvgTraffic_MB", "TrafficConsensusUntilFinalization"}
@@ -285,7 +286,7 @@ def sweep(raiz, saida: Path, tipo, n, maxbyz, ataque, semente, dur, extras=()):
     saida.mkdir(parents=True, exist_ok=True)
     return java(raiz, ["jabs.example.ByzantineSweep", f"--type={tipo}", f"--validators={n}", f"--max-byz={maxbyz}",
                        "--trials=1", f"--duration={dur}", f"--attack={ataque}", f"--seed={semente}",
-                       f"--out={saida / 's.csv'}", *extras], timeout=3600)
+                       f"--out={saida / 's.csv'}", *(["--pbft-max-future-horizon=1000"] if tipo == "VOTING" else []), *extras], timeout=3600)
 
 
 def caso_c(base, atual, saida, semente):

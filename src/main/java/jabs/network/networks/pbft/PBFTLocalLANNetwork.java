@@ -22,11 +22,11 @@ public class PBFTLocalLANNetwork extends Network<PBFTNode, SingleNodeType> {
         super(randomnessEngine, new LAN100MNetworkStats(randomnessEngine));
     }
 
-    public PBFTNode createNewPBFTNode(Simulator simulator, int nodeID, int numAllParticipants) {
+    public PBFTNode createNewPBFTNode(Simulator simulator, int nodeID, int numAllParticipants, long maxFutureHorizon) {
         return new PBFTNode(simulator, this, nodeID,
                 this.sampleDownloadBandwidth(SingleNodeType.LAN_NODE),
                 this.sampleUploadBandwidth(SingleNodeType.LAN_NODE),
-                numAllParticipants);
+                numAllParticipants, maxFutureHorizon);
     }
 
 
@@ -38,7 +38,7 @@ public class PBFTLocalLANNetwork extends Network<PBFTNode, SingleNodeType> {
     @Override
     public void populateNetwork(Simulator simulator, int numNodes, ConsensusAlgorithmConfig pbftConsensusConfig) {
         for (int i = 0; i < numNodes; i++) {
-            this.addNode(createNewPBFTNode(simulator, i, numNodes), SingleNodeType.LAN_NODE);
+            this.addNode(createNewPBFTNode(simulator, i, numNodes, ((PBFTConsensusConfig) pbftConsensusConfig).getMaxFutureHorizon()), SingleNodeType.LAN_NODE);
         }
 
         for (Node node:this.getAllNodes()) {

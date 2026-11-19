@@ -61,7 +61,7 @@ class HotStuffLocalLANNetworkTest {
         HotStuffLocalLANNetwork net = new HotStuffLocalLANNetwork(new RandomnessEngine(1));
         assertThrows(IllegalArgumentException.class, () -> net.populateNetwork(new Simulator(), 4, null));
         assertThrows(IllegalArgumentException.class, () -> net.populateNetwork(new Simulator(), 4,
-                new jabs.consensus.config.PBFTConsensusConfig()));
+                new jabs.consensus.config.PBFTConsensusConfig(1000L)));
         assertThrows(UnsupportedOperationException.class, () -> net.populateNetwork(new Simulator(), config()));
     }
 

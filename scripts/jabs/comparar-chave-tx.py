@@ -42,7 +42,7 @@ HS_REF = ["--hs-view-timeout=60", "--hs-max-future-view-horizon=1000", "--hs-bat
 HS_PEQ = [f if not f.startswith("--hs-batch-size") else "--hs-batch-size=20" for f in HS_REF]
 TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
-      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10"]
+      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
 
 # nome, protocolo, n, duracao_s, flags
 CASOS = [

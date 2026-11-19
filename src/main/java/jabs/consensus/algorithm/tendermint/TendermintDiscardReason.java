@@ -16,5 +16,10 @@ public enum TendermintDiscardReason {
     /** Timeout de (h, r, passo) que o no ja ultrapassou (funcoes 57-65). */
     STALE_TIMEOUT,
     /** Proposta cujo valor falha {@code valid(h, v)}: nao e ignorada, o no prevota nil (linhas 22-33). */
-    INVALID_VALUE
+    INVALID_VALUE,
+    /**
+     * Altura ou round alem do teto de retencao ({@code maxFutureHorizon}): descartada SEM armazenar (nao ocupa a
+     * retencao). Paridade com o {@code maxFutureViewHorizon} do HotStuff (tarefa PARIDADE-teto-retencao-pbft-tendermint).
+     */
+    FUTURE_BEYOND_HORIZON
 }

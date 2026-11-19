@@ -22,7 +22,8 @@ class TendermintVoteMessageTest {
                 .messageOverheadBytes(overhead)
                 .signatureSizeBytes(signature)
                 .proposerSignatureSizeBytes(77) // FIXTURE somente de teste, nao e valor de pesquisa; nao afeta o voto
-                .build();
+                
+                .maxFutureHorizon(1000L).build();
     }
 
     private static int tamanho(TendermintConsensusConfig cfg) {

@@ -14,10 +14,11 @@ public class PBFTNode extends PeerBlockchainNode<PBFTBlock, PBFTTx> {
                         public static final PBFTBlock PBFT_GENESIS_BLOCK =
             new PBFTBlock(0, 0, 0, null, null);
 
-    public PBFTNode(Simulator simulator, Network network, int nodeID, long downloadBandwidth, long uploadBandwidth, int numAllParticipants) {
+    public PBFTNode(Simulator simulator, Network network, int nodeID, long downloadBandwidth, long uploadBandwidth, int numAllParticipants,
+                    long maxFutureHorizon) {
         super(simulator, network, nodeID, downloadBandwidth, uploadBandwidth,
                 new PBFTP2P(),
-                new PBFT<>(new LocalBlockTree<>(PBFT_GENESIS_BLOCK), numAllParticipants)
+                new PBFT<>(new LocalBlockTree<>(PBFT_GENESIS_BLOCK), numAllParticipants, maxFutureHorizon)
         );
         this.consensusAlgorithm.setNode(this);
     }

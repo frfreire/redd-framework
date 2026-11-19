@@ -55,7 +55,8 @@ class CbRedeMedidaTest {
         return TendermintConsensusConfig.builder()
                 .timeouts(new TendermintTimeouts(1.0, 0.5, 1.0, 0.5, 1.0, 0.5))
                 .batchSize(BATCH).txSizeBytes(TX).messageOverheadBytes(O).signatureSizeBytes(S)
-                .proposerSignatureSizeBytes(SP).build();
+                .proposerSignatureSizeBytes(SP)
+                .maxFutureHorizon(1000L).build();
     }
 
     private static final class Run {

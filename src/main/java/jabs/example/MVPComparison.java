@@ -58,6 +58,7 @@ public class MVPComparison {
         configureLoadRecord(cli.get("load-record"), cli.get("load-record-t0"));
         java.util.List<Integer> validatorsList = parseIntList(cli.getOrDefault("validators", "200"));
         java.util.List<String> protocolList = parseStringList(cli.getOrDefault("protocols", "EARTH"));
+        pbftMaxFutureHorizon = parsePbftMaxFutureHorizonIfRequested(protocolList, cli);
         TendermintConsensusConfig tendermintConfig = parseTendermintConfigIfRequested(protocolList, cli);
         if (tendermintConfig != null) {
             for (int validators : validatorsList) {
@@ -230,7 +231,7 @@ public class MVPComparison {
             "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0",
             "tm-propose-timeout", "tm-propose-delta", "tm-prevote-timeout", "tm-prevote-delta",
             "tm-precommit-timeout", "tm-precommit-delta", "tm-batch-size", "tm-tx-size", "tm-message-overhead",
-            "tm-signature-size", "tm-proposer-signature-size",
+            "tm-signature-size", "tm-proposer-signature-size", "tm-max-future-horizon", "pbft-max-future-horizon",
             "hs-view-timeout", "hs-max-future-view-horizon", "hs-batch-size", "hs-tx-size",
             "hs-individual-signature-size", "hs-aggregated-signature-size", "hs-aggregated-share-size",
             "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding",
@@ -310,8 +311,33 @@ public class MVPComparison {
                 .txSizeBytes(requiredInt(cli, "tm-tx-size"))
                 .messageOverheadBytes(requiredInt(cli, "tm-message-overhead"))
                 .signatureSizeBytes(requiredInt(cli, "tm-signature-size"))
-                .proposerSignatureSizeBytes(requiredInt(cli, "tm-proposer-signature-size"));
+                .proposerSignatureSizeBytes(requiredInt(cli, "tm-proposer-signature-size"))
+                .maxFutureHorizon(requiredLong(cli, "tm-max-future-horizon", "TENDERMINT"));
         return builder.build();
+    }
+
+    /** Teto de retencao do PBFT (ARQ): lido do CLI uma vez, antes de qualquer simulacao; {@code null} se ARQ nao foi pedido. */
+    private static Long pbftMaxFutureHorizon;
+
+    static Long parsePbftMaxFutureHorizonIfRequested(java.util.List<String> protocolList, java.util.Map<String, String> cli) {
+        boolean requested = false;
+        for (String p : protocolList) {
+            if ("ARQ".equals(p.trim().toUpperCase(java.util.Locale.ROOT))) {
+                requested = true;
+                break;
+            }
+        }
+        if (!requested) {
+            return null;
+        }
+        return requiredLong(cli, "pbft-max-future-horizon", "ARQ");
+    }
+
+    private static long requirePbftMaxFutureHorizon() {
+        if (pbftMaxFutureHorizon == null) {
+            throw new IllegalStateException("pbft-max-future-horizon nao foi lido: protocolo ARQ exige --pbft-max-future-horizon=valor");
+        }
+        return pbftMaxFutureHorizon;
     }
 
     private static String requiredCliValue(java.util.Map<String, String> cli, String flag) {
@@ -1180,6 +1206,7 @@ public class MVPComparison {
                     totalValidators,
                     duration,
                     ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
+            scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
             scenario.addMetricsLogger(outputPath);
             attachLoadRecorder(scenario, "ARQ", seed, outputPath);
             System.out.println(

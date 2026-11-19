@@ -62,6 +62,7 @@ class BlockFinalizationLoggerAutoentregaTest {
 
     private static Captura rodaArq(Path csv) throws IOException {
         ArqReddVotingScenario sc = new ArqReddVotingScenario("autoentrega-basic", 1, 4, 20.0);
+        sc.setMaxFutureHorizon(1000L);
         Captura logger = new Captura(csv);
         sc.AddNewLogger(logger);
         sc.run();

@@ -138,6 +138,6 @@ class TendermintLocalLANNetworkTest {
         assertThrows(UnsupportedOperationException.class, () -> net.populateNetwork(new Simulator(), config));
         assertThrows(IllegalArgumentException.class, () -> net.populateNetwork(new Simulator(), N, null));
         assertThrows(IllegalArgumentException.class, () -> net.populateNetwork(new Simulator(), N,
-                new jabs.consensus.config.PBFTConsensusConfig()));
+                new jabs.consensus.config.PBFTConsensusConfig(1000L)));
     }
 }

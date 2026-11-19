@@ -27,6 +27,7 @@ public final class TendermintTestConfig {
                 .messageOverheadBytes(TEST_FIXTURE_MESSAGE_OVERHEAD_BYTES)
                 .signatureSizeBytes(TEST_FIXTURE_SIGNATURE_SIZE_BYTES)
                 .proposerSignatureSizeBytes(TEST_FIXTURE_PROPOSER_SIGNATURE_SIZE_BYTES)
-                .build();
+                
+                .maxFutureHorizon(1000L).build();
     }
 }

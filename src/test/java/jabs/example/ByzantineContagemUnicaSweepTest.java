@@ -139,10 +139,10 @@ class ByzantineContagemUnicaSweepTest {
         assertTrue(posa.getMessage().contains("n=3") && posa.getMessage().contains("floor((n-1)/3)=0"), posa.getMessage());
         assertFalse(Files.exists(tmp.resolve("sem-posa")));
         // "false" explicito equivale a ausente
-        assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(sweep("sem-false", "--type=VOTING",
+        assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(sweep("sem-false", "--type=VOTING", "--pbft-max-future-horizon=1000",
                 "--validators=10", "--max-byz=4", "--allow-beyond-bft-threshold=false")));
         // valor invalido da flag falha alto mesmo dentro da faixa
-        assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(sweep("sem-ruim", "--type=VOTING",
+        assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(sweep("sem-ruim", "--type=VOTING", "--pbft-max-future-horizon=1000",
                 "--validators=10", "--max-byz=1", "--allow-beyond-bft-threshold=TRUE")));
     }
 
@@ -150,7 +150,7 @@ class ByzantineContagemUnicaSweepTest {
     void sweep_fora_da_faixa_com_flag_roda_e_rotula_por_f_so_o_que_esta_fora() throws IOException {
         // trials=0 -> cabecalho e falha NAO_MEDIDO (padrao do NetworkSizingTest): o arquivo traz so as linhas de cabecalho
         Path csv = tmp.resolve("com").resolve("s.csv");
-        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("com", "--type=VOTING", "--validators=10",
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("com", "--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10",
                 "--max-byz=5", "--allow-beyond-bft-threshold=true")));
         String txt = Files.readString(csv);
         for (int f : new int[] {4, 5}) {
@@ -160,9 +160,9 @@ class ByzantineContagemUnicaSweepTest {
             assertFalse(txt.contains("byzantine_count=" + f + " "), "dentro da faixa nao rotula: f=" + f);
         }
         // dentro da faixa, com ou sem a flag: CSV identico byte a byte
-        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("dentro-a", "--type=VOTING",
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("dentro-a", "--type=VOTING", "--pbft-max-future-horizon=1000",
                 "--validators=10", "--max-byz=3")));
-        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("dentro-b", "--type=VOTING",
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("dentro-b", "--type=VOTING", "--pbft-max-future-horizon=1000",
                 "--validators=10", "--max-byz=3", "--allow-beyond-bft-threshold=true")));
         assertEquals(Files.readString(tmp.resolve("dentro-a").resolve("s.csv")),
                 Files.readString(tmp.resolve("dentro-b").resolve("s.csv")));
@@ -191,7 +191,7 @@ class ByzantineContagemUnicaSweepTest {
         assertTrue(Files.readString(csv).startsWith("protocol,n,f,"), "legacy dentro da faixa: so o cabecalho de colunas");
         // VOTING (separa a autoentrega, D2): so as 2 linhas '#' de D2 (nenhuma de dimensionamento/faixa) antes do cabecalho
         Path csvV = tmp.resolve("legv").resolve("s.csv");
-        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("legv", "--type=VOTING", "--validators=10",
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("legv", "--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10",
                 "--max-byz=3")));
         List<String> linhas = Files.readAllLines(csvV);
         assertTrue(linhas.get(0).startsWith("# D2 ") && linhas.get(1).startsWith("# Seed=1 ")
@@ -207,7 +207,7 @@ class ByzantineContagemUnicaSweepTest {
         // fim, lista sem fim). Agora o teto min(maxByz, universo) e checado ANTES: falha alto, mensagem clara, nada gravado.
         for (String max : new String[] {"2147483647", "2147483646", "11"}) {
             IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                    () -> ByzantineSweep.run(sweep("absurdo-" + max, "--type=VOTING", "--validators=10", "--max-byz=" + max)), max);
+                    () -> ByzantineSweep.run(sweep("absurdo-" + max, "--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--max-byz=" + max)), max);
             assertTrue(e.getMessage().contains("--max-byz") && e.getMessage().contains("maior que o universo de sorteio")
                     && e.getMessage().contains("f=" + max) && e.getMessage().contains("10 no(s)")
                     && e.getMessage().contains("n_validadores") && e.getMessage().contains("tipo VOTING"), e.getMessage());
@@ -215,7 +215,7 @@ class ByzantineContagemUnicaSweepTest {
         }
         // a flag nao libera f > universo (so f > floor((n-1)/3))
         IllegalArgumentException comFlag = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
-                sweep("absurdo-flag", "--type=VOTING", "--validators=10", "--max-byz=2147483647",
+                sweep("absurdo-flag", "--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--max-byz=2147483647",
                         "--allow-beyond-bft-threshold=true")));
         assertTrue(comFlag.getMessage().contains("nao libera f > universo"), comFlag.getMessage());
         // POW (sem faixa BFT) tambem: o limite de universo vale para todos os tipos
@@ -227,7 +227,7 @@ class ByzantineContagemUnicaSweepTest {
     void sweep_max_byz_negativo_falha_alto_sem_arquivo() {
         for (String max : new String[] {"-1", "-2147483648"}) {
             IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                    () -> ByzantineSweep.run(sweep("neg-" + max, "--type=VOTING", "--validators=10", "--max-byz=" + max)), max);
+                    () -> ByzantineSweep.run(sweep("neg-" + max, "--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--max-byz=" + max)), max);
             assertTrue(e.getMessage().contains("--max-byz") && e.getMessage().contains("negativa")
                     && e.getMessage().contains("f=" + max), e.getMessage());
             assertFalse(Files.exists(tmp.resolve("neg-" + max)), "nada gravado: " + max);
@@ -238,7 +238,7 @@ class ByzantineContagemUnicaSweepTest {
     void sweep_max_byz_igual_ao_universo_ainda_passa_pelo_teto() {
         // max-byz == universo NAO e rejeitado pelo teto novo (cai na faixa BFT, como antes, com a mensagem de faixa)
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> ByzantineSweep.run(sweep("igual", "--type=VOTING", "--validators=10", "--max-byz=10")));
+                () -> ByzantineSweep.run(sweep("igual", "--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--max-byz=10")));
         assertTrue(e.getMessage().contains("fora da faixa BFT"), e.getMessage());
     }
 }

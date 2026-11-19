@@ -68,7 +68,7 @@ class MVPComparisonAutoentregaCsvTest {
 
     @Test
     void arqGravaAditivoELegacyNaoGanhaColuna(@TempDir Path tmp) throws Exception {
-        MVPComparison.main(new String[] {"--protocols=ARQ", "--validators=4", "--trials=1", "--duration=20",
+        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=4", "--trials=1", "--duration=20",
                 "--seed=1", "--output=" + tmp});
         List<String> agg = Files.readAllLines(tmp.resolve("mvp-results.csv"));
         assertEquals("project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std", agg.get(0),

@@ -63,8 +63,10 @@ import java.util.function.LongFunction;
  *   <li>Poder de voto igual para todos ({@link TendermintQuorum});</li>
  *   <li>Sem {@code timeoutCommit} (espera apos decidir, propria do CometBFT): ao decidir, o no comeca a altura
  *       seguinte imediatamente, como no artigo. Se for modelado, e no adaptador;</li>
- *   <li>A memoria nao tem teto (como a retencao do HotStuff): um bizantino pode mandar muitas alturas futuras ou
- *       muitos votos distintos por round. Ver {@link #peakFutureMessages()} e {@link #equivocationsObserved()}.</li>
+ *   <li>Teto de retencao {@code maxFutureHorizon} (obrigatorio, sem padrao; paridade com o HotStuff): altura ou round
+ *       a mais de {@code maxFutureHorizon} a frente do atual e descartado e contado como
+ *       {@link TendermintDiscardReason#FUTURE_BEYOND_HORIZON}. Dentro do teto, um bizantino ainda pode mandar muitos
+ *       votos distintos por round. Ver {@link #peakFutureMessages()} e {@link #equivocationsObserved()}.</li>
  * </ul>
  *
  * @param <V> tipo do valor proposto; {@code equals}/{@code hashCode} sao o {@code id(v)} do artigo
@@ -165,6 +167,8 @@ public final class TendermintCore<V> {
     private boolean started;
     private long height;
     private int round;
+    /** Teto de retencao: alturas e rounds alem disso a frente do estado atual sao descartados sem guardar. > 0, sem padrao. */
+    private final long maxFutureHorizon;
     private TendermintStep step = TendermintStep.PROPOSE;
     private V lockedValue;
     private int lockedRound = -1;
@@ -194,7 +198,11 @@ public final class TendermintCore<V> {
      *              os nos corretos. Valor invalido recebe prevote nil (linhas 22-27 e 28-33) e nunca e decidido
      */
     public TendermintCore(int self, int n, ProposerSelector proposerSelector, LongFunction<V> getValue,
-                          ValidityPredicate<V> valid) {
+                          ValidityPredicate<V> valid, long maxFutureHorizon) {
+        if (maxFutureHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureHorizon deve ser > 0: " + maxFutureHorizon);
+        }
+        this.maxFutureHorizon = maxFutureHorizon;
         this.quorum = new TendermintQuorum(n);
         if (self < 0 || self >= n) {
             throw new IllegalArgumentException("self fora de [0, n): " + self);
@@ -225,7 +233,7 @@ public final class TendermintCore<V> {
     public List<TendermintAction<V>> onProposal(TendermintProposal<V> p) {
         Objects.requireNonNull(p, "proposta");
         List<TendermintAction<V>> out = new ArrayList<>();
-        if (!acceptSender(p.sender()) || !acceptHeight(p.height())) {
+        if (!acceptSender(p.sender()) || !acceptHeight(p.height()) || !acceptRound(p.height(), p.round())) {
             return out;
         }
         if (proposerSelector.proposer(p.height(), p.round()) != p.sender()) {
@@ -250,7 +258,7 @@ public final class TendermintCore<V> {
     public List<TendermintAction<V>> onVote(TendermintVote<V> v) {
         Objects.requireNonNull(v, "voto");
         List<TendermintAction<V>> out = new ArrayList<>();
-        if (!acceptSender(v.sender()) || !acceptHeight(v.height())) {
+        if (!acceptSender(v.sender()) || !acceptHeight(v.height()) || !acceptRound(v.height(), v.round())) {
             return out;
         }
         RoundLog<V> rl = roundLog(v.height(), v.round());
@@ -569,6 +577,23 @@ public final class TendermintCore<V> {
     private boolean acceptHeight(long h) {
         if (h < height) {
             count(TendermintDiscardReason.OLD_HEIGHT);
+            return false;
+        }
+        if (h - height > maxFutureHorizon) { // h >= height aqui: sem overflow
+            count(TendermintDiscardReason.FUTURE_BEYOND_HORIZON);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Teto de rounds: na altura corrente conta-se a distancia ao round atual; em altura futura o round corrente e
+     * desconhecido e conta-se a partir de 0. Vale so para o que vai ser retido (altura futura ou round futuro).
+     */
+    private boolean acceptRound(long h, int r) {
+        long base = (h == height) ? round : 0L;
+        if ((long) r - base > maxFutureHorizon) {
+            count(TendermintDiscardReason.FUTURE_BEYOND_HORIZON);
             return false;
         }
         return true;

@@ -34,7 +34,7 @@ class ByzantineSweepConfigTest {
     @Test
     void ataqueInvalidoAbortaOSweep() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> ByzantineSweep.run(args("--type=VOTING", "--validators=10", "--attack=NAO_EXISTE")));
+                () -> ByzantineSweep.run(args("--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--attack=NAO_EXISTE")));
         assertTrue(e.getMessage().contains("NAO_EXISTE"), e.getMessage());
         assertFalse(Files.exists(tmp.resolve("sweep.csv")), "nada deve ser gravado quando a configuracao e invalida");
     }
@@ -80,7 +80,7 @@ class ByzantineSweepConfigTest {
     @Test
     void nivelSemTrialMedidoFalhaAltoSemNaN() throws IOException {
         IllegalStateException e = assertThrows(IllegalStateException.class,
-                () -> ByzantineSweep.run(args("--type=VOTING", "--validators=10", "--trials=0", "--max-byz=0")));
+                () -> ByzantineSweep.run(args("--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0", "--max-byz=0")));
         assertTrue(e.getMessage().contains("NAO_MEDIDO"), e.getMessage());
 
         Path csv = tmp.resolve("sweep.csv");

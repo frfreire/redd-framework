@@ -150,7 +150,7 @@ class TendermintLivenessN4Experiment {
                 seen.add(new HashSet<>());
                 boolean silent = arm == Arm.C2_SILENT && byz.contains(i);
                 cores.add(silent ? null : new TendermintCore<>(i, n, TendermintCore.roundRobin(n),
-                        h -> "h" + h + "-p" + id + "-" + rnd.nextInt(1_000_000), (h, v) -> true));
+                        h -> "h" + h + "-p" + id + "-" + rnd.nextInt(1_000_000), (h, v) -> true, 1000L));
             }
         }
 

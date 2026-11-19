@@ -24,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 class ByzantineContagemInteiraCenariosTest {
     private static void criaRede(AbstractScenario s) throws Exception {
+        if (s instanceof jabs.scenario.ArqReddVotingScenario) {
+            ((jabs.scenario.ArqReddVotingScenario) s).setMaxFutureHorizon(1000L);
+        }
         Method m = AbstractScenario.class.getDeclaredMethod("createNetwork");
         m.setAccessible(true);
         m.invoke(s);

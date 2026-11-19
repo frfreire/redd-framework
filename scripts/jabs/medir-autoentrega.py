@@ -48,7 +48,7 @@ CAMPO = ("    public static final java.util.TreeMap<String, long[]> MEDIDA = new
          "    } })); }\n\n    @Override\n")
 TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
-      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10"]
+      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
 
 
 def sh(cmd, cwd=None):
@@ -94,7 +94,7 @@ def main():
     saida.mkdir(parents=True, exist_ok=True)
     cp = "%s%s%s" % (copia / "target/classes", os.pathsep, (copia / "target/cp.txt").read_text(encoding="utf-8").strip())
     for proto, n, dur in CASOS:
-        extra = HS if proto == "HOTSTUFF" else TM if proto == "TENDERMINT" else []
+        extra = HS if proto == "HOTSTUFF" else TM if proto == "TENDERMINT" else ["--pbft-max-future-horizon=1000"] if proto == "ARQ" else []
         out = saida / ("%s-%d" % (proto, n))
         r = subprocess.run(["java", "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2", "-cp", cp,
                             "jabs.example.MVPComparison", "--protocols=" + proto, "--validators=%d" % n, "--trials=1",
