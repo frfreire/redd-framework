@@ -1,0 +1,101 @@
+# Bateria 1 — experimento E1 (fronteiras de viabilidade sem falhas), validacao fora da faixa
+# e execucoes de saturacao para Theta.
+# Desenho: .experimento/ADR-0000-redesenho-escalas.md (decisoes 3, 5 e 7); fator A pela emenda de
+# 2026-10-30 do docs/adr/0009; formacao de bloco pelo docs/adr/0013; metricas pelo docs/adr/0012;
+# parametros pelo docs/adr/0010 (PI-xx). Substitui a versao de 2026-10-28 (n de 25 a 400, perfil
+# sazonal, mix publico/privado e Nakamoto), superada por decisao do humano.
+# Convencao: null = "a definir com o humano"; o comentario indica o PI ou ADR que fixa o valor.
+# Nenhuma celula roda antes de P1-P8 (PROTOCOLO-EXPERIMENTAL.md, secao 0).
+
+versao_desenho: ADR-0000            # Proposta na fonte; aceite formal dos coautores e do humano
+experimento: E1
+
+base:
+  fracao_bizantina: 0.0             # E1 e sem falhas; o efeito bizantino e o E2 (bateria2.yaml)
+  n_semantica: nos                  # n = numero de nos para todos os algoritmos (tarefa N1,
+                                    # --n-semantics=nodes); se N1 nao for aprovada, PoS/PoSA usam
+                                    # a conversao legada (0,3n mineradores + 0,7n demais nos)
+  lider_pbft: estavel               # plano complexidade x lideranca (ADR-0009); depende de PI-14
+  lider_hotstuff: rotativo          # HotStuffConsensusConfig.LeaderPolicy.ROTATING
+  lider_tendermint: rotativo
+  ataque_bizantino: nenhum
+  topologia: null                   # PI-07 (rede LAN do pBFT/HotStuff x P2P de Casper/Parlia)
+  duracao_sim_s: null               # piloto (corte do transiente por Welch, D5)
+  warmup_descartar: true
+
+formacao_bloco:                     # docs/adr/0013, decisoes 1 a 4
+  gerador_transacoes: unico         # mesmo gerador, deterministico por semente, para os 5 algoritmos
+  fila_pendentes: por_no
+  regra_fechamento: lote_ou_tempo   # fecha ao atingir lote_max OU tempo_max, o que ocorrer primeiro
+  lote_max_tx: null                 # B_max (artigo, Tabela de parametros)
+  tempo_max_s: null                 # tau_max
+  tamanho_tx_bytes: null            # s_tx, igual para todos (PI-08)
+  tamanho_bloco: soma_das_tx        # nunca sorteado
+
+demanda:                            # docs/adr/0010, PI-00 a PI-06 e PI-10
+  lambda0_tx_s: null                # PI-01 (lambda_B no repositorio, lambda_0 no artigo)
+  N_op: null                        # PI-02
+  kappa: null                       # PI-03
+  P_s: null                         # PI-04 (periodo de compromisso)
+  eta: null                         # PI-05; exige eta > W_janela/P para haver concentracao
+  W_janela_s: null                  # PI-06 (Delta no artigo)
+  # MMPP-2 (PI-10, proposta do humano): 1/sigma2 = W_janela; 1/sigma1 = P - W_janela;
+  # lambda2 = eta*N_op*kappa/W_janela; lambda1 = (1-eta)*N_op*kappa/(P - W_janela).
+  # O Poisson de referencia usa a mesma taxa media lambda = N_op*kappa/P.
+
+enlace:                             # fator K do artigo (W_no no repositorio, PI-07)
+  institucional_mbps: null
+  restrito_mbps: null
+
+fatores:                            # 5 x 4 x 3 x 2 x 2 = 240 celulas
+  algoritmo: [pbft, tendermint, hotstuff, parlia, casperffg]   # PoSA = parlia, PoS = casperffg
+  n: [4, 16, 64, 128]               # faixa de governanca, escala logaritmica
+  demanda_multiplicador: [1, 10, 100]   # lambda0, 10*lambda0, 100*lambda0
+  regime: [poisson, mmpp2]          # mesma taxa media
+  enlace: [institucional, restrito]
+
+celulas_esperadas: 240
+sementes: null                      # r: definido pelo piloto (eq. reps do artigo); nao usar 10 por padrao
+
+notas_celulas:
+  - "n = 4 em parlia e casperffg e caso degenerado (1 validador no Parlia com a conversao legada);
+     a comparacao com os algoritmos BFT e feita a partir de n = 16 (artigo, Secao 5)."
+
+metricas:                           # docs/adr/0012 e artigo, Secao 4.4
+  - Tb                              # tempo medio de finalizacao de bloco
+  - Cb                              # bytes recebidos pelo primeiro no a finalizar (total e consenso)
+  - C_no                            # bytes enviados por no por bloco, inclui o bloco enviado pelo lider
+  - U                               # fracao do tempo com a fila de envio do no ocupada
+  - Lt_p95                          # percentil 95 da latencia de confirmacao de transacoes
+  # Theta nao e medida em E1: vem das execucoes de saturacao abaixo.
+
+criterios_viabilidade:              # artigo, eq. feas; PI-09
+  V1: "Theta >= lambda_pico (lambda2 no MMPP-2; lambda media no Poisson)"
+  V2: "Lt_p95 <= L_max"
+  V3: "U <= U_max"
+  L_max_s: null
+  U_max: null
+
+validacao_fora_da_faixa:            # ADR-0000, decisao 5; nao entra em nenhum ajuste
+  n: [256, 400, 800]
+  algoritmo: [pbft, tendermint, hotstuff, parlia, casperffg]
+  demanda_multiplicador: null       # subconjunto de celulas de E1 a definir com o humano
+  regime: null
+  enlace: null
+  mape_max: null                    # PI-09
+  observacao: "n = 800 no pBFT gera 2n^2 + n = 1.280.800 mensagens por bloco; verificar no piloto
+               se a execucao cabe no tempo e na memoria disponiveis."
+
+saturacao_theta:                    # docs/adr/0012, decisao (a): Theta em execucoes separadas
+  algoritmo: [pbft, tendermint, hotstuff, parlia, casperffg]
+  n: [4, 16, 64, 128]
+  enlace: [institucional, restrito]
+  procedimento: null                # carga crescente ate a taxa de confirmacao deixar de acompanhar
+                                    # a de chegada; passo, criterio de parada e r a definir
+  regime: poisson
+
+ablacao_lideranca:                  # docs/adr/0009, decisao 5: lote a parte, nao e nivel do fator A
+  incluir_no_artigo: null
+  algoritmo: [hotstuff]
+  lider_hotstuff: estavel           # LeaderPolicy.STABLE
+  celulas: null                     # tamanho do lote (celulas e r) a definir com o humano

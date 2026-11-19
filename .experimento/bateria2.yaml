@@ -1,0 +1,52 @@
+# Bateria 2 — experimento E2 (efeito de validadores bizantinos).
+# Desenho: .experimento/ADR-0000-redesenho-escalas.md (decisao 4): phi em {0; 0,10; 0,30} x regime,
+# com n fixo no centro da faixa de governanca. Ataque unico por decisao do humano (B9, 2026-10-30):
+# equivocacao. Substitui a versao de 2026-10-28/29 (n = 100, f de 0 a 51%, Nakamoto, mix 100-0).
+# Convencao: null = "a definir com o humano".
+# Nenhuma celula roda antes de P1-P8 (PROTOCOLO-EXPERIMENTAL.md, secao 0).
+
+versao_desenho: ADR-0000            # Proposta na fonte; aceite formal dos coautores e do humano
+experimento: E2
+
+base:
+  n: null                           # centro da faixa {4, 16, 64, 128}: 16 ou 64 (centro geometrico ~22,6);
+                                    # precisa ser >= 16 para phi = 0,30 respeitar n >= 3f+1
+  n_semantica: nos                  # tarefa N1
+  demanda_multiplicador: null       # nivel de referencia de E1 (1, 10 ou 100)
+  enlace: null                      # nivel de referencia de E1 (institucional ou restrito)
+  lider_pbft: estavel               # PI-14; o lider pode ser sorteado entre os bizantinos (ver abaixo)
+  lider_hotstuff: rotativo
+  lider_tendermint: rotativo
+  duracao_sim_s: null               # piloto
+  warmup_descartar: true
+
+formacao_bloco: igual_bateria1      # docs/adr/0013; mesmos lote_max, tempo_max e s_tx de E1
+
+ataque_bizantino:
+  tipo: equivocation                # ByzantineConfig.AttackType.EQUIVOCATION
+  f: ceil(phi * n)                  # arredondamento do simulador (ByzantineConfig); o artigo usa o mesmo
+  universo_sorteio: null            # PI-13: todos os nos, validadores ou mineradores (hoje difere por algoritmo)
+  lider_pode_ser_bizantino: null    # PI-14
+  coordenacao: nenhuma
+  observacao: "no PoS e no PoSA, a contagem por votante distinto anula o efeito da equivocacao sobre o
+               quorum: o ataque aumenta o trafego, mas nao impede a finalizacao. HotStuff e Tendermint
+               precisam implementar EQUIVOCATION antes desta bateria (D3a-2d e D3b)."
+
+fatores:                            # 5 x 3 x 2 = 30 celulas
+  algoritmo: [pbft, tendermint, hotstuff, parlia, casperffg]
+  phi: [0.0, 0.10, 0.30]
+  regime: [poisson, mmpp2]
+
+celulas_esperadas: 30
+sementes: null                      # r do piloto
+
+limiar_tolerancia:                  # verificacao para n = 16, 64 e 128 com f = ceil(phi*n)
+  bft_e_casper: "n >= 3f+1"         # phi = 0,30: n=16 -> f=5 (ok); n=64 -> f=20 (ok); n=128 -> f=39 (ok)
+  parlia: null                      # finalidade no simulador: > floor(2S/3) votos de S validadores; confirmar
+
+metricas: [Tb, Cb, C_no, U, Lt_p95]
+
+analise:                            # artigo, Secao 5.3
+  anova_fatores: [algoritmo, phi, regime]
+  observacao: "com n fixo, E2 nao produz a fronteira n_max sob falhas; indica se a ordenacao dos
+               algoritmos obtida em E1 se mantem com validadores bizantinos."

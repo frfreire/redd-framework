@@ -1,0 +1,75 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "default_agent": "redd-orquestrador",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "apiKey": "{env:ANTHROPIC_API_KEY}"
+      }
+    }
+  },
+  "model": "anthropic/claude-sonnet-5-5",
+  "small_model": "anthropic/claude-haiku-5-5",
+  "mcp": {
+    "ruflo-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "ruflo@latest",
+        "mcp",
+        "start"
+      ],
+      "environment": {
+        "CLAUDE_FLOW_MODE": "v3",
+        "CLAUDE_FLOW_TOPOLOGY": "hierarchical",
+        "CLAUDE_FLOW_MAX_AGENTS": "8",
+        "CLAUDE_FLOW_MEMORY_BACKEND": "sqlite",
+        "CLAUDE_FLOW_DB_PATH": ".enxame/memoria-redd-jabs.db",
+        "npm_config_update_notifier": "false"
+      },
+      "enabled": false
+    }
+  },
+  "permission": {
+    "edit": "ask",
+    "external_directory": {
+      "*": "ask"
+    },
+    "bash": {
+      "*": "ask",
+      "ls *": "allow",
+      "cat *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
+      "diff *": "allow",
+      "wc *": "allow",
+      "sort *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "mkdir *": "allow",
+      "scripts/*": "allow",
+      "python3 scripts/*": "allow",
+      "mvn *": "allow",
+      "java -cp *": "allow",
+      "docker ps*": "allow",
+      "docker compose *": "allow",
+      "docker pull mirror.gcr.io/*": "allow",
+      "npx --yes ruflo*": "allow",
+      "npx ruflo*": "allow",
+      "npx.cmd --yes ruflo*": "allow",
+      "npx.cmd ruflo*": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git push*": "deny",
+      "git reset --hard*": "deny",
+      "rm -rf *": "deny",
+      "docker system prune*": "deny",
+      "docker volume rm*": "ask"
+    }
+  }
+}

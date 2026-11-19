@@ -1,0 +1,285 @@
+{
+  "nome": "redd-blockchain-jabs-enxame",
+  "descricao": "Enxame de especialistas para codificar um projeto REDD+ (creditos de carbono) sobre blockchain, em duas trilhas que se alimentam: (A) aplicacao Hyperledger Fabric (chaincode Java, rede, API) e (B) simulador JABS (protocolos de consenso, medicao de trafego, experimentos). Uma terceira funcao (ponte) calibra o simulador com medicoes da aplicacao real e traduz requisitos de dominio REDD+ em invariantes e metricas. Codigo que decide validade de credito (chaincode) ou que gera dado de pesquisa (JABS) passa pelo Gauntlet Loop; workers de infra/API/ponte sao validados por build, teste e politica de endosso.",
+  "topologia": "hierarquica",
+  "origem": {
+    "padrao": "gauntlet looping + enxame (ruflo) validado em redd+_blockchain, rics, framework-redd e tratamento-sca-sast-ia",
+    "adaptacoes": [
+      "duas trilhas de codigo de dominio (chaincode e JABS) com bars proprias, em vez de uma",
+      "terceiro loop (resultado/decisao) com politica por impacto, herdado de framework-redd, para afirmacoes tiradas de simulacao",
+      "somente modelos Claude (familia anthropic): Sonnet constroi e critica com contexto limpo, Opus arbitra (tier distinto do builder), Haiku executa workers validados por build/teste/endosso"
+    ]
+  },
+  "memoriaCompartilhada": {
+    "tipo": "sqlite",
+    "caminho": ".enxame/memoria-redd-jabs.db",
+    "namespace": "redd-jabs",
+    "backend": "ruflo via scripts/enxame/memoria.sh",
+    "regraDeConteudo": "apenas resumo de decisao (motivo + arquivo afetado). Nunca codigo completo, chaves, tokens, certificados ou dados pessoais -- o script recusa esses padroes."
+  },
+  "trilhaDeAuditoria": {
+    "caminho": ".ia/rodadas/",
+    "formato": "jsonl, um arquivo por loop, escrito somente via scripts/enxame/registrar-rodada.py",
+    "motivo": "o orcamento de iteracoes e a parada para decisao humana sao aplicados por script, nao por memoria do modelo"
+  },
+  "alvos": {
+    "$comentario": "Caminhos relativos a raiz do repositorio Arq-REDD-Framework. O JABS ja esta na raiz (src/main/java/jabs) e e EVOLUIDO no lugar. chaincode, rede e api sao pastas novas; scripts/enxame/importar-base.sh traz bases de redd+_blockchain sem chaves.",
+    "chaincode": {
+      "caminho": "chaincode",
+      "linguagem": "java",
+      "build": "mvn -q -DskipTests package",
+      "teste": "mvn -q test"
+    },
+    "rede": {
+      "caminho": "rede-fabric",
+      "linguagem": "yaml/shell",
+      "build": "scripts/rede/validar-rede.sh"
+    },
+    "api": {
+      "caminho": "api-gateway",
+      "linguagem": "java",
+      "build": "mvn -q -DskipTests package",
+      "teste": "mvn -q test"
+    },
+    "jabs": {
+      "caminho": "src",
+      "raizDoMaven": ".",
+      "linguagem": "java",
+      "build": "mvn -q clean compile",
+      "teste": "mvn -q test",
+      "$nota": "o JABS vive na raiz do repositorio (src/main/java/jabs); este projeto evolui o codigo existente, nao uma copia"
+    },
+    "experimentos": {
+      "caminho": "experimentos",
+      "linguagem": "python/json",
+      "build": null
+    },
+    "especificacoes": {
+      "caminho": "especificacoes",
+      "linguagem": "markdown",
+      "build": null
+    }
+  },
+  "coordenador": {
+    "agente": "redd-orquestrador",
+    "skill": "redd-orquestrador-enxame",
+    "maxTarefasParalelas": 6,
+    "maxCelulasDeSimulacaoParalelas": 8
+  },
+  "agentes": [
+    {
+      "id": "redd-orquestrador",
+      "papel": "coordenador",
+      "opencodeAgent": "redd-orquestrador",
+      "skill": "redd-orquestrador-enxame",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "descricao": "Sessao principal. Decide o que atacar, dispara os papeis via Task tool, aplica as regras de loop, registra rodadas e memoria. Nao escreve codigo de dominio."
+    },
+    {
+      "id": "redd-dominio",
+      "papel": "worker",
+      "grupo": "dominio",
+      "opencodeAgent": "redd-dominio",
+      "skill": "redd-dominio-mrv",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "escopoEscrita": [
+        "especificacoes",
+        "docs/adr"
+      ],
+      "descricao": "Especialista REDD+/MRV. Produz a especificacao de dominio (invariantes do ciclo de vida do credito, requisitos de MRV, normas) que serve de fonte unica para chaincode e para as metricas do simulador. Nao escreve codigo."
+    },
+    {
+      "id": "fabric-builder",
+      "papel": "builder",
+      "grupo": "chaincode",
+      "opencodeAgent": "fabric-builder",
+      "skill": "fabric-chaincode-builder",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "escopoEscrita": [
+        "chaincode"
+      ],
+      "gauntletLoop": {
+        "loop": "loop1-chaincode",
+        "critic": "gauntlet-critic-chaincode",
+        "arbiter": "gauntlet-arbiter"
+      }
+    },
+    {
+      "id": "gauntlet-critic-chaincode",
+      "papel": "critic",
+      "grupo": "chaincode",
+      "opencodeAgent": "gauntlet-critic-chaincode",
+      "skill": "gauntlet-critic-chaincode",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "condicao": "toda alteracao em chaincode/src/main/java/**",
+      "gauntletLoop": {
+        "loop": "loop1-chaincode",
+        "builder": "fabric-builder",
+        "contextoLimpo": "recebe especificacao + codigo; nunca a justificativa do builder"
+      }
+    },
+    {
+      "id": "fabric-rede",
+      "papel": "worker",
+      "grupo": "infra",
+      "opencodeAgent": "fabric-rede",
+      "skill": "fabric-rede-infra",
+      "modelo": "anthropic/claude-haiku-5-5",
+      "escopoEscrita": [
+        "rede-fabric",
+        "scripts/rede"
+      ],
+      "descricao": "Rede Fabric multi-organizacao (cryptogen/configtx/docker-compose), lifecycle do chaincode aprovado. Segunda opiniao = politica de endosso em runtime.",
+      "precondicaoDe": [
+        "fabric-api"
+      ]
+    },
+    {
+      "id": "fabric-api",
+      "papel": "worker",
+      "grupo": "api",
+      "opencodeAgent": "fabric-api",
+      "skill": "fabric-api-gateway",
+      "modelo": "anthropic/claude-haiku-5-5",
+      "escopoEscrita": [
+        "api-gateway"
+      ],
+      "condicao": "gauntlet-critic-chaincode.veredicto == APROVADO E fabric-rede.chaincodeInstalado == true"
+    },
+    {
+      "id": "jabs-builder",
+      "papel": "builder",
+      "grupo": "jabs",
+      "opencodeAgent": "jabs-builder",
+      "skill": "jabs-protocolo-builder",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "escopoEscrita": [
+        "src",
+        "pom.xml"
+      ],
+      "gauntletLoop": {
+        "loop": "loop2-jabs-codigo",
+        "critic": "gauntlet-critic-jabs",
+        "arbiter": "gauntlet-arbiter"
+      }
+    },
+    {
+      "id": "gauntlet-critic-jabs",
+      "papel": "critic",
+      "grupo": "jabs",
+      "opencodeAgent": "gauntlet-critic-jabs",
+      "skill": "gauntlet-critic-jabs",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "condicao": "toda alteracao em src/main/java/** E todo resultado/decisao de impacto MEDIO ou superior",
+      "gauntletLoop": {
+        "loop": [
+          "loop2-jabs-codigo",
+          "loop3-resultado-decisao"
+        ],
+        "builder": "jabs-builder",
+        "contextoLimpo": "recebe fonte primaria (codigo, dados brutos, teoria); nunca a conclusao do builder"
+      }
+    },
+    {
+      "id": "jabs-experimento",
+      "papel": "worker",
+      "grupo": "experimento",
+      "opencodeAgent": "jabs-experimento",
+      "skill": "jabs-experimento-doe",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "escopoEscrita": [
+        "experimentos"
+      ],
+      "condicao": "portao de validacao V-A/V-B/V-C do protocolo == APROVADO",
+      "descricao": "Gera configs por script, roda baterias (celulas independentes em paralelo), preserva brutos, analisa. Todo resultado de impacto MEDIO+ entra no loop3 como builder (proponente)."
+    },
+    {
+      "id": "redd-ponte",
+      "papel": "worker",
+      "grupo": "ponte",
+      "opencodeAgent": "redd-ponte",
+      "skill": "redd-ponte-fabric-jabs",
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "escopoEscrita": [
+        "experimentos/calibracao",
+        "especificacoes/calibracao"
+      ],
+      "condicao": "chaincode implantado E simulador com protocolo equivalente validado",
+      "descricao": "Calibra o simulador com medicoes da aplicacao Fabric (tamanhos reais de tx/bloco/endosso, latencias) e deriva perfis de carga REDD+ das transacoes do contrato. Aponta onde o modelo diverge da realidade."
+    },
+    {
+      "id": "gauntlet-arbiter",
+      "papel": "arbiter",
+      "grupo": "todos",
+      "opencodeAgent": "gauntlet-arbiter",
+      "skill": "gauntlet-arbiter",
+      "modelo": "anthropic/claude-opus-5-5",
+      "condicao": "parecer.divergenciaSobreGravidade == true (loops 1/2) OU impacto == MEDIO com divergencia (loop 3)",
+      "gauntletLoop": {
+        "contextoLimpo": "recebe especificacao + trecho + numero do criterio; nunca vereditos de builder/critic",
+        "decisaoFinal": true
+      },
+      "modeloFallback": "anthropic/claude-sonnet-5-5"
+    }
+  ],
+  "politicaConsenso": {
+    "codigoDeDominioExigeRevisao": true,
+    "escopoDaRevisaoObrigatoria": [
+      "chaincode",
+      "src/main/java"
+    ],
+    "divergenciaSobreGravidadeResultaEm": "gauntlet-arbiter (decisao final, sem segunda arbitragem do mesmo gap)",
+    "bloqueioDeDeployComGapBloqueante": true,
+    "bloqueioDeExperimentoSemPortaoDeValidacao": true,
+    "impacto": {
+      "$eixo": "aplica-se ao loop3 (resultados e decisoes), nao a gaps de codigo",
+      "CRITICO": "afeta resultado publicado, regra de decisao de framework de selecao de consenso, ou criterio pre-registrado. Critic obrigatorio; divergencia vai direto a humanos.",
+      "ALTO": "decisao de metodologia, ADR, portao de validacao. Critic obrigatorio; divergencia vai a humanos.",
+      "MEDIO": "resultado interno, script, etapa de analise. Critic obrigatorio; divergencia aciona arbiter (maioria 2 de 3, confianca MEDIA; tres vereditos distintos vai a humanos).",
+      "BAIXO": "rotineiro ou exploratorio. Passe unico, critic opcional."
+    },
+    "independenciaSemDiversidadeDeFamilia": "todos os modelos sao Claude: critic e arbiter sempre com contexto limpo; arbiter em tier diferente do builder"
+  },
+  "dependenciasEntreGrupos": {
+    "fase0": [
+      "dominio",
+      "infra (esqueleto da rede)",
+      "jabs (auditoria de determinismo e de medicao do que ja existe)"
+    ],
+    "fase1": [
+      "chaincode",
+      "jabs"
+    ],
+    "fase2": [
+      "api (apos chaincode aprovado e implantado)",
+      "experimento (apos portao V-A/V-B/V-C)"
+    ],
+    "fase3": [
+      "ponte (apos fase 2)",
+      "loop3-resultado-decisao sobre cada resultado produzido"
+    ],
+    "regras": [
+      "dominio precede qualquer codigo novo de chaincode ou de metrica: invariante sem especificacao nao entra em bar",
+      "chaincode e jabs usam bases de codigo disjuntas e rodam em paralelo",
+      "dentro de um mesmo grupo, builder -> critic -> (arbiter) e estritamente sequencial",
+      "experimento nunca inicia sobre protocolo cujo portao de validacao nao passou",
+      "api nunca inicia antes do critic do chaincode aprovar"
+    ]
+  },
+  "execucao": {
+    "superficies": [
+      "opencode-cli"
+    ],
+    "opencodeConfig": "opencode.json",
+    "mecanismoDeParalelizacao": "Task tool nativo do OpenCode: varias chamadas na mesma mensagem quando nao ha dependencia de dado entre elas.",
+    "notaTransparencia": "O Ruflo e usado como memoria persistente via CLI (scripts/enxame/memoria.sh). Ele nao faz o spawn dos subagentes: o paralelismo real vem do Task tool. O servidor MCP do Ruflo esta declarado em opencode.json com enabled=false e e opcional."
+  },
+  "gauntletLoop": {
+    "config": "gauntlet-loop.config.json",
+    "aplicaA": [
+      "fabric-builder",
+      "jabs-builder",
+      "jabs-experimento (resultados)"
+    ]
+  }
+}

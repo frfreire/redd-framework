@@ -1,0 +1,15 @@
+# Piloto — dimensiona replicacoes e determina o corte do transiente (Welch).
+# Subconjunto deliberado: cobre os extremos de n e as duas familias de complexidade.
+base:
+  largura_banda_mbps: 100
+  topologia: aleatoria
+  tamanho_bloco_kb: 1024
+  tamanho_tx_bytes: 512
+  esquema_assinatura: individual
+  duracao_sim_s: 7200
+  mix: "100-0"
+fatores:
+  protocolo: [pbft, hotstuff, tendermint]
+  n: [25, 100, 400]
+  perfil_carga: [estacionario, sazonal]
+sementes: 10

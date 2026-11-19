@@ -1,0 +1,111 @@
+\documentclass[english,brazilian]{sbc2025}%
+
+\usepackage[misc,geometry]{ifsym}
+\usepackage{aas_macros}
+\usepackage[bottom]{footmisc}
+\usepackage{tabularray}
+\usepackage{afterpage}
+\usepackage{url}
+\usepackage{pifont}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+
+\setcitestyle{square}
+
+\definecolor{engtitle}{rgb}{0.5,0.5,0.5}
+\definecolor{orcidlogo}{rgb}{0.37,0.48,0.13}
+\definecolor{unilogo}{rgb}{0.16, 0.26, 0.58}
+\definecolor{maillogo}{rgb}{0.58, 0.16, 0.26}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.0}
+\hypersetup{colorlinks,breaklinks,
+            linkcolor=darkblue,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+
+% ---------------------------------------------------------------------
+% Macros de redação -- remover antes da submissão
+%   \tbd{...}  : conteúdo que depende dos resultados ainda em geração
+%   \chk{...}  : afirmação/parâmetro a ser confirmado pelos coautores
+% ---------------------------------------------------------------------
+\newcommand{\tbd}[1]{\textcolor{red}{[PENDENTE: #1]}}
+\newcommand{\chk}[1]{\textcolor{orange!80!black}{[VERIFICAR: #1]}}
+\newcommand{\figplaceholder}[2]{%
+  \fbox{\parbox[c][#1][c]{0.95\columnwidth}{\centering\small\textcolor{red}{#2}}}}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+% Notação
+\newcommand{\Tb}{T_{\mathrm{b}}}
+\newcommand{\Cb}{C_{\mathrm{b}}}
+\newcommand{\Cn}{C^{\max}_{\text{nó}}}
+\newcommand{\Lt}{L^{95}_{\mathrm{tx}}}
+\newcommand{\Th}{\Theta}
+\newcommand{\Ut}{U}
+\newcommand{\Kn}{K_{\text{nó}}}
+\newcommand{\tbdc}{\textcolor{red}{?}} % célula de tabela pendente
+\newcommand{\nmax}{n_{\max}}
+
+\jid{iSys}
+\jtitle{iSys - Journal of Information Systems, 202X, XX:1}
+\issn{1984-2902}
+\doi{10.5753/isys.202X.XXXXXX}
+\copyrightstatement{Este trabalho está licenciado sob uma Licença Creative Commons Atribuição 4.0 Internacional}
+\jyear{202X}
+
+\category{Artigo de Pesquisa}
+
+% Conforme o template iSys, o título deve estar em inglês mesmo em artigos em português;
+% a versão em português aparece como subtítulo (\engtitle).
+\title[Dimensionamento do Consenso Bizantino em Registros REDD+]{Sizing Byzantine Consensus for Blockchain-Based REDD+ Registries: Governance, Demand, and Feasibility Frontiers}
+\engtitle{Dimensionamento do Consenso Bizantino em Registros REDD+ Baseados em Blockchain: Governança, Demanda e Fronteiras de Viabilidade}
+
+% O ORCID É OBRIGATÓRIO PARA CADA AUTOR -- ordem dos autores a confirmar
+\author[Freire et al. 202X]{
+\affil{\textbf{Fabricio Rodrigues Freire}~\orcidlink{0000-0000-0000-0000}~\textcolor{blue}{\faEnvelopeO}~~[{Universidade de Bras\'ilia}~|\href{mailto:fabriciorfreire@gmail.com}{~{\textit{fabriciorfreire@gmail.com}}}~]}
+
+\affil{\textbf{Marcela Ceschim Caburl\~ao}~\orcidlink{0009-0003-7911-8166}~~[{Universidade Federal do ABC}~|\href{mailto:xxx@ufabc.edu.br}{{\textit{xxx@ufabc.edu.br}}}~]}
+
+\affil{\textbf{Carlo Kleber da Silva Rodrigues}~\orcidlink{0000-0003-1231-6953}~~[{Universidade Federal do ABC}~|\href{mailto:xxx@ufabc.edu.br}{{\textit{xxx@ufabc.edu.br}}}~]}
+}
+
+\begin{document}
+% Força rótulos em português (o hook de idioma da classe não é acionado para 'brazilian')
+\renewcommand{\figurename}{Figura}\renewcommand{\tablename}{Tabela}\renewcommand{\refname}{Refer\^encias}
+\renewcommand{\declname}{Declara\c{c}\~oes complementares}\renewcommand{\ackname}{Agradecimentos}\renewcommand{\fundingname}{Financiamento}
+\renewcommand{\contributionsname}{Contribui\c{c}\~oes dos autores}\renewcommand{\interestsname}{Conflitos de interesse}
+\renewcommand{\materialsname}{Disponibilidade de dados e materiais}\renewcommand{\furthername}{Outras informa\c{c}\~oes relevantes}
+
+\begin{frontmatter}
+
+\maketitle
+
+\begin{mail}
+\chk{Endereço postal do autor correspondente.}
+\end{mail}
+
+\input{secoes/00-resumo}
+
+\begin{dates}
+\noindent{\sffamily\textbf{Recebido:}} DD Mês AAAA~~~$\bullet$~~~
+{\sffamily\textbf{Aceito:}} DD Mês AAAA~~~$\bullet$~~~
+{\sffamily\textbf{Publicado:}} DD Mês AAAA
+\end{dates}
+
+\end{frontmatter}
+
+\input{secoes/01-introducao}
+\input{secoes/02-fundamentacao}
+\input{secoes/03-trabalhos-relacionados}
+\input{secoes/04-requisitos-escalas}
+\input{secoes/05-metodologia}
+\input{secoes/06-resultados}
+\input{secoes/07-conclusoes}
+
+\input{secoes/08-declaracoes}
+
+
+\bibliographystyle{apalike-sol}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,1 @@
+﻿base: git archive 325f4e3 compilada em %TEMP%\opencode\base-325f4e3; atual: E:\Projetos\redd-framework com a N1b nao commitada; JDK 21 Windows; args: --type --validators --max-byz=3 --trials=1 --duration=30 --seed. LONGEST rc=1 nos dois lados (nao simula; nao conta como prova). Nao cobre modo nodes (nao ha baseline).

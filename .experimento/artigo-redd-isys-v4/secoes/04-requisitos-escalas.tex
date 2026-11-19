@@ -1,0 +1,116 @@
+% 04-requisitos-escalas.tex -- incluído por main-pt.tex
+% =====================================================================
+\section{Requisitos, Escalas e Critérios de Viabilidade}
+\label{sec:model}
+% =====================================================================
+
+\subsection{Requisitos do Registro e Seleção dos Protocolos}
+
+Os protocolos avaliados são selecionados a partir de quatro requisitos que decorrem da natureza jurídica e institucional de um registro de carbono:
+
+\begin{itemize}
+\item \textbf{R1 -- Finalidade determinística e imediata.} A transferência e a aposentadoria de um crédito produzem efeitos jurídicos e contábeis; uma finalidade probabilística, ou alcançada apenas após vários períodos, reabriria uma janela de reversão e, consequentemente, de dupla contagem.
+\item \textbf{R2 -- Validadores identificados e responsabilizáveis.} No SBCE, o registro central é gerido por um órgão gestor e os demais participantes são entidades reguladas ou credenciadas \citep{Lei15042}; um conjunto de validadores aberto a qualquer detentor de participação não é compatível com essa estrutura.
+\item \textbf{R3 -- Tolerância bizantina com limiar conhecido.} Proponentes, verificadores e compradores têm interesses conflitantes, de modo que o registro deve tolerar validadores maliciosos até um limiar explícito.
+\item \textbf{R4 -- Baixo custo energético.} Um instrumento de política climática não deve depender de um mecanismo cujo custo energético cresce com a segurança desejada.
+\end{itemize}
+
+A Tabela~\ref{tab:req} confronta as famílias de protocolos com esses requisitos. O PoW viola R1, R2 e R4 e é, portanto, excluído. Os protocolos BFT clássicos atendem a todos os requisitos, e cada um é retido por uma razão específica: o pBFT é o protocolo adotado pela Arq-REDD+ e representa o custo quadrático de referência; o HotStuff testa a hipótese de que a redução do custo total para $O(n)$ no caso normal desloca a fronteira de viabilidade; e o Tendermint representa o BFT utilizado em produção em redes de consórcio. O PoS atende apenas parcialmente a R1 e a R2, pois a finalidade do Casper FFG é obtida somente em pontos de verificação periódicos e o conjunto de validadores é aberto a detentores de participação \citep{Buterin2017}. O PoSA atende a R2, mas apenas parcialmente a R1, pois a finalidade depende de rodadas adicionais de votação dos validadores autorizados \chk{confirmar como a finalidade do Parlia é modelada no JABS}. Ambos são retidos, apesar disso, como âncoras de validade externa, uma vez que são os mecanismos dos projetos REDD+ em operação (MCO2 e Ambify) e permitem relacionar os resultados deste trabalho com os de \citep{Caburlao2026clei}. Essa exceção é deliberada e não se estende à recomendação final, que exige o atendimento integral de R1--R4.
+
+\begin{table}[!ht]
+\caption{Atendimento dos requisitos do registro pelas famílias de protocolos (\cmark: atende; $\circ$: atende parcialmente; \xmark: não atende).}
+\label{tab:req}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccccl@{}}
+\hline\hline
+Protocolo & R1 & R2 & R3 & R4 & Papel no estudo \\
+\hline
+PoW        & \xmark  & \xmark  & $\circ$ & \xmark & excluído \\
+PoS        & $\circ$ & $\circ$ & \cmark  & \cmark & âncora (MCO2) \\
+PoSA       & $\circ$ & \cmark  & \cmark  & \cmark & âncora (Ambify) \\
+pBFT       & \cmark  & \cmark  & \cmark  & \cmark & referência $O(n^2)$ \\
+Tendermint & \cmark  & \cmark  & \cmark  & \cmark & BFT de produção \\
+HotStuff   & \cmark  & \cmark  & \cmark  & \cmark & hipótese $O(n)$ \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+\subsection{Escala de Governança e Escala de Mercado}
+
+Conforme ilustrado na Figura~\ref{fig:system}, considera-se um registro com $n$ validadores, dos quais $f = \lfloor \phi n \rfloor$ se comportam de maneira bizantina, em que $\phi$ é a fração bizantina e $f$ deve satisfazer o limiar de tolerância de cada protocolo (para os protocolos BFT e para o Casper FFG, $n \geq 3f+1$). A demanda de transações tem taxa $\lambda(t)$ e é gerada pelos operadores e pelos participantes do mercado voluntário.
+
+O tamanho do conjunto de validadores é tratado como uma variável de governança. Em uma configuração em que cada uma das 27 unidades federativas, o órgão gestor e um conjunto de verificadores credenciados operam um validador, $n$ se situa na casa das dezenas; uma governança ampliada, com participação de associações de comunidades florestais e de entidades do mercado voluntário, pode atingir algumas centenas de nós. Por outro lado, o dimensionamento territorial de \citep{Caburlao2026clei}, de um nó por $1.000$ hectares, implica $n \approx 10^{5}$ para uma área da ordem de $10^{8}$ hectares \chk{confirmar a ordem de grandeza da área elegível adotada}. A faixa de governança considerada é, portanto, $n \in [4, 256]$, e valores maiores são utilizados apenas para validar os metamodelos e para quantificar o custo do acoplamento territorial.
+
+\begin{figure}[!ht]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  font=\footnotesize,
+  box/.style={draw, rounded corners=2pt, align=center, minimum width=2.1cm, minimum height=0.75cm},
+  layer/.style={draw, dashed, rounded corners=3pt, inner sep=5pt},
+  >={Stealth[length=2mm]}]
+  \node[box] (op) {Operadores\\regulados};
+  \node[box, right=0.35cm of op] (vol) {Mercado\\voluntário};
+  \node[box, right=0.35cm of vol] (prop) {Proponentes\\REDD+};
+  \node[box, below=1.1cm of vol, minimum width=6.8cm] (cons) {Consenso entre $n$ validadores institucionais\\(órgão gestor, UFs, verificadores), $f = \lfloor \phi n \rfloor$ bizantinos};
+  \node[box, below=0.7cm of cons, minimum width=6.8cm] (led) {Registro replicado (emissão, transferência, conciliação, aposentadoria)};
+  \draw[->] (op) -- (op |- cons.north);
+  \draw[->] (vol) -- node[right, pos=0.4]{$\lambda(t)$} (cons);
+  \draw[->] (prop) -- (prop |- cons.north);
+  \draw[->] (cons) -- node[right]{$\Tb$, $\Cb$} (led);
+  \begin{scope}[on background layer]
+   \node[layer, fit=(op)(vol)(prop), label={[font=\scriptsize,align=center]right:escala de\\mercado}] {};
+   \node[layer, fit=(cons), label={[font=\scriptsize,align=center]right:escala de\\governança}] {};
+  \end{scope}
+\end{tikzpicture}}
+\caption{Registro considerado: a demanda $\lambda(t)$ é determinada pela escala de mercado, enquanto o custo de cada rodada de consenso é determinado pela escala de governança $n$.}
+\label{fig:system}
+\end{figure}
+
+A separação entre as duas escalas tem uma consequência direta. Seja $B$ o número de transações por bloco. O custo de comunicação do consenso é incorrido por bloco e é aproximadamente independente de $B$, ao passo que o custo de disseminação do conteúdo do bloco cresce com $B$. Assim, o tráfego total por bloco pode ser decomposto como
+\begin{equation}
+\Cb(n, B) \approx \underbrace{M(n)\, s_{\mathrm{v}}}_{\text{consenso}} + \underbrace{(n-1)\, B\, s_{\mathrm{tx}}}_{\text{disseminação}},
+\label{eq:decomp}
+\end{equation}
+em que $M(n)$ é o número de mensagens de consenso por bloco, $s_{\mathrm{v}}$ é o tamanho de uma mensagem de voto e $s_{\mathrm{tx}}$ é o tamanho médio de uma transação. A expressão \eqref{eq:decomp} indica que o volume de transações afeta sobretudo o segundo termo, linear em $n$, enquanto o termo potencialmente quadrático depende apenas da governança. Ela também implica que $\Cb$ não segue uma lei de potência única em $n$: o expoente efetivo varia entre $1$ e $2$ conforme a razão entre os dois termos, o que é levado em conta na Seção~\ref{sec:method}. A expressão é tratada como hipótese a ser testada, e não como substituta da medição.
+
+\subsection{Modelo de Demanda do Registro Nacional}
+
+Seja $N_{\mathrm{op}}$ o número de operadores e participantes ativos, $\kappa$ o número médio de transações de registro por participante em um período de compromisso de duração $P$ (relatos, transferências, conciliações e aposentadorias), e $\eta$ a fração dessas transações que ocorre em uma janela de duração $\Delta$ que antecede o prazo de conciliação. A taxa média e a taxa de pico são dadas por
+\begin{equation}
+\bar{\lambda} = \frac{N_{\mathrm{op}}\,\kappa}{P}, \qquad \lambda_{\mathrm{pico}} = \frac{\eta\, N_{\mathrm{op}}\,\kappa}{\Delta},
+\label{eq:demand}
+\end{equation}
+respectivamente, de modo que a razão pico/média é $\rho_{\mathrm{p}} = \eta P / \Delta$. Essa carga é representada por um processo de Poisson modulado por Markov de dois estados (MMPP-2) \citep{Fischer1993}, cujo estado de alta atividade tem duração média igual à janela e ocorre, em média, uma vez por período. Dessa forma, os parâmetros do MMPP-2 ficam integralmente determinados por
+\begin{gather}
+\frac{1}{\sigma_{2}} = \Delta, \qquad \frac{1}{\sigma_{1}} = P - \Delta, \nonumber\\
+\lambda_{2} = \lambda_{\mathrm{pico}}, \qquad \lambda_{1} = \frac{(1-\eta)\,N_{\mathrm{op}}\,\kappa}{P - \Delta},
+\label{eq:mmpp}
+\end{gather}
+em que $\lambda_{1}$ e $\lambda_{2}$ são as taxas nos estados de baixa e de alta atividade e $1/\sigma_{1}$ e $1/\sigma_{2}$ são os respectivos tempos médios de permanência. Pode-se verificar que a fração de tempo no estado de alta atividade é $\sigma_{1}/(\sigma_{1}+\sigma_{2}) = \Delta/P$ e que a taxa média do processo,
+\begin{equation}
+\frac{\sigma_{2}\lambda_{1} + \sigma_{1}\lambda_{2}}{\sigma_{1} + \sigma_{2}} = \bar{\lambda},
+\label{eq:meanrate}
+\end{equation}
+coincide com a de \eqref{eq:demand}. Há concentração da carga somente se $\eta > \Delta/P$, isto é, se $\rho_{\mathrm{p}} > 1$; para $\eta = \Delta/P$, o MMPP-2 reduz-se a um processo de Poisson. Como referência, utiliza-se um processo de Poisson com a mesma taxa média $\bar{\lambda}$, o que permite isolar o efeito da concentração temporal do efeito da intensidade da carga \citep{Paxson1995}.
+
+Uma vez que a regulamentação do SBCE ainda definirá os setores abrangidos e a duração dos períodos de compromisso \citep{Lei15042}, os valores de $N_{\mathrm{op}}$, $\kappa$, $\eta$, $\Delta$ e $P$ não são fixados em um único cenário. A taxa média é variada em três ordens de grandeza, e a razão pico/média $\rho_{\mathrm{p}}$ é avaliada em um experimento de sensibilidade (Seção~\ref{sec:method}). As fronteiras de viabilidade são, assim, apresentadas como função de $\bar{\lambda}$ para cada valor de $\rho_{\mathrm{p}}$ avaliado, e não para um cenário regulatório arbitrário. \chk{Definir as faixas de $N_{\mathrm{op}}$, $\kappa$, $\eta$, $\Delta$ e $P$ e as fontes empregadas.}
+
+\subsection{Métricas e Critérios de Viabilidade}
+
+As métricas consideradas são o tempo médio de finalização de bloco, $\Tb$, e o tráfego total por bloco, $\Cb$, conforme \citep{Caburlao2025reic,Caburlao2026clei}, complementadas pelo tráfego máximo por nó, $\Cn$, pela vazão sustentada, $\Th$, definida como a maior taxa de confirmação mantida sob saturação, pelo percentil 95 da latência de confirmação de transações, $\Lt$, e pela ocupação do enlace de subida mais carregado, $\Ut$, medida como a fração do tempo em que esse enlace permanece ocupado. Como o JABS modela filas de envio e de recepção por nó, $\Ut$ é obtida diretamente da simulação, e sua aproximação analítica,
+\begin{equation}
+\Ut \approx \frac{8\, \Cn\, \nu_{\mathrm{b}}}{\Kn},
+\label{eq:util}
+\end{equation}
+em que $\Cn$ é expresso em bytes por bloco, $\nu_{\mathrm{b}}$ é a taxa de produção de blocos e $\Kn$ é a capacidade do enlace em bits por segundo, é utilizada apenas como verificação. Diferentemente de $\Cb$, a métrica $\Ut$ captura o nó gargalo, o que é essencial para protocolos centrados no líder, como o HotStuff.
+
+Uma configuração é considerada viável se atender simultaneamente a três critérios, fixados antes da bateria principal:
+\begin{align}
+\text{(V1) estabilidade:} \quad & Q(kP) \leq \epsilon_{Q}\ \ \forall k, \nonumber\\
+\text{(V2) latência:} \quad & \Lt \leq L_{\max}, \label{eq:feas}\\
+\text{(V3) enlace:} \quad & \Ut \leq U_{\max}, \nonumber
+\end{align}
+em que $Q(kP)$ é o número de transações pendentes ao final do $k$-ésimo período de compromisso e $\epsilon_{Q}$ é uma tolerância. O critério V1 exige que o acúmulo formado durante a janela de pico seja escoado antes do período seguinte, o que é menos restritivo do que exigir $\Th \geq \lambda_{\mathrm{pico}}$, uma vez que rajadas curtas podem ser absorvidas por fila. O efeito dessa fila sobre os usuários é capturado por V2. A fronteira de viabilidade de um protocolo, $\nmax(\bar{\lambda})$, é o maior $n$ que atende a \eqref{eq:feas} para uma dada demanda, e a restrição vinculante é o primeiro critério violado quando $n$ cresce. \chk{Fixar $\epsilon_{Q}$, $L_{\max}$ (por exemplo, como fração de $\Delta$) e $U_{\max}$ (por exemplo, $0{,}7$) antes da bateria principal.}

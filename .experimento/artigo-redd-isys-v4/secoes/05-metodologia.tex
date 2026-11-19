@@ -1,0 +1,90 @@
+% 05-metodologia.tex -- incluído por main-pt.tex
+% =====================================================================
+\section{Metodologia}
+\label{sec:method}
+% =====================================================================
+
+\subsection{Projeto Experimental}
+
+Os experimentos seguem a metodologia de \citet{Jain1991} e estão organizados em um experimento piloto, na fixação do protocolo de análise e na bateria principal. O piloto é utilizado para validar o simulador, estimar a variabilidade das respostas e determinar o número de replicações. As métricas, os níveis, os testes, o nível de significância, os limiares de \eqref{eq:feas} e a regra de recomendação são registrados antes da bateria principal.
+
+Por transparência, registra-se que o desenho aqui descrito resulta de uma revisão do desenho inicial do estudo, motivada pela identificação da estimativa de tráfego discutida a seguir e por questionamentos sobre a escalabilidade do pBFT em escala nacional. A revisão ocorreu antes da bateria principal, e as execuções realizadas com o desenho inicial são utilizadas apenas no piloto. \chk{Declarar se algum resultado dessas execuções foi examinado antes da revisão e de que forma.}
+
+A bateria principal compreende dois experimentos. O experimento E1 é um projeto fatorial completo com os fatores da Tabela~\ref{tab:factors}, que incluem a fração de validadores bizantinos, de modo que as fronteiras de viabilidade sejam obtidas também sob falhas. O nível $\phi = 0{,}30$ fica abaixo do limiar de um terço de todos os protocolos retidos; para $n = 4$, corresponde a $f = 1$. O experimento E2 avalia a sensibilidade à concentração da demanda, com $\rho_{\mathrm{p}}$ em três níveis, para os protocolos BFT nas combinações de $n$ e $\bar{\lambda}$ mais próximas das fronteiras obtidas em E1. Adicionalmente, os níveis $n \in \{400, 800\}$ não são utilizados em nenhum ajuste e servem exclusivamente para validar os metamodelos, em um subconjunto de células de E1 (demanda intermediária, enlace institucional); o nível $n = 400$ coincide com a maior escala mencionada na avaliação preliminar da Arq-REDD+ \chk{confirmar}. A viabilidade computacional das execuções com $n = 800$, em que o pBFT troca da ordem de $10^{6}$ mensagens por bloco, é verificada no piloto.
+
+\begin{table}[!ht]
+\caption{Fatores e níveis do experimento E1 e sua justificativa.}
+\label{tab:factors}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lp{2.5cm}p{3.0cm}@{}}
+\hline\hline
+Fator & Níveis & Justificativa \\
+\hline
+A: Protocolo & pBFT, Tendermint, HotStuff, PoSA, PoS & Tabela~\ref{tab:req} \\
+N: Validadores $n$ & 4, 16, 64, 256 & faixa de governança, razão 4 \\
+D: Demanda $\bar{\lambda}$ & $\lambda_{0}$, $10\lambda_{0}$, $100\lambda_{0}$ & cenários regulatórios \eqref{eq:demand} \\
+R: Regime & Poisson, MMPP-2 & concentração nos prazos \\
+K: Enlace $\Kn$ & institucional, restrito & conectividade de nós remotos \\
+$\Phi$: Bizantinos $\phi$ & 0; 0,30 & requisito R3 \\
+\hline
+\multicolumn{2}{@{}l}{Configurações} & $5\times4\times3\times2\times2\times2 = 480$ \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+Todas as simulações são realizadas no simulador JABS \citep{Yajam2023}. A versão atual do simulador inclui o pBFT, o PoSA (Parlia) e o Casper FFG, com chegadas de transações de Poisson; a execução de E1 requer a implementação do Tendermint, do HotStuff, do gerador MMPP-2 de \eqref{eq:mmpp} e das trocas de visão do pBFT, sem as quais um líder bizantino interrompe a progressão do protocolo. \chk{Condicionado a essas implementações e à sua validação no piloto.} Os validadores bizantinos adotam o comportamento de silêncio, isto é, deixam de enviar votos e, quando líderes, deixam de propor blocos \chk{confirmar os tipos de ataque disponíveis no \texttt{ByzantineConfig}}.
+
+Um aspecto metodológico é determinante para a validade das conclusões: o tráfego $\Cb$ é medido em nível de pacote, somando-se o tamanho de todas as mensagens efetivamente trocadas para finalizar cada bloco, para todos os protocolos. Na versão atual do simulador, o tráfego do pBFT é estimado como $2n \times 1.024$ bytes por bloco, acrescido de ruído, o que corresponde a um único nó enviando duas mensagens de 1~KiB a cada um dos demais. No JABS, porém, um voto do pBFT tem $42$ bytes ($32$ bytes de \textit{hash} e $10$ de sobrecarga). Considerando apenas os votos, o tráfego total esperado é da ordem de $2n^{2} \times 42$ bytes, de modo que a estimativa superestima o tráfego para $n \lesssim 24$ e o subestima para valores maiores, com razão da ordem de $16$ em $n = 400$. \chk{Condicionado à aceitação e à implementação da ADR-0001.} Cada configuração é executada com $r$ replicações independentes, com sementes distintas e descarte do transiente inicial \citep{Law2015}, em que $r$ é obtido a partir do piloto de modo que a semiamplitude do intervalo de confiança de $95\%$ das respostas estocásticas não exceda $5\%$ da média \citep{Jain1991}:
+\begin{equation}
+r = \max_{m}\left\lceil \left( \frac{z_{0,975}\, s_{m}}{0{,}05\, \bar{y}_{m}} \right)^{2} \right\rceil.
+\label{eq:reps}
+\end{equation}
+
+Antes da bateria principal, o simulador é validado em duas etapas. Na primeira, reproduzem-se os cenários de \citep{Caburlao2026clei} para o PoSA e o PoS. Na segunda, verifica-se que o número de mensagens de consenso medido para o pBFT com $n \in \{4, 16, 64\}$ coincide com o valor esperado pela especificação do protocolo, o que confirma a correção da instrumentação.
+
+\subsection{Elasticidades e Validação Fora da Faixa}
+
+A questão central do trabalho, isto é, se a viabilidade é mais sensível à escala de governança ou à de mercado, é respondida por elasticidades, que são adimensionais e não dependem da amplitude dos níveis escolhidos. Para o tráfego total, ajusta-se, para cada protocolo e cada combinação dos fatores R, K e $\Phi$, o metamodelo de dois termos sugerido por \eqref{eq:decomp},
+\begin{equation}
+\Cb = \alpha\, n^{\,b} + \beta\, (n-1)\, \bar{B},
+\label{eq:cbmodel}
+\end{equation}
+por mínimos quadrados não lineares, em que $\bar{B}$ é o número médio de transações por bloco medido e $b$ é o expoente do termo de consenso, esperado próximo de $2$ para pBFT e Tendermint e de $1$ para HotStuff no caso normal \eqref{eq:mpbft}. Para $\Tb$, $\Lt$ e $\Ut$, ajusta-se o metamodelo
+\begin{multline}
+\ln y = a + b \ln n + c \ln \bar{\lambda} + d \ln n \ln \bar{\lambda} \\
++ \textstyle\sum_{X \in \{R, K, \Phi\}} g_{X}\, \mathbb{1}_{X} + e,
+\label{eq:scaling}
+\end{multline}
+em que $\mathbb{1}_{X}$ são variáveis indicadoras dos níveis de R, K e $\Phi$. As elasticidades em relação às duas escalas são então
+\begin{equation}
+\varepsilon_{n} = \frac{\partial \ln y}{\partial \ln n}, \qquad \varepsilon_{\lambda} = \frac{\partial \ln y}{\partial \ln \bar{\lambda}},
+\label{eq:elast}
+\end{equation}
+avaliadas no centro da faixa de governança e de demanda, com intervalos de confiança obtidos por \textit{bootstrap} sobre as replicações. Os metamodelos são utilizados para predizer as respostas em $n \in \{400, 800\}$ e considerados válidos para extrapolação se os valores simulados nesses níveis estiverem contidos nos intervalos de predição de $95\%$ e o erro percentual absoluto médio for inferior a $10\%$ \citep{Kleijnen2015}. \chk{Limiar a fixar antes da bateria principal.} Para o PoS e o PoSA, $n$ representa o número de validadores que participam da produção e da finalização dos blocos, e não são formuladas expectativas teóricas para os expoentes.
+
+\subsection{Testes de Efeitos por Análise de Variância}
+
+A ANOVA é utilizada para testar a existência dos efeitos e, sobretudo, das interações que determinam se a ordenação dos protocolos muda com as condições de operação. Como os fatores são escolhidos deliberadamente, adota-se um modelo de efeitos fixos. Para cada resposta estocástica $m \in \{\Tb, \Lt, \Ut\}$, a observação $y$ da $l$-ésima replicação na célula $c$ do projeto é modelada como
+\begin{equation}
+y^{(\theta)}_{cl} = \mu + \sum_{E \in \mathcal{E}} \tau_{E}(c) + \varepsilon_{cl},
+\label{eq:anova}
+\end{equation}
+em que $\mathcal{E}$ é o conjunto dos efeitos principais e das interações entre os fatores da Tabela~\ref{tab:factors}, $\tau_{E}(c)$ é o efeito $E$ na célula $c$, sujeito a restrições de soma zero, e $y^{(\theta)}$ é a transformação de Box--Cox \citep{BoxCox1964},
+\begin{equation}
+y^{(\theta)} = \begin{cases} (y^{\theta}-1)/\theta, & \theta \neq 0, \\ \ln y, & \theta = 0, \end{cases}
+\label{eq:boxcox}
+\end{equation}
+necessária porque as respostas são positivas, assimétricas e variam em várias ordens de grandeza entre protocolos, o que torna os efeitos multiplicativos \citep{Jain1991,Montgomery2017}. O tráfego $\Cb$ não é submetido à ANOVA, pois, para os protocolos BFT, a contagem de mensagens por bloco é praticamente determinística e a variância entre replicações tende a zero, o que tornaria os testes degenerados; para essa resposta, a análise baseia-se exclusivamente em \eqref{eq:cbmodel}.
+
+A análise segue cinco etapas: (i) testes $F$ para todos os efeitos, com somas de quadrados coincidentes por se tratar de projeto balanceado; (ii) verificação da normalidade dos resíduos por gráficos quantil--quantil, complementados pelo teste de Shapiro--Wilk \citep{Shapiro1965} apenas nas células com até $5.000$ observações, e da homogeneidade das variâncias pelo teste de Brown--Forsythe \citep{Brown1974}; (iii) repetição da inferência com erros-padrão robustos à heterocedasticidade (HC3) \citep{Long2000} e por uma análise fatorial não paramétrica com transformação de postos alinhados (ART) \citep{Wobbrock2011}, que preserva os testes de interação, sendo um efeito considerado estabelecido apenas se significativo nas três análises; (iv) comparações entre protocolos dentro de cada nível dos fatores com que interagem, pelo procedimento de Games--Howell \citep{Games1976}, com controle da taxa de erro por família pelo procedimento de Holm \citep{Holm1979} a $\alpha = 0{,}05$; e (v) tamanhos de efeito pela estatística
+\begin{equation}
+\omega^{2}_{E} = \frac{SS_{E} - \mathit{gl}_{E}\, MS_{\mathrm{err}}}{SST + MS_{\mathrm{err}}}
+\label{eq:omega}
+\end{equation}
+\citep{Olejnik2003}. As parcelas de variação $SS_{E}/SST$ \citep{Jain1991} são reportadas de forma descritiva e não são utilizadas para comparar a importância de fatores cujas faixas de níveis foram fixadas arbitrariamente, papel que cabe às elasticidades \eqref{eq:elast}. Nenhum fator é descartado com base apenas em um efeito principal fraco quando suas interações são significativas.
+
+\subsection{Fronteiras de Viabilidade e Recomendação}
+
+As fronteiras $\nmax(\bar{\lambda})$ são obtidas, para cada protocolo e cada combinação de $\rho_{\mathrm{p}}$, K e $\Phi$, pela inversão dos metamodelos validados em relação aos critérios \eqref{eq:feas}, e confirmadas por simulação direta em pontos imediatamente abaixo e acima da fronteira estimada. A recomendação de protocolo para um cenário de governança $n$ e de demanda $\bar{\lambda}$ segue três etapas, fixadas antes da bateria principal: (i) admissibilidade, que exige o atendimento integral de R1--R4 e um limiar de tolerância superior a $\phi$; (ii) viabilidade pelos critérios \eqref{eq:feas}; e (iii) entre os protocolos admissíveis e viáveis, preferência pelo menor $\Lt$, por ser a métrica percebida pelos participantes do mercado, com desempate, quando os intervalos de confiança se sobrepõem, pela maior margem $\nmax(\bar{\lambda})/n$, que favorece configurações capazes de acomodar a expansão da governança sem reengenharia do registro.

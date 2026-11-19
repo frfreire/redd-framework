@@ -1,0 +1,56 @@
+﻿diff --git a/src/test/java/jabs/example/HashIdentidadePreSimulacaoTest.java b/src/test/java/jabs/example/HashIdentidadePreSimulacaoTest.java
+index 4fa828d..6da1d44 100644
+--- a/src/test/java/jabs/example/HashIdentidadePreSimulacaoTest.java
++++ b/src/test/java/jabs/example/HashIdentidadePreSimulacaoTest.java
+@@ -4,7 +4,6 @@ import jabs.config.NetworkSizing;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.io.TempDir;
+ 
+-import java.io.IOException;
+ import java.nio.charset.StandardCharsets;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
+@@ -42,19 +41,18 @@ class HashIdentidadePreSimulacaoTest {
+     @TempDir
+     Path tmp;
+ 
+-    private static String classpath() throws IOException {
+-        Path base = Path.of("").toAbsolutePath();
+-        StringBuilder cp = new StringBuilder();
+-        cp.append(base.resolve("target/test-classes")).append(':').append(base.resolve("target/classes"));
+-        Path deps = base.resolve("target/cp.txt");
+-        if (Files.exists(deps)) {
+-            cp.append(':').append(Files.readString(deps).trim());
+-        }
+-        return cp.toString();
++    /**
++     * Classpath das JVMs filhas: o do proprio teste (surefire expoe o real em {@code surefire.test.class.path}; fora do
++     * surefire, {@code java.class.path}). Independe de plataforma (separador e caminhos vem da JVM atual) e inclui as
++     * dependencias, sem exigir {@code target/cp.txt}.
++     */
++    private static String classpath() {
++        return System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+     }
+ 
+     private static String rodar(String cp, Path saida, String... args) throws Exception {
+-        List<String> cmd = new ArrayList<>(List.of("java", "-cp", cp));
++        String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
++        List<String> cmd = new ArrayList<>(List.of(java, "-cp", cp));
+         cmd.addAll(List.of(args));
+         Process p = new ProcessBuilder(cmd).redirectErrorStream(true).redirectOutput(saida.toFile()).start();
+         if (!p.waitFor(120, TimeUnit.SECONDS)) {
+diff --git a/src/test/java/jabs/network/p2p/P2PSetupTest.java b/src/test/java/jabs/network/p2p/P2PSetupTest.java
+index 785f140..7bc76ab 100644
+--- a/src/test/java/jabs/network/p2p/P2PSetupTest.java
++++ b/src/test/java/jabs/network/p2p/P2PSetupTest.java
+@@ -295,7 +295,9 @@ class P2PSetupTest {
+             if (p.exitValue() != 0) {
+                 return "ERRO:" + Files.readString(erro);
+             }
+-            return Files.readString(saida);
++            // P2PVizinhosMain usa println: a filha termina linhas com System.lineSeparator() (CRLF no Windows).
++            // So a terminacao de linha e normalizada; o conteudo continua comparado byte a byte.
++            return Files.readString(saida).replace(System.lineSeparator(), "\n");
+         } finally {
+             Files.deleteIfExists(saida);
+             Files.deleteIfExists(erro);

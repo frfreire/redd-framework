@@ -1,0 +1,19 @@
+﻿AMBIFY_10_60/s1 bytes=126/126 igual=True hash=de612b723f # base=0 atual=0
+AMBIFY_10_60/s2 bytes=125/125 igual=True hash=a32ac2dce2 # base=0 atual=0
+AMBIFY_10_60/s3 bytes=126/126 igual=True hash=0e8fcdcc45 # base=0 atual=0
+AMBIFY_12_60/s1 bytes=125/125 igual=True hash=b5d6e44aba # base=0 atual=0
+AMBIFY_12_60/s2 bytes=126/126 igual=True hash=08001b4c50 # base=0 atual=0
+AMBIFY_12_60/s3 bytes=126/126 igual=True hash=070b3fe3d2 # base=0 atual=0
+ARQ_7_60/s1 bytes=121/121 igual=True hash=b63ef0eee2 # base=0 atual=0
+ARQ_7_60/s2 bytes=121/121 igual=True hash=2940e3e61f # base=0 atual=0
+ARQ_7_60/s3 bytes=121/121 igual=True hash=7289783838 # base=0 atual=0
+MCO2_10_60/s1 bytes=123/123 igual=True hash=42387b13ef # base=0 atual=0
+MCO2_10_60/s2 bytes=123/123 igual=True hash=42387b13ef # base=0 atual=0
+MCO2_10_60/s3 bytes=123/123 igual=True hash=42387b13ef # base=0 atual=0
+MCO2_50_600/s1 bytes=127/127 igual=True hash=ed82f24348 # base=0 atual=0
+MCO2_50_600/s2 bytes=127/127 igual=True hash=7c0c206c3d # base=0 atual=0
+MCO2_50_600/s3 bytes=127/127 igual=True hash=a5d4f4a08d # base=0 atual=0
+OFFSET_40_20000/s1 bytes=131/131 igual=True hash=ee402f6f59 # base=0 atual=0
+OFFSET_40_20000/s2 bytes=132/132 igual=True hash=036c366c7a # base=0 atual=0
+OFFSET_40_20000/s3 bytes=131/131 igual=True hash=57a05837ee # base=0 atual=0
+TOTAL byte-a-byte iguais=18 diferentes=0

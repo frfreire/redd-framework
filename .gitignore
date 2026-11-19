@@ -180,42 +180,42 @@ _bmad/
 _bmad-output/
 
 # Instrucoes e configuracao dos agentes
-AGENTS.md
-CLAUDE.md
+#AGENTS.md
+#CLAUDE.md
 GEMINI.md
-opencode.json
-enxame.config.json
-gauntlet-loop.config.json
+#opencode.json
+#enxame.config.json
+#gauntlet-loop.config.json
 
 # Memoria vetorial e bases dos agentes (Ruflo / AgentDB / RuVector)
-.enxame/
-.swarm/
-agentdb.rvf
-agentdb.rvf.*
-*.rvf
-ruvector.db
-*.db
+#.enxame/
+#.swarm/
+#agentdb.rvf
+#agentdb.rvf.*
+#*.rvf
+#ruvector.db
+#*.db
 
 # Registro de rodadas builder/critic/arbiter e logs dos agentes
-.ia/
+#.ia/
 
 # Scripts de orquestracao do enxame (importar base, memoria, registrar rodada)
-scripts/enxame/
+#scripts/enxame/
 
 # Especificacoes, indices e auditorias mantidos pelos agentes
-especificacoes/
+#especificacoes/
 
 # Planejamento do experimento e rascunhos do artigo (nao sao codigo).
 # Ao congelar o pre-registro, publicar a versao final das baterias em experimentos/.
-.experimento/
+#.experimento/
 
 # Status do orquestrador. ADRs (docs/adr/) sao versionados: sao decisoes do humano. A documentacao Sphinx de docs/ continua versionada.
-docs/STATUS.md
-docs/_build/
+#docs/STATUS.md
+#docs/_build/
 
 # Pesquisa e material web gerado por assistentes
-research/
-_web_docs/
+#research/
+#_web_docs/
 
 # =====================================================================
 # Artefatos gerados

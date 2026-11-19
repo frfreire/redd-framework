@@ -1,0 +1,31 @@
+% 03-trabalhos-relacionados.tex -- incluído por main-pt.tex
+% =====================================================================
+\section{Trabalhos Relacionados}
+\label{sec:related}
+% =====================================================================
+
+O potencial da blockchain para REDD+ tem sido examinado sob os pontos de vista econômico, institucional e ambiental \citep{Howson2019geoforum,Kotsialou2021,Kotsialou2022,Marke2022,Pak2021}, e revisões sistemáticas mapearam suas aplicações em mercados de carbono e no setor florestal \citep{Vilkov2023,He2022}. No contexto brasileiro, \citet{Aguiar2018} analisou o mercado voluntário de carbono florestal, e \citet{Neves2025} investigou a blockchain no sistema jurisdicional de REDD+ do Acre. Mais recentemente, \citet{Caburlao2026fsi} identificaram a escassez de validação empírica e de arquiteturas técnicas detalhadas nesse campo.
+
+As avaliações de mecanismos de consenso são numerosas e, em sua maioria, comparativas. \citet{Bamakan2020} organizaram critérios de avaliação de desempenho de algoritmos de consenso, \citet{Werth2023} examinaram plataformas à luz do trilema escalabilidade, segurança e descentralização, e \citet{Shen2025} e \citet{Shaikh2025} propuseram revisões e arcabouços comparativos. Comparações baseadas em simulação foram conduzidas para o compartilhamento de redes \citep{Zeydan2026} e para a comercialização de energia em microrredes \citep{Bhavana2025}. Esses trabalhos ordenam protocolos sob cargas e escalas fixadas pelos autores, mas não derivam a carga nem o tamanho do conjunto de validadores a partir do domínio de aplicação.
+
+No domínio REDD+, \citet{Caburlao2025reic,Caburlao2026clei} compararam projetos em operação por simulação, com tráfego medido no simulador, intervalos de confiança e análise de sensibilidade, considerando os mecanismos PoS e PoSA desses projetos. \citet{Bastos2026} avaliaram uma arquitetura permissionada sobre Hyperledger Besu para créditos REDD+ na Amazônia por meio de testes de carga com até $250$ usuários simultâneos. Fora do domínio do carbono, \citet{Rodrigues2021} analisou arquiteturas integradas a blockchain para transações de Internet das Coisas, e \citet{Rodrigues2024} estudou a seleção de tecnologias de registro distribuído.
+
+Contudo, nenhum dos trabalhos supracitados (i) separa a escala de governança da escala de mercado, (ii) deriva a demanda da estrutura de obrigações de um mercado regulado, (iii) inclui protocolos BFT clássicos com tráfego medido em nível de pacote e validadores bizantinos no contexto de registros de carbono, e (iv) valida leis de escala fora da faixa de ajuste para estimar limites de viabilidade. A Tabela~\ref{tab:related} resume essas diferenças.
+
+\begin{table*}[!ht]
+\caption{Comparação com os trabalhos relacionados. Esc.: separa as escalas de governança e de mercado; Dem.: demanda derivada do domínio; BFT: inclui protocolos BFT clássicos com tráfego medido e validadores bizantinos; Front.: fronteira de viabilidade validada fora da faixa de ajuste.}
+\label{tab:related}
+\centering
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\hline\hline
+Trabalho & REDD+ & Simulação & Esc. & Dem. & BFT & Front. \\
+\hline
+\citet{Bamakan2020}      & --     & --     & --     & --     & --     & -- \\
+\citet{Zeydan2026}       & --     & \cmark & --     & \chk{} & \chk{} & -- \\
+\citet{Bastos2026}       & \cmark & --     & --     & \chk{} & \chk{} & -- \\
+\citet{Caburlao2026clei} & \cmark & \cmark & --     & --     & --     & -- \\
+Este trabalho            & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark \\
+\hline\hline
+\end{tabular}
+\end{table*}

@@ -1,0 +1,286 @@
+{
+  "$comentario": "Gauntlet Loop para um projeto REDD+ em blockchain com duas trilhas de codigo e uma de pesquisa. Loops 1 e 2: builder e critic disputam sobre CODIGO em construcao, ha reenvio ao builder com o maior gap unico (padrao redd+_blockchain e rics). Loop 3: disputam sobre um RESULTADO ou DECISAO, nao ha reenvio e a divergencia se resolve por impacto (padrao framework-redd).",
+  "origemConceitual": [
+    "redd+_blockchain/gauntlet-loop.config.json",
+    "rics/gauntlet-loop.config.json",
+    "framework-redd/gauntlet-loop.config.json"
+  ],
+  "modelosPorPapel": {
+    "builder": {
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "familia": "anthropic",
+      "tier": "sonnet"
+    },
+    "critic": {
+      "modelo": "anthropic/claude-sonnet-5-5",
+      "familia": "anthropic",
+      "tier": "sonnet"
+    },
+    "arbiter": {
+      "modelo": "anthropic/claude-opus-5-5",
+      "familia": "anthropic",
+      "tier": "opus",
+      "fallback": "anthropic/claude-sonnet-5-5"
+    },
+    "workerValidadoExternamente": {
+      "modelo": "anthropic/claude-haiku-5-5",
+      "familia": "anthropic",
+      "tier": "haiku",
+      "aplicaA": [
+        "fabric-rede",
+        "fabric-api"
+      ]
+    },
+    "regra": "todos os modelos sao da familia anthropic. Como nao ha diversidade de familia, a independencia entre papeis vem de: (1) contexto limpo obrigatorio para critic e arbiter; (2) arbiter em tier diferente do builder (opus vs sonnet). scripts/enxame/validar-config.py falha se algum modelo nao for anthropic, se o arbiter compartilhar tier com o builder ou se critic/arbiter nao declararem contextoLimpo.",
+    "economiaDeTokens": "sonnet so onde se decide validade (builders, critics, dominio, ponte, experimento) e na coordenacao; haiku em workers cuja saida e validada por build, teste e politica de endosso; opus apenas no arbiter, que e raro e recebe entrada minima (especificacao + trecho + numero do criterio).",
+    "verificadoEm": "PENDENTE: confirmar que claude-opus-5-5, claude-sonnet-5-5 e claude-haiku-5-5 respondem na API da Anthropic (api.anthropic.com) com a chave em ANTHROPIC_API_KEY. Se opus nao estiver habilitado na conta, usar o fallback do arbiter."
+  },
+  "contextoLimpo": {
+    "critic": "recebe especificacao + codigo (ou fonte primaria). Nunca a justificativa do builder. Obrigatorio: e a principal salvaguarda contra erro correlacionado, ja que builder e critic sao do mesmo modelo.",
+    "arbiter": "recebe especificacao + trecho em disputa + numero do criterio violado. Nunca vereditos nem justificativas de builder ou critic.",
+    "mecanismo": "conteudo do prompt, nao sessao: cada chamada ao Task tool e uma invocacao nova"
+  },
+  "loops": [
+    {
+      "id": "loop1-chaincode",
+      "status": "formalizado",
+      "escopo": "chaincode/src/main/java/**/*.java",
+      "builder": {
+        "agente": "fabric-builder",
+        "skill": "fabric-chaincode-builder",
+        "produz": "funcao de contrato, modelo de estado, indice CouchDB ou teste"
+      },
+      "critic": {
+        "agente": "gauntlet-critic-chaincode",
+        "skill": "gauntlet-critic-chaincode",
+        "recebe": "especificacoes/dominio-redd.md (invariantes) + codigo produzido",
+        "produz": "ParecerRevisao"
+      },
+      "arbiter": {
+        "agente": "gauntlet-arbiter",
+        "skill": "gauntlet-arbiter",
+        "acionadoSomenteQuando": "critic.divergenciaSobreGravidade == true",
+        "produz": "GAP_BLOQUEANTE | GAP_NAO_BLOQUEANTE",
+        "decisaoFinal": true
+      },
+      "bar": [
+        {
+          "ordem": 1,
+          "criterio": "determinismo-de-endosso",
+          "descricao": "Funcoes de escrita nao usam relogio local, aleatoriedade, UUID gerado no peer, I/O externo nem iteracao de colecao sem ordem estavel. Tempo vem de getTxTimestamp(); identificadores vem dos argumentos ou de getTxId(). Se dois peers puderem produzir read/write sets diferentes, a transacao falha no commit."
+        },
+        {
+          "ordem": 2,
+          "criterio": "identidade-nunca-vem-do-payload",
+          "descricao": "Autorizacao usa ctx.getClientIdentity() (MSP e atributos). Nenhum argumento do tipo remetente, owner ou caller decide quem pode agir."
+        },
+        {
+          "ordem": 3,
+          "criterio": "separacao-de-papeis",
+          "descricao": "O verificador de um relatorio MRV nao pode ser a organizacao proponente do projeto, comparado contra o dado gravado no ledger, nao contra constantes."
+        },
+        {
+          "ordem": 4,
+          "criterio": "maquina-de-estados-completa",
+          "descricao": "Toda funcao de escrita valida o estado atual do ativo antes de mutar e lanca excecao de contrato especifica em transicao invalida. Nao ha mutacao por caminho que ignore a maquina de estados."
+        },
+        {
+          "ordem": 5,
+          "criterio": "conservacao-de-toneladas",
+          "descricao": "A soma de creditos emitidos a partir de um relatorio verificado nunca excede as toneladas verificadas, somando todas as emissoes anteriores e nao apenas a corrente. Periodos de monitoramento de um mesmo projeto nao se sobrepoem (dupla contagem). Verificar com teste que emite duas vezes sobre o mesmo relatorio."
+        },
+        {
+          "ordem": 6,
+          "criterio": "irreversibilidade-da-aposentadoria",
+          "descricao": "Aposentar e irreversivel, a segunda chamada falha de forma explicita (nunca no-op silencioso) e nenhuma transferencia ou nova aposentadoria e aceita depois."
+        },
+        {
+          "ordem": 7,
+          "criterio": "eventos-de-dominio",
+          "descricao": "Toda funcao de escrita chama setEvent com payload JSON parseavel, com nome estavel que a API consome."
+        },
+        {
+          "ordem": 8,
+          "criterio": "consultas-sem-varredura-total",
+          "descricao": "Consultas usam chave composta, range limitado ou rich query com indice em META-INF/statedb/couchdb/indexes e paginacao. Nada de getStateByRange vazio seguido de filtro em memoria."
+        },
+        {
+          "ordem": 9,
+          "criterio": "dados-sensiveis-fora-do-ledger",
+          "descricao": "O ledger guarda hash da evidencia MRV, nunca o documento. Dado pessoal ou comercialmente sensivel vai para colecao de dados privados, nao para o estado publico do canal."
+        },
+        {
+          "ordem": 10,
+          "criterio": "build-e-testes-passam",
+          "descricao": "mvn -q -DskipTests package compila; mvn -q test passa; existe teste para cada transicao invalida e para o criterio 5."
+        }
+      ],
+      "pararNoPrimeiroGap": true,
+      "reenvioAoBuilder": true,
+      "orcamentoDeIteracoes": 3,
+      "regraDeGapUnico": "cada reenvio aponta so o gap de menor ordem encontrado pelo critic",
+      "regrasDeDecisao": {
+        "criticAprova": "registrar APROVADO, seguir para a proxima tarefa do grupo",
+        "criticRejeitaSemDivergencia": "builder recebe o gap unico, corrige, nova rodada do critic",
+        "builderDivergeSobreGravidade": "aciona gauntlet-arbiter; a decisao e final para aquele gap"
+      },
+      "aposEsgotarOrcamento": {
+        "acao": "PARA_E_SOLICITA_DECISAO_HUMANA",
+        "motivo": "tres rodadas sem convergencia indicam problema de especificacao ou de capacidade, nao um gap pontual"
+      },
+      "gateDeDeploy": "somente APROVADO ou GAP_NAO_BLOQUEANTE libera package/install/commit pelo fabric-rede"
+    },
+    {
+      "id": "loop2-jabs-codigo",
+      "status": "formalizado",
+      "escopo": "src/main/java/**/*.java",
+      "builder": {
+        "agente": "jabs-builder",
+        "skill": "jabs-protocolo-builder",
+        "produz": "protocolo de consenso, no, rede, cenario, contabilizacao de trafego, logger ou correcao de medicao"
+      },
+      "critic": {
+        "agente": "gauntlet-critic-jabs",
+        "skill": "gauntlet-critic-jabs",
+        "recebe": "especificacao do protocolo (paper/ADR) + codigo produzido + saida de scripts/lint/lint-jabs.py",
+        "produz": "ParecerRevisao"
+      },
+      "arbiter": {
+        "agente": "gauntlet-arbiter",
+        "skill": "gauntlet-arbiter",
+        "acionadoSomenteQuando": "critic.divergenciaSobreGravidade == true",
+        "produz": "GAP_BLOQUEANTE | GAP_NAO_BLOQUEANTE",
+        "decisaoFinal": true
+      },
+      "bar": [
+        {
+          "ordem": 1,
+          "criterio": "trafego-medido-nao-estimado",
+          "descricao": "Todo byte contabilizado vem de pacotes que passaram pela camada de rede do simulador (packet.getSize()). Nenhuma formula fechada em n, nenhum ruido sintetico. O protocolo novo esta registrado nos ramos instanceof de PeerBlockchainNode.processIncomingPacket; sem isso o trafego sai zero."
+        },
+        {
+          "ordem": 2,
+          "criterio": "determinismo-por-semente",
+          "descricao": "Aleatoriedade apenas via RandomnessEngine do cenario. Proibidos Math.random() e new Random(literal). Duas execucoes com a mesma semente geram CSV identico, exceto colunas de hashCode de objeto. Verificar com scripts/jabs/checar-determinismo.py."
+        },
+        {
+          "ordem": 3,
+          "criterio": "fidelidade-ao-protocolo",
+          "descricao": "Fases, quorum e rotacao de lider seguem o artigo de origem. Com n = 3f+1 o quorum e 2f+1 (comparacao >=, atencao a divisao inteira). Protocolos encadeados (HotStuff) encadeiam de fato. Modelo de assinatura (individual vs agregada) e timeouts sao parametros."
+        },
+        {
+          "ordem": 4,
+          "criterio": "modelo-de-falha-explicito-e-uniforme",
+          "descricao": "O comportamento bizantino esta definido e e o mesmo para todos os protocolos comparados. Nenhum catch(Exception) engole erro do hook bizantino."
+        },
+        {
+          "ordem": 5,
+          "criterio": "granularidade-de-metrica-declarada",
+          "descricao": "Cada metrica declara unidade e granularidade (por no ou agregado de rede; total ou so consenso). Valor sentinela -1 nunca e tratado como zero. A leitura de ordem de complexidade usa a granularidade correta (ver ADR sobre C_B)."
+        },
+        {
+          "ordem": 6,
+          "criterio": "portao-V-A-B-C",
+          "descricao": "V-A (ordem de complexidade sobre trafego medido), V-B (limiar de tolerancia a falha bizantina dentro de 1 ponto percentual do teorico) e V-C (confronto com numeros publicados, ou declaracao explicita de inviabilidade) foram executados e documentados."
+        },
+        {
+          "ordem": 7,
+          "criterio": "nao-regressao",
+          "descricao": "Para uma semente fixa, a saida dos protocolos existentes nao mudou, salvo mudanca intencional documentada em ADR."
+        },
+        {
+          "ordem": 8,
+          "criterio": "build-e-testes-passam",
+          "descricao": "mvn -q clean compile compila. Testes existem para o protocolo novo (quorum, mesma semente, no silencioso) e passam."
+        }
+      ],
+      "pararNoPrimeiroGap": true,
+      "reenvioAoBuilder": true,
+      "orcamentoDeIteracoes": 3,
+      "regraDeGapUnico": "cada reenvio aponta so o gap de menor ordem",
+      "regrasDeDecisao": {
+        "criticAprova": "registrar APROVADO",
+        "criticRejeitaSemDivergencia": "builder recebe o gap unico e corrige",
+        "builderDivergeSobreGravidade": "aciona gauntlet-arbiter; decisao final"
+      },
+      "aposEsgotarOrcamento": {
+        "acao": "PARA_E_SOLICITA_DECISAO_HUMANA",
+        "motivo": "mesma trava do loop1"
+      },
+      "gateDeExperimento": "baterias so iniciam com loop2 APROVADO para o protocolo e portao V-A/V-B/V-C registrado"
+    },
+    {
+      "id": "loop3-resultado-decisao",
+      "status": "formalizado",
+      "aplicaSeA": [
+        "afirmacao de resultado de simulacao ou de calibracao (ex.: o custo de comunicacao do protocolo X cresce com n ao quadrado)",
+        "decisao de ADR",
+        "veredito de corretude de artefato pre-requisito antes de iniciar uma fase"
+      ],
+      "builder": {
+        "agente": "jabs-experimento",
+        "skill": "jabs-experimento-doe",
+        "produz": "ParecerTecnico | PropostaADR | VereditoCorretude"
+      },
+      "critic": {
+        "agente": "gauntlet-critic-jabs",
+        "skill": "gauntlet-critic-jabs",
+        "recebe": "ContextoArtefato: codigo do simulador, CSV brutos, teoria. Nunca a conclusao do builder.",
+        "produz": "ParecerTecnico"
+      },
+      "arbiter": {
+        "agente": "gauntlet-arbiter",
+        "skill": "gauntlet-arbiter",
+        "acionadoSomenteQuando": "impacto == MEDIO E vereditos divergem E nenhum dos dois e INCONCLUSIVO",
+        "restricao": "nunca em ALTO ou CRITICO"
+      },
+      "bar": [
+        {
+          "ordem": 1,
+          "criterio": "reproducao-independente",
+          "descricao": "O critic re-deriva o resultado a partir da fonte primaria antes de ver qualquer conclusao."
+        },
+        {
+          "ordem": 2,
+          "criterio": "consistencia-com-fonte-primaria",
+          "descricao": "A afirmacao e conferida contra o codigo e os CSV brutos, nao contra uma descricao em prosa."
+        },
+        {
+          "ordem": 3,
+          "criterio": "deteccao-de-artefato-vs-medicao",
+          "descricao": "Distingue resultado genuino de artefato do metodo: formula fechada apresentada como medicao, transiente nao removido, semente fixa, granularidade de metrica trocada."
+        },
+        {
+          "ordem": 4,
+          "criterio": "confianca-coerente-com-evidencia",
+          "descricao": "Se confirmar exige reexecutar o simulador, o veredito e PENDENTE_RETESTE, nunca confirmacao otimista."
+        },
+        {
+          "ordem": 5,
+          "criterio": "rastreabilidade-ate-requisito",
+          "descricao": "O resultado se liga a um requisito de especificacoes/dominio-redd.md (por exemplo, latencia de finalizacao para registro de emissao). Resultado sem requisito e curiosidade, nao evidencia para o projeto."
+        }
+      ],
+      "pararNoPrimeiroGap": true,
+      "reenvioAoBuilder": false,
+      "motivoSemReenvio": "divergencia sobre resultado e discordancia de julgamento, nao gap corrigivel; reenviar ancora o builder na direcao do critic",
+      "regrasDeDecisao": {
+        "concordancia": "consolida com confianca ALTA",
+        "divergenciaImpactoAltoOuCritico": "PENDENTE_REVISAO_HUMANA imediato, sem arbiter",
+        "divergenciaImpactoMedio": "arbiter; maioria 2 de 3 fecha com confianca MEDIA; tres vereditos distintos vai a humanos",
+        "concordanciaEmInconclusivo": "vai a humanos ou a fila de reteste; arbiter nao e acionado"
+      },
+      "vereditos": [
+        "CONFIRMADO",
+        "DEFEITO_ENCONTRADO",
+        "INCONCLUSIVO",
+        "PENDENTE_RETESTE"
+      ]
+    }
+  ],
+  "execucaoReal": {
+    "mecanismoDeParalelizacao": "Task tool nativo do OpenCode. Loops 1 e 2 sao independentes entre si e rodam em paralelo; builder, critic e arbiter dentro do mesmo loop sao sequenciais.",
+    "ruflo": "memoria persistente via scripts/enxame/memoria.sh. Nao orquestra spawn.",
+    "aplicacaoDoOrcamento": "scripts/enxame/registrar-rodada.py grava cada rodada em .ia/rodadas/<loop>.jsonl e devolve codigo de saida 20 quando o orcamento acaba"
+  }
+}

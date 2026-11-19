@@ -1,0 +1,97 @@
+% 06-resultados.tex -- incluído por main-pt.tex
+% =====================================================================
+\section{Resultados Numéricos e Discussões}
+\label{sec:results}
+% =====================================================================
+
+Nesta seção, os resultados numéricos da bateria principal são apresentados juntamente com a análise estatística correspondente. Todos os resultados são reportados como médias com intervalos de confiança de $95\%$ sobre $r = $ \tbd{valor} replicações, e assume-se, salvo indicação em contrário, $\lambda_{0} = $ \tbd{valor} transações por segundo e $\rho_{\mathrm{p}} = $ \tbd{valor}.
+
+\subsection{Validação do Simulador e Efeito da Medição do Tráfego}
+
+\begin{figure}[!ht]
+\centering
+\figplaceholder{4.5cm}{Fig. 2 -- $\Cb$ do pBFT versus $n$ (escala log-log): estimativa em forma fechada versus medição em nível de pacote, $n$ de 4 a 400, com o ponto de cruzamento indicado.}
+\caption{Tráfego de finalização de bloco do pBFT versus número de validadores: estimativa em forma fechada da versão atual do simulador e medição em nível de pacote.}
+\label{fig:artifact}
+\end{figure}
+
+\tbd{Resultado da reprodução dos cenários de \citep{Caburlao2026clei} para PoSA e PoS e da verificação da contagem de mensagens do pBFT.} A Figura~\ref{fig:artifact} compara, para o pBFT, a estimativa em forma fechada com o tráfego medido em nível de pacote. Pode-se observar que \tbd{descrever: a estimativa cresce com expoente 1, enquanto a medição cresce com expoente $\hat{b} = $ ...; localizar o cruzamento, esperado próximo de $n = 24$}. Isso é esperado, uma vez que a estimativa supõe mensagens de 1~KiB enviadas por um único nó, enquanto a medição soma votos de $42$ bytes trocados em duas fases de todos para todos \eqref{eq:mpbft}. Portanto, a estimativa não apenas erra o valor absoluto, como também a forma do crescimento, que é o que determina a viabilidade em escala.
+
+\subsection{Leis de Escala e Elasticidades}
+
+\begin{figure}[!ht]
+\centering
+\figplaceholder{4.5cm}{Fig. 3 -- $\Cb$ e $\Cn$ versus $n$ (log-log) para os cinco protocolos, com ajustes de \eqref{eq:cbmodel} e pontos de validação em 400 e 800.}
+\caption{Tráfego total por bloco e tráfego máximo por nó versus número de validadores, com os metamodelos ajustados e os pontos de validação fora da faixa de ajuste.}
+\label{fig:scaling}
+\end{figure}
+
+A Figura~\ref{fig:scaling} apresenta o tráfego total e o tráfego do nó mais carregado em função de $n$. Pode-se observar que \tbd{expoentes $\hat{b}$ do termo de consenso por protocolo e comparação com a teoria}. Em particular, \tbd{HotStuff: expoente do tráfego total próximo de 1, mas tráfego do líder também linear em $n$; discutir se o líder se torna o gargalo}. Os pontos de validação em $n \in \{400, 800\}$ \tbd{estão/não estão contidos nos intervalos de predição; MAPE}.
+
+\begin{table}[!ht]
+\caption{Elasticidades em relação à governança ($\varepsilon_{n}$) e à demanda ($\varepsilon_{\lambda}$), avaliadas no centro das faixas, com $\phi = 0$ e enlace institucional (\textcolor{red}{?}: pendente).}
+\label{tab:elast}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccc@{}}
+\hline\hline
+\multirow{2}{*}{Protocolo} & \multicolumn{2}{c}{$\Cb$} & \multicolumn{2}{c}{$\Lt$} & \multicolumn{2}{c}{$\Ut$} \\
+ & $\varepsilon_{n}$ & $\varepsilon_{\lambda}$ & $\varepsilon_{n}$ & $\varepsilon_{\lambda}$ & $\varepsilon_{n}$ & $\varepsilon_{\lambda}$ \\
+\hline
+pBFT       & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+Tendermint & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+HotStuff   & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+PoSA       & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+PoS        & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+A Tabela~\ref{tab:elast} apresenta as elasticidades. \tbd{Comparar $\varepsilon_{n}$ e $\varepsilon_{\lambda}$ por protocolo e resposta: esta é a evidência central para a hipótese de trabalho.}
+
+\subsection{Restrição Vinculante e Fronteiras de Viabilidade}
+
+\begin{figure}[!ht]
+\centering
+\figplaceholder{5cm}{Fig. 4 -- $\nmax$ versus $\bar{\lambda}$ (log-log) para cada protocolo, enlace e $\phi$; faixa de governança ($n \le 256$) sombreada; marcador indicando a restrição vinculante (V1, V2 ou V3).}
+\caption{Fronteiras de viabilidade $\nmax(\bar{\lambda})$ para cada protocolo, capacidade de enlace e fração bizantina, com a faixa de governança destacada e a restrição vinculante indicada.}
+\label{fig:frontier}
+\end{figure}
+
+A Figura~\ref{fig:frontier} ilustra as fronteiras de viabilidade. \tbd{Para cada protocolo: em que demanda a fronteira cruza a faixa de governança; qual critério se esgota primeiro; deslocamento da fronteira com $\phi = 0{,}30$ e com enlace restrito.} \tbd{Relação entre a fronteira e o dimensionamento territorial ($n \approx 10^5$).}
+
+\subsection{Efeito da Concentração da Demanda}
+
+\tbd{Experimento E2: deslocamento de $\Lt$ e de $\nmax$ com $\rho_{\mathrm{p}}$; comparar com o Poisson de mesma $\bar{\lambda}$ e discutir se uma avaliação com Poisson superestimaria a fronteira.}
+
+\subsection{Testes de Efeitos e Interações}
+
+\begin{table*}[!ht]
+\caption{Efeitos e interações das respostas estocásticas de E1: valores-$p$ das análises clássica e ART e tamanho de efeito $\omega^{2}_{E}$. Apenas efeitos significativos nas três análises (clássica, HC3 e ART) são apresentados.}
+\label{tab:anova}
+\centering
+\small
+\begin{tabular}{@{}lccccccccc@{}}
+\hline\hline
+\multirow{2}{*}{Efeito} & \multicolumn{3}{c}{$\Tb$} & \multicolumn{3}{c}{$\Lt$} & \multicolumn{3}{c}{$\Ut$} \\
+ & $p_{F}$ & $p_{\mathrm{ART}}$ & $\omega^{2}_{E}$ & $p_{F}$ & $p_{\mathrm{ART}}$ & $\omega^{2}_{E}$ & $p_{F}$ & $p_{\mathrm{ART}}$ & $\omega^{2}_{E}$ \\
+\hline
+A$\times$N        & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+A$\times$R        & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+A$\times\Phi$     & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+A$\times$K        & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+D$\times$R        & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc & \tbdc \\
+\hline\hline
+\end{tabular}
+\end{table*}
+
+A Tabela~\ref{tab:anova} apresenta os efeitos e as interações estabelecidos. \tbd{$\hat\theta$ de Box--Cox; verificações de premissas; concordância entre as três análises (incluir $p_{\mathrm{HC3}}$ no texto ou em material suplementar).} \tbd{Discutir em que condições a ordenação dos protocolos se inverte (interações com A).}
+
+\subsection{Discussão: Viabilidade em Escala Nacional}
+
+\tbd{Responder diretamente, com base nas fronteiras, se o consenso bizantino é viável em escala nacional: (a) com governança institucional ($n \le 256$), quais protocolos são viáveis para cada faixa de demanda, com e sem validadores bizantinos; (b) com dimensionamento territorial, se algum protocolo bizantino plano é viável ou se a alternativa é uma arquitetura hierárquica \citep{Amir2010}; (c) implicações para a regulamentação do registro central do SBCE.}
+
+\subsection{Limitações}
+
+\tbd{Avaliação por simulação; demanda paramétrica até a regulamentação do SBCE; um único comportamento bizantino (silêncio); avaliação de segurança restrita ao limiar de tolerância; arquiteturas hierárquicas discutidas, mas não simuladas; riscos de contratos inteligentes e oráculos fora do escopo \citep{GhiyamiPour2025,Rahman2023}.}
