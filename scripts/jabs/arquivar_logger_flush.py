@@ -61,7 +61,7 @@ def arquivar(origem, destino, execs, nome="tendermint-4v-t0.csv"):
 def selftest():
     with tempfile.TemporaryDirectory() as t:
         os.makedirs(os.path.join(t, "o", "e1"))
-        with open(os.path.join(t, "o", "e1", "tendermint-4v-t0.csv"), "w") as f:
+        with open(os.path.join(t, "o", "e1", "tendermint-4v-t0.csv"), "w", encoding="utf-8") as f:
             f.write("# c\na,b\n1,2\n3\n4,5\n")
         r = arquivar(os.path.join(t, "o"), os.path.join(t, "d"), ["e1", "e2"])
         assert "linhas_de_dados=3 colunas_erradas=1" in r[0], r

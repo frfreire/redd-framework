@@ -23,6 +23,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 FLAG_HASH = ["-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"]
@@ -30,7 +31,7 @@ FLAG_HASH = ["-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"]
 
 def md5_csv_sem_hash(path):
     """MD5 do CSV sem comentarios (#) e sem colunas cujo nome contem 'hash' (maiusc/minusc)."""
-    with open(path, newline="") as f:
+    with open(path, newline="", encoding="utf-8") as f:
         linhas = [l for l in f.read().splitlines() if l and not l.startswith("#")]
     rd = list(csv.reader(io.StringIO("\n".join(linhas))))
     if not rd:
@@ -43,7 +44,8 @@ def md5_csv_sem_hash(path):
 
 
 def rodar(args, com_flag, rotulo):
-    cp = open(args.cp_file).read().strip()
+    with open(args.cp_file, encoding="utf-8") as fcp:
+        cp = fcp.read().strip()
     saida = os.path.join(args.saida_base, "%s-%s-%d" % (rotulo, "com" if com_flag else "sem", int(time.time() * 1000)))
     os.makedirs(saida)
     base = ["--protocols=" + args.protocolo, "--validators=%d" % args.n, "--trials=1", "--duration=%d" % args.duracao,
@@ -58,7 +60,7 @@ def rodar(args, com_flag, rotulo):
     if args.extra:
         cmd += args.extra
     t0 = time.time()
-    p = subprocess.Popen(cmd, stdout=open(saida + "/stdout.txt", "w"), stderr=subprocess.STDOUT)
+    p = subprocess.Popen(cmd, stdout=open(saida + "/stdout.txt", "w", encoding="utf-8"), stderr=subprocess.STDOUT)
     topos = collections.Counter()
     primeiro_jabs = collections.Counter()
     if args.amostrar_pilha and com_flag:
@@ -104,7 +106,7 @@ def main():
     ap.add_argument("--duracao", type=int, default=30)
     ap.add_argument("--batch", type=int, default=500)
     ap.add_argument("--semente", type=int, default=16346)
-    ap.add_argument("--saida-base", default="/tmp/opencode/hs-hash")
+    ap.add_argument("--saida-base", default=os.path.join(tempfile.gettempdir(), "opencode", "hs-hash"))
     ap.add_argument("--rotulo", default="x")
     ap.add_argument("--amostrar-pilha", action="store_true")
     ap.add_argument("--so", choices=["com", "sem"])

@@ -76,21 +76,34 @@ Autoteste sem JVM: `nao_regressao.py --selftest`.
 """
 import argparse
 import csv
+import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+TMP_OPENCODE = Path(tempfile.gettempdir()) / "opencode"  # no Linux: /tmp/opencode
+SAIDA_X = Path(tempfile.gettempdir()) / "x"  # so para o autoteste (funcao pura, nada e criado)
+
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
 
 
 def classpath(raiz: Path) -> str:
     cp = raiz / "target" / "cp.txt"
     if not cp.exists():
-        r = subprocess.run(["mvn", "-q", "-o", "dependency:build-classpath", f"-Dmdep.outputFile={cp}"],
+        r = subprocess.run([mvn_exe(), "-q", "-o", "dependency:build-classpath", f"-Dmdep.outputFile={cp}"],
                            capture_output=True, text=True, cwd=str(raiz))
         if r.returncode != 0 or not cp.exists():
             sys.exit(f"ERRO: classpath de {raiz}: {r.stderr[-300:]}")
-    return f"{raiz / 'target' / 'classes'}:{cp.read_text().strip()}"
+    return f"{raiz / 'target' / 'classes'}{os.pathsep}{cp.read_text(encoding='utf-8').strip()}"
 
 
 # Flags que montar_cmd ja define: o chamador nao pode redefini-las por --extra-flag-protocolo.
@@ -166,7 +179,7 @@ def executar(raiz: Path, proto, n, dur, semente, saida: Path, tmax, extras=(), j
     t0 = time.time()
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=tmax, cwd=str(raiz))
-        (saida.parent / (saida.name + ".log")).write_text(r.stdout + r.stderr)
+        (saida.parent / (saida.name + ".log")).write_text(r.stdout + r.stderr, encoding="utf-8")
         return r.returncode, time.time() - t0
     except subprocess.TimeoutExpired:
         return "TIMEOUT", time.time() - t0
@@ -190,9 +203,20 @@ EXTRA_ATUAL = "TrafficConsensusUntilFinalization"  # coluna nova da T1 (ADR-0006
 # explicita: so os nomes desta tupla, so na raiz da pasta de saida (caminho relativo == nome), nunca por padrao/regex.
 # Qualquer outro arquivo extra continua divergindo, e o conteudo do aditivo e verificado a parte (atual a x atual b,
 # comparar_aditivo), porque nao existe base dele.
-ARQUIVOS_ADITIVOS = ("mvp-results-cb.csv",)
+ARQUIVOS_ADITIVOS = ("mvp-results-cb.csv", "mvp-results-autoentrega.csv")
 # Protocolos em que o aditivo TEM de existir no atual (MVPComparison.hasCbRede); nos demais ele nao pode aparecer.
 PROTOCOLOS_COM_ADITIVO = ("HOTSTUFF", "TENDERMINT")
+# D2 (ADR-0015): protocolos do MVPComparison que SEPARAM a autoentrega (PBFT, Casper, Parlia, Nakamoto) e tipos do
+# ByzantineSweep idem. mvp-results-autoentrega.csv so existe (e so pode existir) para os primeiros.
+PROTOCOLOS_AUTOENTREGA = ("ARQ", "MCO2", "TREE", "AMBIFY", "OFFSET", "EARTH")
+TIPOS_SWEEP_AUTOENTREGA = ("VOTING", "POS", "POSA", "POW")
+# Aditivo -> protocolos em que TEM de existir no atual (nos demais NAO pode aparecer).
+PROTOCOLOS_POR_ADITIVO = {"mvp-results-cb.csv": PROTOCOLOS_COM_ADITIVO,
+                          "mvp-results-autoentrega.csv": PROTOCOLOS_AUTOENTREGA}
+# D2: coluna aditiva do CSV por trial (no FIM) e colunas aditivas do s.csv do ByzantineSweep (no FIM).
+COL_AUTOENTREGA = "Cb_autoentrega_B"
+COLS_SWEEP_AUTOENTREGA = ["avgSelfDelivery_MB", "stdSelfDelivery_MB"]
+TOL_CONSERVACAO_SWEEP = 2.5e-6  # arredondamento de 6 casas (%.6f) das duas parcelas
 # Maximo de JVMs simultaneas (B1/HS-CB-fase2): com ate 4 nao houve divergencia em 100 execucoes por protocolo; carga
 # alta degrada o determinismo da escrita do CSV (AbstractCSVLogger.flushBuffer sem sincronizacao). Ver README do hs-cb-fase2.
 MAX_PARALELO = 4
@@ -233,10 +257,86 @@ def comparar_aditivo(a: Path, b: Path, nome: str, esperado: bool):
     return "IDENTICO", "", len(ra)
 
 
-def comparar(a: Path, b: Path, extra_ok=False):
+def _num(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def reconciliar_autoentrega(rel, ca, ra, cb, rb):
+    """D2 (ADR-0015): tolera, SO para protocolos que separam a autoentrega, a mudanca ADITIVA de formato e SO sob regra:
+      (1) CSV por trial (BlockFinalizationLogger / EnhancedBlockFinalizationLogger): b = a + coluna COL_AUTOENTREGA no FIM.
+          TrafficUntilFinalization(a) == TrafficUntilFinalization(b) + Cb_autoentrega_B(b), linha a linha (autoentrega -1 =
+          nao medido: sem conservacao, o trafego tem de ser IGUAL); no Enhanced, tambem Cb_AvgTraffic_MB(b) <= (a) e
+          TrafficConsensusUntilFinalization 0 <= (b) <= (a) quando (a) foi medido. As demais colunas seguem a comparacao ESTRITA.
+      (2) s.csv do ByzantineSweep: b = a + COLS_SWEEP_AUTOENTREGA no FIM. avgTraffic(a) ~ avgTraffic(b) + avgSelfDelivery_MB
+          (tolerancia TOL_CONSERVACAO_SWEEP); avgSelfDelivery -1 = nao medido: sem conservacao, avgTraffic(b) so pode nao subir;
+          stdTraffic pode diferir (desvio nao e aditivo). As demais colunas seguem a comparacao ESTRITA.
+    Retorna (cb2, rb2, notas, aplicou): a coluna aditiva sai de b e as celulas de trafego validas assumem o valor de a (a
+    comparacao estrita do chamador roda DEPOIS). Cabecalho que nao e a + aditivo no fim, ou numero de linhas diferente,
+    volta intacto (o chamador diverge como sempre). Celula que viola a regra gera nota e fica como esta (diverge)."""
+    notas = []
+    if len(ra) != len(rb):
+        return cb, rb, notas, False
+    if cb == ca + [COL_AUTOENTREGA] and "TrafficUntilFinalization" in ca:
+        k = len(ca)
+        it = ca.index("TrafficUntilFinalization")
+        ic = ca.index("Cb_AvgTraffic_MB") if "Cb_AvgTraffic_MB" in ca else None
+        icons = ca.index("TrafficConsensusUntilFinalization") if "TrafficConsensusUntilFinalization" in ca else None
+        novo = []
+        for i, (x, y) in enumerate(zip(ra, rb), 1):
+            y2 = list(y[:k])
+            auto = _num(y[k]) if len(y) > k else None
+            tb, ta = _num(x[it]), _num(y[it]) if len(y) > it else None
+            if auto is None or tb is None or ta is None:
+                notas.append(f"{rel} linha {i}: valor nao numerico ou linha curta (autoentrega/trafego)")
+            elif (tb == ta + auto) if auto >= 0 else (tb == ta):
+                y2[it] = x[it]
+            else:
+                notas.append(f"{rel} linha {i}: TrafficUntilFinalization base={x[it]} atual={y[it]} {COL_AUTOENTREGA}={y[k]} "
+                             "(base != atual + autoentrega)")
+            if ic is not None and len(y) > ic and _num(x[ic]) is not None and _num(y[ic]) is not None \
+                    and _num(y[ic]) <= _num(x[ic]) + 1e-12:
+                y2[ic] = x[ic]
+            if icons is not None and len(y) > icons and _num(x[icons]) is not None and _num(y[icons]) is not None \
+                    and _num(x[icons]) >= 0 and 0 <= _num(y[icons]) <= _num(x[icons]):
+                y2[icons] = x[icons]
+            novo.append(y2)
+        return ca, novo, notas[:3], True
+    if cb == ca + COLS_SWEEP_AUTOENTREGA and "avgTraffic" in ca:
+        k = len(ca)
+        ia = ca.index("avgTraffic")
+        isd = ca.index("stdTraffic") if "stdTraffic" in ca else None
+        novo = []
+        for i, (x, y) in enumerate(zip(ra, rb), 1):
+            y2 = list(y[:k])
+            ab, aa = _num(x[ia]), _num(y[ia]) if len(y) > ia else None
+            sm = _num(y[k]) if len(y) > k + 1 else None
+            ss = _num(y[k + 1]) if len(y) > k + 1 else None
+            if ab is None or aa is None or sm is None or ss is None:
+                notas.append(f"{rel} linha {i}: valor nao numerico ou linha curta (avgTraffic/autoentrega)")
+            elif (sm < 0) != (ss < 0):
+                notas.append(f"{rel} linha {i}: avg/stdSelfDelivery_MB inconsistentes ({y[k]}, {y[k + 1]}): -1 so nos dois")
+            elif (abs(ab - (aa + sm)) <= TOL_CONSERVACAO_SWEEP) if sm >= 0 else (aa <= ab + TOL_CONSERVACAO_SWEEP):
+                y2[ia] = x[ia]
+                if isd is not None:
+                    y2[isd] = x[isd]
+            else:
+                notas.append(f"{rel} linha {i}: avgTraffic base={x[ia]} atual={y[ia]} avgSelfDelivery_MB={y[k]} "
+                             f"(base != atual + autoentrega, tol {TOL_CONSERVACAO_SWEEP})" if sm >= 0 else
+                             f"{rel} linha {i}: avgTraffic subiu (base={x[ia]} atual={y[ia]}) com autoentrega nao medida")
+            novo.append(y2)
+        return ca, novo, notas[:3], True
+    return cb, rb, notas, False
+
+
+def comparar(a: Path, b: Path, extra_ok=False, autoentrega=False):
     """Retorna (veredito, detalhe, linhas_comparadas). a = referencia, b = candidato.
     extra_ok: aceita em b a coluna EXTRA_ATUAL ausente em a, desde que valha -1 em todas as linhas
     (esquema ampliado, protocolo que nao mede a decomposicao); a coluna sai antes de comparar.
+    autoentrega (D2): so para protocolo que separa a autoentrega; aceita a coluna aditiva no FIM e a diferenca de trafego
+    SOB a regra de conservacao de reconciliar_autoentrega; sem a flag a comparacao e estrita como sempre.
     Arquivos de ARQUIVOS_ADITIVOS (raiz da pasta) ficam fora da lista de arquivos comparada (ver acima)."""
     fa = listar_csv(a)
     fb = listar_csv(b)
@@ -244,7 +344,7 @@ def comparar(a: Path, b: Path, extra_ok=False):
         return "SEM_DADOS", "nenhum CSV gerado", 0
     if fa != fb:
         return "DIVERGENTE", f"arquivos diferem {fa} vs {fb}", 0
-    total, notas, extras = 0, [], 0
+    total, notas, extras, ae = 0, [], 0, 0
     for rel in fa:
         ca, ra = ler(a / rel)
         cb, rb = ler(b / rel)
@@ -255,6 +355,10 @@ def comparar(a: Path, b: Path, extra_ok=False):
             extras += 1
             cb = cb[:k] + cb[k + 1:]
             rb = [r[:k] + r[k + 1:] for r in rb]
+        if autoentrega:
+            cb, rb, n_ae, aplicou = reconciliar_autoentrega(rel, ca, ra, cb, rb)
+            notas.extend(n_ae)
+            ae += 1 if aplicou else 0
         total += len(ra)
         if ca != cb:
             notas.append(f"{rel}: cabecalho {ca} vs {cb}")
@@ -268,24 +372,29 @@ def comparar(a: Path, b: Path, extra_ok=False):
                     break
     if total == 0:
         return "SEM_DADOS", "CSV sem linhas de dados", 0
-    if extras and not notas:
-        return "IDENTICO", f"(coluna nova {EXTRA_ATUAL}=-1 em todas as linhas, removida da comparacao)", total
+    if (extras or ae) and not notas:
+        obs = []
+        if extras:
+            obs.append(f"coluna nova {EXTRA_ATUAL}=-1 em todas as linhas, removida da comparacao")
+        if ae:
+            obs.append(f"D2: coluna aditiva de autoentrega no fim e trafego sob conservacao em {ae} arquivo(s); resto estrito")
+        return "IDENTICO", "(" + "; ".join(obs) + ")", total
     return ("IDENTICO" if not notas else "DIVERGENTE"), "; ".join(notas), total
 
 
 def selftest():
     """Autoteste sem JVM. Nenhum valor de pesquisa aqui; 'foo' e flag ficticia so de exemplo."""
     antigo = ["java", "-cp", "CP", "jabs.example.MVPComparison", "--protocols=MCO2", "--validators=10",
-              "--trials=1", "--duration=60", "--seed=1", "--output=/tmp/x"]
-    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x")) == antigo
-    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), []) == antigo
-    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), (), ["-XX:hashCode=2"])[:3] == ["java", "-XX:hashCode=2", "-cp"]
+              "--trials=1", "--duration=60", "--seed=1", f"--output={SAIDA_X}"]
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, SAIDA_X) == antigo
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, SAIDA_X, []) == antigo
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, SAIDA_X, (), ["-XX:hashCode=2"])[:3] == ["java", "-XX:hashCode=2", "-cp"]
     assert parse_extras_protocolo(["TENDERMINT:--tm-batch-size=1"], ["TENDERMINT"], ["TENDERMINT"]) == {"TENDERMINT": ["--tm-batch-size=1"]}
     assert parse_extras_protocolo(["HOTSTUFF:--hs-batch-size=1"], ["HOTSTUFF"], ["hotstuff"]) == {"HOTSTUFF": ["--hs-batch-size=1"]}
     assert parse_extras_protocolo([], ["MCO2"]) == {}
     ok = parse_extras_protocolo(["mco2:--foo=1", "MCO2:--bar=2"], ["MCO2", "AMBIFY"])
     assert ok == {"MCO2": ["--foo=1", "--bar=2"]}, ok
-    assert montar_cmd("CP", "MCO2", "10", "60", 1, Path("/tmp/x"), ok["MCO2"])[-2:] == ["--foo=1", "--bar=2"]
+    assert montar_cmd("CP", "MCO2", "10", "60", 1, SAIDA_X, ok["MCO2"])[-2:] == ["--foo=1", "--bar=2"]
     assert "AMBIFY" not in ok  # caso sem flag: comando inalterado
     for ruim in (["MCO2"], ["MCO2:foo=1"], ["MCO2:--semsinal"], ["MCO2:--seed=2"], ["MCO2:--foo=1", "MCO2:--foo=2"],
                  ["TENDERMINT:--tm-batch-size=1"], ["HOTSTUFF:--hs-batch-size=1"], ["OFFSET:--foo=1"], [":--foo=1"]):
@@ -322,7 +431,7 @@ def selftest_aditivo():
         p = Path(raiz) / nome
         p.mkdir(parents=True)
         for f, c in arquivos.items():
-            (p / f).write_text(c)
+            (p / f).write_text(c, encoding="utf-8")
         return p
 
     with tempfile.TemporaryDirectory() as t:
@@ -361,8 +470,62 @@ def selftest_aditivo():
         assert comparar_aditivo(atual, atual_b, n, False)[0] == "DIVERGENTE"  # ARQ & cia nao podem ter aditivo
         so_hash = pasta(t, "atual-e", {"mvp-results.csv": cab, n: "# outro comentario\nprotocolo;n;CbRede_avg_B\nHOTSTUFF;4;100\n"})
         assert comparar_aditivo(atual, so_hash, n, True)[0] == "IDENTICO"  # '#' ignorado
-    assert ARQUIVOS_ADITIVOS == ("mvp-results-cb.csv",)  # lista explicita, nao regex
+    assert ARQUIVOS_ADITIVOS == ("mvp-results-cb.csv", "mvp-results-autoentrega.csv")  # lista explicita, nao regex
+    assert set(PROTOCOLOS_POR_ADITIVO) == set(ARQUIVOS_ADITIVOS)
     assert MAX_PARALELO == 4
+    selftest_autoentrega()
+
+
+def selftest_autoentrega():
+    """D2: tolerancia a coluna aditiva e a diferenca de trafego SO sob conservacao e SO com autoentrega=True. Sem JVM."""
+    import tempfile
+    sw_a = ("protocol,n,f,trials,avgPdv,avgTraffic,stdTraffic,secureCount\n")
+    sw_b = ("protocol,n,f,trials,avgPdv,avgTraffic,stdTraffic,secureCount,avgSelfDelivery_MB,stdSelfDelivery_MB\n")
+    lg_a = "Time,NodeID,BlockHeight,BlockHashCode,TrafficUntilFinalization\n"
+    lg_b = "Time,NodeID,BlockHeight,BlockHashCode,TrafficUntilFinalization,Cb_autoentrega_B\n"
+
+    def pasta(raiz, nome, arq):
+        p = Path(raiz) / nome
+        p.mkdir(parents=True)
+        for f, c in arq.items():
+            (p / f).write_text(c, encoding="utf-8")
+        return p
+
+    def veredito(t, nome, ca, cb, **kw):
+        base = pasta(t, "b-" + nome, {"s.csv": ca})
+        atual = pasta(t, "a-" + nome, {"s.csv": cb})
+        return comparar(base, atual, **kw)
+
+    with tempfile.TemporaryDirectory() as t:
+        ok = veredito(t, "ok", sw_a + "VOTING,10,0,2,0.5,3.000010,0.2,2\n", sw_b + "VOTING,10,0,2,0.5,3.000000,0.1,2,0.000010,0.000001\n", autoentrega=True)
+        assert ok[0] == "IDENTICO" and "D2" in ok[1], ok
+        # sem a flag: estrito como sempre (coluna a mais e avgTraffic diferente divergem)
+        assert veredito(t, "estrito", sw_a + "VOTING,10,0,2,0.5,3.000010,0.2,2\n",
+                        sw_b + "VOTING,10,0,2,0.5,3.000000,0.1,2,0.000010,0.000001\n")[0] == "DIVERGENTE"
+        # conservacao violada
+        v = veredito(t, "viola", sw_a + "VOTING,10,0,2,0.5,3.000010,0.2,2\n", sw_b + "VOTING,10,0,2,0.5,3.000000,0.1,2,0.001000,0.0\n", autoentrega=True)
+        assert v[0] == "DIVERGENTE" and "avgTraffic" in v[1], v
+        # outra coluna diferente continua divergindo
+        v = veredito(t, "pdv", sw_a + "VOTING,10,0,2,0.5,3.000010,0.2,2\n", sw_b + "VOTING,10,0,2,0.6,3.000000,0.1,2,0.000010,0.000001\n", autoentrega=True)
+        assert v[0] == "DIVERGENTE" and "avgPdv" in v[1], v
+        # -1 = nao medido: sem conservacao, mas avgTraffic nao pode subir
+        v = veredito(t, "nm", sw_a + "VOTING,10,0,2,0.5,3.0,0.2,2\n", sw_b + "VOTING,10,0,2,0.5,3.0,0.2,2,-1,-1\n", autoentrega=True)
+        assert v[0] == "IDENTICO", v
+        v = veredito(t, "nm-sobe", sw_a + "VOTING,10,0,2,0.5,3.0,0.2,2\n", sw_b + "VOTING,10,0,2,0.5,3.5,0.2,2,-1,-1\n", autoentrega=True)
+        assert v[0] == "DIVERGENTE", v
+        # coluna aditiva fora do fim / cabecalho diferente: diverge
+        v = veredito(t, "fora", sw_a + "VOTING,10,0,2,0.5,3.0,0.2,2\n",
+                     "avgSelfDelivery_MB,stdSelfDelivery_MB,protocol,n,f,trials,avgPdv,avgTraffic,stdTraffic,secureCount\n"
+                     "0,0,VOTING,10,0,2,0.5,3.0,0.2,2\n", autoentrega=True)
+        assert v[0] == "DIVERGENTE", v
+        # CSV por trial (logger): conservacao linha a linha
+        v = veredito(t, "lg", lg_a + "1.0,1,5,77,1000\n2.0,2,6,88,2000\n", lg_b + "1.0,1,5,77,900,100\n2.0,2,6,88,2000,0\n", autoentrega=True)
+        assert v[0] == "IDENTICO", v
+        v = veredito(t, "lg-viola", lg_a + "1.0,1,5,77,1000\n", lg_b + "1.0,1,5,77,900,50\n", autoentrega=True)
+        assert v[0] == "DIVERGENTE" and "TrafficUntilFinalization" in v[1], v
+        v = veredito(t, "lg-tempo", lg_a + "1.0,1,5,77,1000\n", lg_b + "1.5,1,5,77,900,100\n", autoentrega=True)
+        assert v[0] == "DIVERGENTE" and "Time" in v[1], v
+        assert veredito(t, "lg-estrito", lg_a + "1.0,1,5,77,1000\n", lg_b + "1.0,1,5,77,900,100\n")[0] == "DIVERGENTE"
 
 
 def main():
@@ -374,7 +537,7 @@ def main():
     ap.add_argument("--casos", default="MCO2:10:60,AMBIFY:10:60,OFFSET:10:60")
     ap.add_argument("--semente", type=int, default=1)
     ap.add_argument("--timeout", type=int, default=600, help="segundos por execucao")
-    ap.add_argument("--saida", default="/tmp/opencode/nr")
+    ap.add_argument("--saida", default=str(TMP_OPENCODE / "nr"))
     ap.add_argument("--extra-flag-protocolo", dest="extra_proto", action="append", default=[],
                     metavar="PROTO:--CHAVE=VALOR",
                     help="flag repassada ao MVPComparison so nos casos de PROTO, nos dois lados (repetivel). "
@@ -452,15 +615,16 @@ def main():
         for rot, x, y in (("baseline a x b (pre-existente?)", d("base", "a"), d("base", "b")),
                           ("atual    a x b                ", d("atual", "a"), d("atual", "b")),
                           ("baseline a x atual a (REGRESSAO?)", d("base", "a"), d("atual", "a"))):
-            v, det, lin = comparar(x, y, extra_ok=rot.startswith("baseline a x atual"))
+            v, det, lin = comparar(x, y, extra_ok=rot.startswith("baseline a x atual"),
+                                   autoentrega=rot.startswith("baseline a x atual") and proto.strip().upper() in PROTOCOLOS_AUTOENTREGA)
             print(f"   {rot}: {v} ({lin} linhas) {det}")
             if v == "SEM_DADOS":
                 pior = max(pior, 2)
             elif v == "DIVERGENTE" and rot.startswith("baseline a x atual"):
                 pior = max(pior, 1)
         # B3: o aditivo nao tem base; so determinismo atual a x atual b (e presenca/ausencia coerente com o protocolo)
-        esperado = proto.strip().upper() in PROTOCOLOS_COM_ADITIVO
         for nome in ARQUIVOS_ADITIVOS:
+            esperado = proto.strip().upper() in PROTOCOLOS_POR_ADITIVO[nome]
             v, det, lin = comparar_aditivo(d("atual", "a"), d("atual", "b"), nome, esperado)
             if v != "N/A":
                 print(f"   aditivo {nome} atual a x b (sem base): {v} ({lin} linhas) {det}")

@@ -4,14 +4,16 @@ HEAD (git archive, ver construir-base-head.py) com a arvore de trabalho; todas a
 -XX:+UnlockExperimentalVMOptions -XX:hashCode=2. A mudanca e SO DE CONTABILIDADE: nenhum evento muda de tempo nem de ordem.
 
 Uso:
-  construir-base-head.py --commit HEAD --destino /tmp/opencode/d2-head          # uma vez
-  nr_autoentrega.py --base /tmp/opencode/d2-head --atual . [--saida /tmp/opencode/d2-nr] [--so ABCD]
+  construir-base-head.py --commit HEAD --destino <TMP>/opencode/d2-head          # uma vez (<TMP> = tempfile.gettempdir())
+  nr_autoentrega.py --base <TMP>/opencode/d2-head --atual . [--saida <TMP>/opencode/d2-nr] [--so ABCD]
 
 Casos (semente fixa):
   A  protocolos que NAO contam autoentrega (DAGSPER, HOTSTUFF, TENDERMINT): HEAD x atual IDENTICOS byte a byte (todos os
      arquivos, inclusive linhas '#'); e o aditivo mvp-results-autoentrega.csv NAO pode existir no atual.
   B  protocolos que contavam (ARQ=PBFT, MCO2/TREE=Casper, AMBIFY=Parlia, OFFSET/EARTH=Nakamoto), por n:
-       B1 CSV por trial: o atual so ganha a coluna Cb_autoentrega_B NO FIM; toda coluna existente mantem nome e posicao;
+        B1 CSV por trial: o atual so ganha a coluna Cb_autoentrega_B NO FIM; toda coluna existente mantem nome e posicao
+           (inclusive o '-basic-log.csv' do BlockFinalizationLogger de TREE/Casper, Parlia e Nakamoto: 9 colunas identicas
+           fora TrafficUntilFinalization = base - Cb_autoentrega_B; comentario '#' declara EXCLUDING e SimulatorVersion);
           mesmo numero de linhas; TODA coluna que nao e de trafego (Time, NodeID, BlockHeight, BlockSize, BlockCreationTime,
           BlockCreator, BlockFinalizationTime, hash, Tb_Avg, BFT, Pdv) IDENTICA; ESTA e a prova de que Tb/blocos/Tt nao mudam
           (PARA com saida 3 se alguma divergir: a mudanca deixaria de ser so contabilidade, decisao humana).
@@ -21,16 +23,22 @@ Casos (semente fixa):
        B4 mvp-results-autoentrega.csv existe no atual (ausente na base) e tem a sentinela -1 apenas onde nada foi medido.
        B5 determinismo: atual-a x atual-b IDENTICOS byte a byte.
      Imprime ANTES x DEPOIS por protocolo e n (Cb_avg em bytes, autoentrega media por bloco, fracao).
-  C  ByzantineSweep: VOTING/POS/POSA/POW com ataque e max-byz <= universo: so avgTraffic/stdTraffic podem diferir; DAGSPER
-     IDENTICO; max-byz > universo falha ALTO (atual) e max-byz absurdo nao entra em laco.
+   C  ByzantineSweep: VOTING/POS/POSA/POW com ataque e max-byz <= universo: cabecalho = HEAD + avgSelfDelivery_MB,
+      stdSelfDelivery_MB no fim; so avgTraffic/stdTraffic podem diferir, e avgTraffic(HEAD) ~ avgTraffic(atual) +
+      avgSelfDelivery_MB (tol. 2,5e-6; -1 = nao medido: sem conservacao); linhas '#' do HEAD preservadas + 2 novas; DAGSPER
+      IDENTICO byte a byte, sem linhas novas; max-byz > universo falha ALTO (atual) e max-byz absurdo nao entra em laco.
 Saida: 0 = conforme; 1 = divergencia inesperada; 2 = erro de execucao; 3 = coluna de DINAMICA (Tb/blocos/Tt/hash) mudou: PARE.
 """
 import argparse
 import csv
+import os
 import subprocess
 import sys
+import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+TMP_OPENCODE = Path(tempfile.gettempdir()) / "opencode"  # no Linux: /tmp/opencode
 
 JVM = ["-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"]
 HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch-size=20", "--hs-tx-size=512",
@@ -44,6 +52,8 @@ EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM}
 COLUNA_NOVA = "Cb_autoentrega_B"
 COL_TRAFEGO = {"TrafficUntilFinalization", "Cb_AvgTraffic_MB", "TrafficConsensusUntilFinalization"}
 ADITIVO = "mvp-results-autoentrega.csv"
+COLS_SWEEP = ["avgSelfDelivery_MB", "stdSelfDelivery_MB"]  # colunas aditivas do s.csv do ByzantineSweep (no fim)
+TOL_SWEEP = 2.5e-6  # arredondamento de 6 casas das duas parcelas (%.6f)
 
 # (protocolo, n, duracao s): duracoes em que o protocolo FINALIZA blocos (as mesmas de nr_byz_unica.py)
 CASOS_A = [("DAGSPER", 10, 600), ("HOTSTUFF", 4, 30), ("HOTSTUFF", 7, 30), ("TENDERMINT", 4, 30), ("TENDERMINT", 7, 30)]
@@ -56,7 +66,7 @@ def classpath(raiz: Path) -> str:
     cp = raiz / "target" / "cp.txt"
     if not cp.exists():
         sys.exit(f"ERRO: {cp} ausente")
-    return f"{raiz / 'target' / 'classes'}:{cp.read_text().strip()}"
+    return f"{raiz / 'target' / 'classes'}{os.pathsep}{cp.read_text(encoding='utf-8').strip()}"
 
 
 def java(raiz: Path, args, timeout=3600):
@@ -82,6 +92,11 @@ def ler_csv(path: Path):
     delim = ";" if linhas[0].count(";") > linhas[0].count(",") else ","
     rows = list(csv.reader(linhas, delimiter=delim))
     return rows[0], rows[1:]
+
+
+def comentarios(path: Path):
+    """Linhas '#' do arquivo (comentario de cabecalho), em ordem."""
+    return [l for l in path.read_text(encoding="utf-8", errors="replace").splitlines() if l.startswith("#")]
 
 
 def num(x):
@@ -149,25 +164,44 @@ def caso_b(base, atual, saida, semente):
         # B1/B2 por trial CSV
         csvs = [k for k in fbase if k.endswith(".csv") and k != "mvp-results.csv"]
         for k in csvs:
-            if "-basic-log" in k:  # BlockFinalizationLogger (TREE): MESMO cabecalho (sem coluna nova); so TrafficUntilFinalization pode cair
+            if "-basic-log" in k:  # BlockFinalizationLogger (TREE/Casper, Parlia, Nakamoto): coluna aditiva no fim; so TrafficUntilFinalization cai
                 cb, rb = ler_csv(b / k)
                 ca, ra = ler_csv(a / k)
-                if ca != cb or len(ra) != len(rb):
-                    print(f"[{rot}] DIVERGENTE: {k} cabecalho/linhas")
+                if ca[:len(cb)] != cb or ca[len(cb):] != [COLUNA_NOVA]:
+                    print(f"[{rot}] DIVERGENTE: {k} cabecalho. base={cb} atual={ca} (esperado base + [{COLUNA_NOVA}] no fim)")
                     ok = False
                     continue
+                if len(ra) != len(rb):
+                    print(f"[{rot}] DIVERGENTE: {k} linhas base={len(rb)} atual={len(ra)}")
+                    ok = False
+                    dinamica_mudou = True
+                    continue
                 it = cb.index("TrafficUntilFinalization")
+                iauto = len(cb)
                 din = [(j, cb[i]) for j, (x, y) in enumerate(zip(rb, ra)) for i in range(len(cb)) if i != it and x[i] != y[i]]
                 if din:
                     print(f"[{rot}] *** DINAMICA MUDOU em {k}: {len(din)} celula(s), ex.: {din[0]}")
                     dinamica_mudou = True
                     ok = False
                     continue
+                # conservacao linha a linha: base == atual + autoentrega (autoentrega -1 = nao medido: o trafego tem de ser igual)
+                cons_ruins = [j for j, (x, y) in enumerate(zip(rb, ra))
+                              if ((num(x[it]) != num(y[it]) + num(y[iauto])) if num(y[iauto]) >= 0
+                                  else (num(x[it]) != num(y[it])))]
                 subiu = [j for j, (x, y) in enumerate(zip(rb, ra)) if num(y[it]) > num(x[it])]
                 mudou = sum(1 for x, y in zip(rb, ra) if x[it] != y[it])
-                print(f"[{rot}] B1 {k} (log basico): {len(ra)} linhas; so TrafficUntilFinalization difere em {mudou}; "
-                      f"subiu em {len(subiu)} (esperado 0)")
-                ok &= not subiu
+                nneg = sum(1 for y in ra if num(y[iauto]) < 0)
+                # comentario '#': o da base e prefixo do atual e declara EXCLUDING, granularidade e SimulatorVersion
+                cm_b, cm_a = comentarios(b / k), comentarios(a / k)
+                txt = "\n".join(cm_a)
+                cm_ruim = (len(cm_a) != len(cm_b) or not all(y.startswith(x) for x, y in zip(cm_b, cm_a))
+                           or not all(t in txt for t in ("EXCLUDING", "granularity", "SimulatorVersion=")))
+                if cons_ruins or subiu or cm_ruim:
+                    print(f"[{rot}] DIVERGENTE B1/B2 em {k}: conservacao={len(cons_ruins)} subiu={len(subiu)} "
+                          f"comentario_ruim={cm_ruim}")
+                    ok = False
+                print(f"[{rot}] B1/B2 {k} (log basico): {len(ra)} linhas; 9 colunas base IDENTICAS exceto TrafficUntilFinalization "
+                      f"(difere em {mudou}); base = atual + {COLUNA_NOVA} em todas as linhas; linhas com sentinela -1={nneg}")
                 continue
             cb, rb = ler_csv(b / k)
             ca, ra = ler_csv(a / k)
@@ -242,24 +276,51 @@ def caso_c(base, atual, saida, semente):
     print("== C: ByzantineSweep (max-byz <= universo): so avgTraffic/stdTraffic podem diferir; DAGSPER identico; divida do laco")
     ok = True
     for tipo, n, ataque, dur, maxb in (("VOTING", 10, "EQUIVOCATION", 120, 3), ("POS", 10, "WITHHOLD", 1200, 3),
-                                       ("POSA", 25, "WITHHOLD", 300, 2), ("DAGSPER", 10, "WITHHOLD", 600, 3)):
+                                       ("POSA", 25, "WITHHOLD", 300, 2), ("POW", 40, "WITHHOLD", 8000, 1),
+                                       ("DAGSPER", 10, "WITHHOLD", 600, 3)):
         for nome, raiz in (("base", base), ("atual", atual)):
             r = sweep(raiz, saida / f"C-{tipo}-{nome}", tipo, n, maxb, ataque, semente, dur)
             if r.returncode != 0:
                 print(f"ERRO sweep {tipo} {nome} rc={r.returncode}\n{r.stdout[-500:]}\n{r.stderr[-700:]}")
                 sys.exit(2)
-        hb, lb = ler_csv(saida / f"C-{tipo}-base" / "s.csv")
-        ha, la = ler_csv(saida / f"C-{tipo}-atual" / "s.csv")
-        if hb != ha or len(lb) != len(la):
-            print(f"[C {tipo}] DIVERGENTE: cabecalho/linhas")
+        pb, pa = saida / f"C-{tipo}-base", saida / f"C-{tipo}-atual"
+        if tipo == "DAGSPER":  # nao separa autoentrega: pasta inteira (s.csv com linhas '#' e CSV por trial) IDENTICA byte a byte
+            fa, fb = arquivos(pb), arquivos(pa)
+            if not fa or fa.keys() != fb.keys() or any(fa[k] != fb[k] for k in fa):
+                print(f"[C {tipo}] DIVERGENTE: nao e byte a byte igual (arquivos base={sorted(fa)} atual={sorted(fb)}; "
+                      f"bytes diferentes={sorted(k for k in fa if k in fb and fa[k] != fb[k])})")
+                ok = False
+            else:
+                print(f"[C {tipo} n={n} max-byz={maxb}] CONFORME: IDENTICO byte a byte, {len(fa)} arquivos, sem linhas novas")
+            continue
+        hb, lb = ler_csv(pb / "s.csv")
+        ha, la = ler_csv(pa / "s.csv")
+        # D2: cabecalho = HEAD + avgSelfDelivery_MB,stdSelfDelivery_MB no fim; mesmo numero de linhas
+        if ha != hb + COLS_SWEEP or len(lb) != len(la):
+            print(f"[C {tipo}] DIVERGENTE: cabecalho/linhas. base={hb} atual={ha} (esperado base + {COLS_SWEEP}); linhas {len(lb)} x {len(la)}")
             ok = False
             continue
+        # linhas '#': as do HEAD preservadas no inicio e 2 novas (semantica EXCLUEM; Seed/SimulatorVersion/Granularity)
+        cm_b, cm_a = comentarios(pb / "s.csv"), comentarios(pa / "s.csv")
+        novas = "\n".join(cm_a[len(cm_b):])
+        cm_ok = (cm_a[:len(cm_b)] == cm_b and len(cm_a) == len(cm_b) + 2
+                 and all(t in novas for t in ("EXCLUEM", "Seed=", "SimulatorVersion=", "Granularity=")))
         difer = sorted({hb[i] for x, y in zip(lb, la) for i in range(len(hb)) if x[i] != y[i]})
-        permitido = set() if tipo == "DAGSPER" else {"avgTraffic", "stdTraffic"}
-        if set(difer) <= permitido:
-            print(f"[C {tipo} n={n} max-byz={maxb}] CONFORME: colunas que diferem={difer or 'nenhuma'}")
+        permitido = {"avgTraffic", "stdTraffic"}
+        iat, k = hb.index("avgTraffic"), len(hb)
+        medidas = [(num(x[iat]), num(y[iat]), num(y[k])) for x, y in zip(lb, la)]
+        # conservacao (media): base ~ atual + avgSelfDelivery_MB; -1 = nao medido: nao conferir (so nao pode subir)
+        ruins_cons = [(b0, a0, s0) for b0, a0, s0 in medidas
+                      if (abs(b0 - (a0 + s0)) > TOL_SWEEP if s0 >= 0 else a0 > b0 + TOL_SWEEP)]
+        desvio = max((abs(b0 - (a0 + s0)) for b0, a0, s0 in medidas if s0 >= 0), default=0.0)
+        nao_med = sum(1 for _, _, s0 in medidas if s0 < 0)
+        if set(difer) <= permitido and cm_ok and not ruins_cons:
+            print(f"[C {tipo} n={n} max-byz={maxb}] CONFORME: colunas que diferem={difer or 'nenhuma'}; cabecalho = base + {COLS_SWEEP}; "
+                  f"2 linhas '#' novas; conservacao avgTraffic(base) = atual + avgSelfDelivery_MB em {len(medidas) - nao_med} linha(s) "
+                  f"(desvio max {desvio:.2e}, tol {TOL_SWEEP:.1e}); nao medido(-1)={nao_med}")
         else:
-            print(f"[C {tipo}] DIVERGENTE: colunas que diferem={difer} (permitido={sorted(permitido)})")
+            print(f"[C {tipo}] DIVERGENTE: colunas que diferem={difer} (permitido={sorted(permitido)}); linhas_'#'_ok={cm_ok}; "
+                  f"conservacao violada={ruins_cons[:2]}")
             ok = False
     # divida do laco: max-byz > universo falha alto, sem laco, sem arquivo
     r = sweep(atual, saida / "C-universo", "VOTING", 10, 2147483647, "EQUIVOCATION", semente, 10)
@@ -274,7 +335,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base", required=True)
     ap.add_argument("--atual", default=".")
-    ap.add_argument("--saida", default="/tmp/opencode/d2-nr")
+    ap.add_argument("--saida", default=str(TMP_OPENCODE / "d2-nr"))
     ap.add_argument("--semente", type=int, default=1)
     ap.add_argument("--so", default="ABC")
     a = ap.parse_args()

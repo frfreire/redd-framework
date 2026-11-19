@@ -14,14 +14,25 @@ nao encontrada. Nao usa git.
 """
 import argparse
 import hashlib
+import os
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
+
+
 ALVO = Path("src/main/java/jabs/example/MVPComparison.java")
-BACKUP = Path("/tmp/mutar-garantia.bak")
+BACKUP = Path(tempfile.gettempdir()) / "mutar-garantia.bak"  # no Linux: /tmp/mutar-garantia.bak
 CHAMADA = "        exigirGarantiaAntesDeQualquerSaida(args);\n"
 FIM_BANNER = '        System.out.println("╚════════════════════════════════════════════════════════╝\\n");\n'
 APOS_PARSE = "        java.util.Map<String, String> cli = parseArgs(args);\n"
@@ -38,7 +49,10 @@ def sha(p):
 
 
 def rodar(mvn):
-    cmd = shlex.split(mvn) + ["test-compile", "surefire:test@hash2", "-Dtest=GarantiaHashCodeTest"]
+    cmd = shlex.split(mvn)
+    if cmd and cmd[0] == "mvn":
+        cmd[0] = mvn_exe()
+    cmd = cmd + ["test-compile", "surefire:test@hash2", "-Dtest=GarantiaHashCodeTest"]
     r = subprocess.run(cmd, capture_output=True, text=True)
     return r.returncode == 0, (r.stdout + r.stderr)
 
@@ -60,7 +74,7 @@ def main():
 
     signal.signal(signal.SIGINT, ao_sinal)
     signal.signal(signal.SIGTERM, ao_sinal)
-    texto = original.decode("utf-8")
+    texto = original.decode("utf-8").replace("\r\n", "\n")  # ancoras usam LF; a arvore pode estar em CRLF
     ok = True
     try:
         print(f"sha256 original  {h0}")

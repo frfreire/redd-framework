@@ -11,6 +11,11 @@ Uso:
 Casos:
   A  SEM ataque (MVPComparison: ARQ, MCO2, TREE, AMBIFY, OFFSET, EARTH, DAGSPER; e ByzantineSweep f=0 por tipo)
      HEAD x atual -> arquivos IDENTICOS (mvp-results.csv e CSV por trial, byte a byte)
+     EXCECAO D2 (ADR-0015): sweep f=0 de VOTING, POS e POSA (POW idem) ganha a coluna aditiva no fim e as 2 linhas '#' novas, e
+     avgTraffic(HEAD) ~ avgTraffic(atual) + avgSelfDelivery_MB (tol. 2,5e-6; -1 = nao medido); o resto segue estrito.
+     DAGSPER segue byte a byte. (Os casos MVPComparison de protocolos que separam a autoentrega mudam por D2 e sao cobertos
+     por nr_autoentrega.py; este caso A continua os comparando de forma estrita, entao so e conforme com --base anterior a D2
+     ou com --base que ja contem D2.)
   B  HOTSTUFF COM ataque (n=7, f=2; n=10, f=3): HEAD x atual -> IDENTICOS (o gerador unico reproduz o conjunto do HEAD)
   C  CONJUNTOS/CONTAGENS por protocolo SOB ATAQUE (so createNetwork, sem simular): tabela antes x depois, com a contagem
      efetiva e os ids; DIFERENCA ESPERADA e documentada (ARQ, Casper, Parlia, Nakamoto, DAGsper); nunca falha por diferir.
@@ -20,10 +25,15 @@ Casos:
 Saida: 0 = tudo conforme; 1 = divergencia inesperada; 2 = erro de execucao.
 """
 import argparse
+import csv
+import importlib.util
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
+TMP_OPENCODE = Path(tempfile.gettempdir()) / "opencode"  # no Linux: /tmp/opencode
 AQUI = Path(__file__).resolve().parent
 JVM = ["-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"]
 HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch-size=20", "--hs-tx-size=512",
@@ -36,7 +46,7 @@ def classpath(raiz: Path) -> str:
     cp = raiz / "target" / "cp.txt"
     if not cp.exists():
         sys.exit(f"ERRO: {cp} ausente")
-    return f"{raiz / 'target' / 'classes'}:{cp.read_text().strip()}"
+    return f"{raiz / 'target' / 'classes'}{os.pathsep}{cp.read_text(encoding='utf-8').strip()}"
 
 
 def java(raiz: Path, classe_ou_args, saida_log=None, timeout=900):
@@ -64,6 +74,72 @@ def comparar(rotulo, a: Path, b: Path):
     return True
 
 
+TIPOS_SWEEP_AUTOENTREGA = ("VOTING", "POS", "POSA", "POW")  # D2: tipos do ByzantineSweep que separam a autoentrega
+
+
+def carregar_nr():
+    spec = importlib.util.spec_from_file_location("nao_regressao", AQUI / "nao_regressao.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def ler_csv(path: Path):
+    """(cabecalho, linhas) sem as linhas '#'; NAO descarta colunas 'hash' (aqui o hash tem de ser identico)."""
+    linhas = [l for l in path.read_text(encoding="utf-8", errors="replace").splitlines() if l.strip() and not l.startswith("#")]
+    rows = list(csv.reader(linhas))
+    return (rows[0], rows[1:]) if rows else ([], [])
+
+
+def comentarios(path: Path):
+    return [l for l in path.read_text(encoding="utf-8", errors="replace").splitlines() if l.startswith("#")]
+
+
+def comparar_sweep_autoentrega(rotulo, a: Path, b: Path):
+    """D2 (ADR-0015), ByzantineSweep f=0 de VOTING/POS/POSA (POW idem): a = HEAD, b = atual. Mesmos arquivos. s.csv: linhas '#'
+    do HEAD preservadas no inicio e EXATAMENTE 2 novas (semantica EXCLUEM; Seed/SimulatorVersion/Granularity); cabecalho = HEAD
+    + avgSelfDelivery_MB,stdSelfDelivery_MB; so avgTraffic/stdTraffic podem diferir, sob conservacao (nao_regressao.
+    reconciliar_autoentrega). CSV por trial: so a coluna Cb_autoentrega_B no fim e o trafego sob conservacao; o resto IDENTICO,
+    hash incluido; comentario '#' do HEAD e prefixo do atual. A coluna aditiva TEM de existir (nao so ser tolerada)."""
+    nr = carregar_nr()
+    fa, fb = arquivos(a), arquivos(b)
+    if not fa:
+        print(f"[{rotulo}] SEM_DADOS: {a} vazio")
+        return False
+    if fa.keys() != fb.keys():
+        print(f"[{rotulo}] DIVERGENTE: arquivos diferentes: so em A={sorted(fa.keys() - fb.keys())} so em B={sorted(fb.keys() - fa.keys())}")
+        return False
+    ruins, linhas = [], 0
+    for k in fa:
+        if not k.endswith(".csv"):
+            if fa[k] != fb[k]:
+                ruins.append(f"{k}: bytes diferentes")
+            continue
+        ha, hb = comentarios(a / k), comentarios(b / k)
+        if k == "s.csv":
+            novas = "\n".join(hb[len(ha):])
+            if hb[:len(ha)] != ha or len(hb) != len(ha) + 2 or not all(t in novas for t in ("EXCLUEM", "Seed=", "SimulatorVersion=", "Granularity=")):
+                ruins.append(f"{k}: linhas '#' (esperado: as do HEAD + 2 novas com EXCLUEM/Seed/SimulatorVersion/Granularity; HEAD={len(ha)} atual={len(hb)})")
+        elif len(ha) != len(hb) or not all(y.startswith(x) for x, y in zip(ha, hb)):
+            ruins.append(f"{k}: comentario '#' do HEAD nao e prefixo do atual")
+        ca, ra = ler_csv(a / k)
+        cb, rb = ler_csv(b / k)
+        cb2, rb2, notas, aplicou = nr.reconciliar_autoentrega(k, ca, ra, cb, rb)
+        linhas += len(ra)
+        if not aplicou:
+            ruins.append(f"{k}: sem a coluna aditiva no fim (cabecalho HEAD={len(ca)} col., atual={len(cb)} col., linhas {len(ra)} x {len(rb)})")
+        elif notas:
+            ruins.append("; ".join(notas))
+        elif cb2 != ca or rb2 != ra:
+            i = next((i for i, (x, y) in enumerate(zip(ra, rb2), 1) if x != y), 0)
+            ruins.append(f"{k}: diferenca fora do trafego (cabecalho igual={cb2 == ca}, primeira linha {i})")
+    if ruins:
+        print(f"[{rotulo}] DIVERGENTE: {ruins}")
+        return False
+    print(f"[{rotulo}] CONFORME (D2): {len(fa)} arquivos, {linhas} linhas de dados; so a coluna aditiva no fim e o trafego sob conservacao diferem")
+    return True
+
+
 def mvp(raiz, saida: Path, proto, n, dur, semente, extras=()):
     return java(raiz, ["jabs.example.MVPComparison", f"--protocols={proto}", f"--validators={n}", "--trials=1",
                        f"--duration={dur}", f"--seed={semente}", f"--output={saida}", *extras])
@@ -86,7 +162,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base", required=True)
     ap.add_argument("--atual", default=".")
-    ap.add_argument("--saida", default="/tmp/opencode/byz-unica-nr")
+    ap.add_argument("--saida", default=str(TMP_OPENCODE / "byz-unica-nr"))
     ap.add_argument("--semente", type=int, default=1)
     ap.add_argument("--so", default="ABCD", help="subconjunto de casos (ex.: AB)")
     a = ap.parse_args()
@@ -118,7 +194,10 @@ def main():
             for nome, raiz in (("base", base), ("atual", atual)):
                 exige_rc0(sweep(raiz, saida / f"A-sw-{tipo}-{nome}", tipo, n, 0, ataque, a.semente, dur=dur),
                           f"A-sw-{tipo}-{nome}")
-            ok &= comparar(f"A sweep {tipo} n={n} f=0 (legacy)", saida / f"A-sw-{tipo}-base", saida / f"A-sw-{tipo}-atual")
+            if tipo in TIPOS_SWEEP_AUTOENTREGA:  # D2: so a coluna aditiva e o trafego sob conservacao; o resto estrito
+                ok &= comparar_sweep_autoentrega(f"A sweep {tipo} n={n} f=0 (legacy, D2)", saida / f"A-sw-{tipo}-base", saida / f"A-sw-{tipo}-atual")
+            else:  # DAGSPER: byte a byte, sem linhas novas
+                ok &= comparar(f"A sweep {tipo} n={n} f=0 (legacy)", saida / f"A-sw-{tipo}-base", saida / f"A-sw-{tipo}-atual")
 
     if "B" in a.so:
         print("== B: HOTSTUFF COM ataque, HEAD x atual (o conjunto do HEAD e reproduzido pelo gerador unico)")
@@ -178,7 +257,7 @@ def main():
         r = sweep(atual, saida / "D-com", "VOTING", n, lim + 1, "EQUIVOCATION", a.semente, trials=1, dur=10,
                   extras=["--allow-beyond-bft-threshold=true"])
         exige_rc0(r, "D-com")
-        t = (saida / "D-com" / "s.csv").read_text()
+        t = (saida / "D-com" / "s.csv").read_text(encoding="utf-8")
         achou = f"# fora_da_faixa=true n={n} byzantine_count={lim + 1} limite_bft={lim}" in t
         print(f"[D com flag] {'rotulo presente' if achou else 'ROTULO AUSENTE'}")
         ok &= achou

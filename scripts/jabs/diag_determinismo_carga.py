@@ -16,6 +16,7 @@ Autoteste sem JVM: --selftest
 """
 import argparse
 import csv
+import os
 import subprocess
 import sys
 import tempfile
@@ -26,7 +27,7 @@ from pathlib import Path
 
 def classpath(raiz: Path) -> str:
     cp = raiz / "target" / "cp.txt"
-    return f"{raiz / 'target' / 'classes'}:{cp.read_text().strip()}"
+    return f"{raiz / 'target' / 'classes'}{os.pathsep}{cp.read_text(encoding='utf-8').strip()}"
 
 
 def ler(path: Path):
@@ -97,7 +98,7 @@ def rodar(cmd, saida: Path, raiz: Path, tmax):
     t0 = time.time()
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=tmax, cwd=str(raiz))
-        (saida.parent / (saida.name + ".log")).write_text(r.stdout + r.stderr)
+        (saida.parent / (saida.name + ".log")).write_text(r.stdout + r.stderr, encoding="utf-8")
         return r.returncode, time.time() - t0
     except subprocess.TimeoutExpired:
         return "TIMEOUT", time.time() - t0
@@ -108,7 +109,7 @@ def selftest():
         t = Path(t)
         for nome, corpo in (("a", "x,hash,y\n1,AAA,2\n"), ("b", "x,hash,y\n1,BBB,2\n"), ("c", "x,hash,y\n1,AAA,3\n")):
             (t / nome).mkdir()
-            (t / nome / "r.csv").write_text("# comentario " + nome + "\n" + corpo)
+            (t / nome / "r.csv").write_text("# comentario " + nome + "\n" + corpo, encoding="utf-8")
         assert diferenca(t / "a", t / "b") is None  # so hash e '#' diferem
         assert diferenca(t / "a", t / "c") is not None  # coluna real diferente
     print("SELFTEST OK")
@@ -174,7 +175,7 @@ def main():
     raiz, out = Path(a.raiz).resolve(), Path(a.saida)
     cp = classpath(raiz)
     if a.cp_prefixo:
-        cp = f"{Path(a.cp_prefixo).resolve()}:{cp}"
+        cp = f"{Path(a.cp_prefixo).resolve()}{os.pathsep}{cp}"
     out.mkdir(parents=True, exist_ok=True)
 
     def cmd(i):

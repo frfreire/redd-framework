@@ -13,11 +13,20 @@ nao encontrada.
 """
 import argparse
 import hashlib
+import os
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
 from pathlib import Path
+
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
 
 LOGGER = Path("src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java")
 SEQ = Path("src/main/java/jabs/ledgerdata/TxSequencer.java")
@@ -36,7 +45,10 @@ def sha(p):
 
 
 def rodar(mvn):
-    r = subprocess.run(shlex.split(mvn) + ["test", "-Dtest=" + TESTES], capture_output=True, text=True)
+    cmd = shlex.split(mvn)
+    if cmd and cmd[0] == "mvn":
+        cmd[0] = mvn_exe()
+    r = subprocess.run(cmd + ["test", "-Dtest=" + TESTES], capture_output=True, text=True)
     return r.returncode == 0, r.stdout + r.stderr
 
 
@@ -64,7 +76,7 @@ def main():
         if not passou:
             return 1
         for nome, alvo, trocas in MUTACOES:
-            t = originais[alvo].decode("utf-8")
+            t = originais[alvo].decode("utf-8").replace("\r\n", "\n")  # ancoras usam LF; a arvore pode estar em CRLF
             for velho, novo in trocas:
                 if t.count(velho) != 1:
                     print("ancora nao encontrada (ou ambigua) em %s: %r" % (nome, velho))

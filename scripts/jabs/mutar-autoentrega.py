@@ -10,20 +10,39 @@ Passos: (1) copia src/ e pom.xml da arvore atual para --copia (recria a copia); 
 original entre mutantes (sha256 conferido). Saida: 0 = baseline passou E todo mutante detectado; 1 = algum mutante
 sobreviveu ou baseline falhou; 2 = ancora nao encontrada (script desatualizado). Reintroduz, entre outras, a contagem da
 autoentrega no C_B principal (M1..M5), exatamente o que a tarefa pede.
+Cobre tambem os formatos de saida aditivos de D2: *-basic-log.csv do BlockFinalizationLogger (M16..M22), s.csv do
+ByzantineSweep (M23..M33) e os mutantes L7/L7b (recordSelfDelivery com > 0) e L8 (argumentos trocados no
+EnhancedBlockFinalizationLogger) que sobreviveram na revisao anterior: se sobreviverem de novo, o script os NOMEIA no resumo
+(saida 1); a correcao e um teste novo em src/test, nao um afrouxamento aqui.
 """
 import argparse
 import hashlib
+import os
 import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+TMP_OPENCODE = Path(tempfile.gettempdir()).resolve() / "opencode"  # no Linux: /tmp/opencode
+
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
+
 
 RAIZ = Path(".")
 TESTES = ("AutoentregaUniformeTest,PBFTTrafficMeasurementTest,PBFTPrepareEquivocationTest,MVPComparisonAutoentregaCsvTest,"
-          "ByzantineContagemUnicaSweepTest,DAGsperTrafficTest,MVPComparisonNaoRegressaoTest")
+          "ByzantineContagemUnicaSweepTest,DAGsperTrafficTest,MVPComparisonNaoRegressaoTest,"
+          "BlockFinalizationLoggerAutoentregaTest,ByzantineSweepAutoentregaCsvTest")  # jabs.log e jabs.example (D2: CSV basico e s.csv)
 J = "src/main/java/jabs/"
 NODE = J + "network/node/nodes/PeerBlockchainNode.java"
+BFL = J + "log/BlockFinalizationLogger.java"
+SWEEP = J + "example/ByzantineSweep.java"
 
 MUTACOES = [
     ("M1 PBFT: a autoentrega volta a ser contada no C_B principal (filtro desligado)",
@@ -66,28 +85,86 @@ MUTACOES = [
      J + "example/ByzantineSweep.java", "if (maxByz > universeSize) {", "if (maxByz >= universeSize) {"),
     ("M15 DIVIDA do sweep: a mensagem deixa de nomear o universo",
      J + "example/ByzantineSweep.java", "\"contagem bizantina f=\" + maxByz + \" (--max-byz) maior que o universo de sorteio (\"",
-     "\"contagem bizantina f=\" + maxByz + \" (--max-byz) maior que o de sorteio (\""),
+      "\"contagem bizantina f=\" + maxByz + \" (--max-byz) maior que o de sorteio (\""),
+    # ---- CSV basico do BlockFinalizationLogger (*-basic-log.csv) ----
+    ("M16 basic-log: coluna ligada para o protocolo ERRADO (criterio negado)",
+     BFL, "on = ((PeerBlockchainNode<?, ?>) o).getConsensusAlgorithm().separatesSelfDelivery();",
+     "on = !((PeerBlockchainNode<?, ?>) o).getConsensusAlgorithm().separatesSelfDelivery();"),
+    ("M17 basic-log: coluna ligada para TODOS os protocolos (HotStuff, Tendermint e DAGsper tambem)",
+     BFL, "selfDeliveryColumn = on;", "selfDeliveryColumn = true;"),
+    ("M18 basic-log: celula da coluna nova traz o trafego total no lugar da autoentrega",
+     BFL, "row[row.length - 1] = Long.toString(finalizationEvent.getSelfDeliveryTraffic());",
+     "row[row.length - 1] = Long.toString(finalizationEvent.getTrafficUntilFinalization());"),
+    ("M19 basic-log: comentario '#' diz INCLUDING no lugar de EXCLUDING",
+     BFL, "C_B_total EXCLUDING self-delivery", "C_B_total INCLUDING self-delivery"),
+    ("M20 basic-log: sentinela -1 da celula vira 0 (nao medido parece zero medido)",
+     BFL, "row[row.length - 1] = Long.toString(finalizationEvent.getSelfDeliveryTraffic());",
+     "row[row.length - 1] = Long.toString(Math.max(0L, finalizationEvent.getSelfDeliveryTraffic()));"),
+    ("M21 basic-log: coluna nova no INICIO do cabecalho (fora do fim)",
+     BFL, "cols[cols.length - 1] = SELF_DELIVERY_COLUMN;",
+     "cols[cols.length - 1] = cols[0];\n            cols[0] = SELF_DELIVERY_COLUMN;"),
+    ("M22 basic-log: comentario '#' perde a SimulatorVersion",
+     BFL, "base = base.concat(LinkLoadRecorder.SIMULATOR_VERSION);", "base = base.concat(\"?\");"),
+    # ---- s.csv do ByzantineSweep ----
+    ("M23 sweep: POW deixa de ter as colunas de autoentrega (tipo que separa ficou sem)",
+     SWEEP, "\"POSA\".equals(type) || \"POW\".equals(type);", "\"POSA\".equals(type);"),
+    ("M24 sweep: DAGSPER ganha as colunas de autoentrega (coluna ligada para protocolo errado)",
+     SWEEP, "\"POSA\".equals(type) || \"POW\".equals(type);", "\"POSA\".equals(type) || \"POW\".equals(type) || \"DAGSPER\".equals(type);"),
+    ("M25 sweep: celulas avg e std da autoentrega trocadas",
+     SWEEP, ".append(selfFmt(self[0])).append(',').append(selfFmt(self[1]))",
+     ".append(selfFmt(self[1])).append(',').append(selfFmt(self[0]))"),
+    ("M26 sweep: autoentrega convertida para MB com divisor errado (KB)",
+     SWEEP, "double selfMb = selfBytes / (1024.0 * 1024.0);", "double selfMb = selfBytes / 1024.0;"),
+    ("M27 sweep: comentario '#' diz INCLUEM no lugar de EXCLUEM",
+     SWEEP, "avgTraffic e stdTraffic EXCLUEM a autoentrega", "avgTraffic e stdTraffic INCLUEM a autoentrega"),
+    ("M28 sweep: sentinela -1 da celula vira 0",
+     SWEEP, "return mb < 0 ? \"-1\" : String.format(Locale.ROOT, \"%.6f\", mb);",
+     "return mb < 0 ? \"0\" : String.format(Locale.ROOT, \"%.6f\", mb);"),
+    ("M29 sweep: sentinela -1 das estatisticas (nenhum trial mediu) vira 0",
+     SWEEP, "return new double[] {-1.0, -1.0};", "return new double[] {0.0, 0.0};"),
+    ("M30 sweep: colunas de autoentrega no INICIO do cabecalho (fora do fim)",
+     SWEEP, "new StringBuilder(BASE_HEADER).append(SELF_DELIVERY_COLUMNS).toString()",
+     "new StringBuilder(SELF_DELIVERY_COLUMNS.substring(1)).append(',').append(BASE_HEADER).toString()"),
+    ("M31 sweep: autoentrega medida igual a zero deixa de contar (>= 0 vira > 0)",
+     SWEEP, "if (comAutoentrega && selfBytes >= 0) {", "if (comAutoentrega && selfBytes > 0) {"),
+    ("M32 sweep: linha '#' declara a semente errada",
+     SWEEP, "selfDeliveryComments(cli.getOrDefault(\"seed\", \"12345\"))", "selfDeliveryComments(\"0\")"),
+    ("M33 sweep: linha '#' perde a SimulatorVersion",
+     SWEEP, ".append(jabs.log.LinkLoadRecorder.SIMULATOR_VERSION)", ".append(\"\")"),
+    # ---- sobreviventes apontados pela revisao anterior ----
+    ("L7 recordSelfDelivery: o total medido igual a zero deixa de contar (>= 0 vira > 0)",
+     J + "metrics/SimulationMetrics.java", "if (totalBytes >= 0) {", "if (totalBytes > 0) {"),
+    ("L7b recordSelfDelivery: a parte de consenso igual a zero deixa de contar (>= 0 vira > 0)",
+     J + "metrics/SimulationMetrics.java", "if (consensusBytes >= 0) {", "if (consensusBytes > 0) {"),
+    ("L8 EnhancedBlockFinalizationLogger: argumentos total e consenso de recordSelfDelivery trocados",
+     J + "log/EnhancedBlockFinalizationLogger.java",
+     "metrics.recordSelfDelivery(finalizationEvent.getSelfDeliveryTraffic(),\n                    finalizationEvent.getSelfDeliveryConsensusTraffic());",
+     "metrics.recordSelfDelivery(finalizationEvent.getSelfDeliveryConsensusTraffic(),\n                    finalizationEvent.getSelfDeliveryTraffic());"),
 ]
 
 
 def sha(p):
-    return hashlib.sha256(p.read_bytes()).hexdigest()
+    """sha256 do conteudo com fim de linha normalizado (CRLF->LF): a copia pode ser regravada com CRLF no Windows."""
+    return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def rodar(mvn, copia):
-    r = subprocess.run(shlex.split(mvn) + ["test", f"-Dtest={TESTES}"], capture_output=True, text=True, cwd=str(copia))
+    cmd = shlex.split(mvn)
+    if cmd and cmd[0] == "mvn":
+        cmd[0] = mvn_exe()
+    r = subprocess.run(cmd + ["test", f"-Dtest={TESTES}"], capture_output=True, text=True, cwd=str(copia))
     return r.returncode, r.stdout + r.stderr
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--copia", default="/tmp/opencode/d2-mut")
+    ap.add_argument("--copia", default=str(TMP_OPENCODE / "d2-mut"))
     ap.add_argument("--mvn", default="mvn -o")
     ap.add_argument("--so", default="")
     a = ap.parse_args()
     copia = Path(a.copia).resolve()
-    if not str(copia).startswith("/tmp/opencode/"):
-        sys.exit("ERRO: a copia tem de ficar sob /tmp/opencode/ (a arvore de trabalho nao e tocada)")
+    if not str(copia).startswith(str(TMP_OPENCODE) + os.sep):
+        sys.exit(f"ERRO: a copia tem de ficar sob {TMP_OPENCODE}{os.sep} (a arvore de trabalho nao e tocada)")
     if copia.exists():
         shutil.rmtree(copia)
     copia.mkdir(parents=True)

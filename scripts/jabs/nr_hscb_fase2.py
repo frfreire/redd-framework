@@ -51,7 +51,7 @@ def extras(proto, pares):
 
 
 def comando(grupo, base, atual, semente, saida, fx):
-    comum = ["python3", "scripts/jabs/nao_regressao.py", "--base", base, "--atual", atual, "--semente", str(semente),
+    comum = [sys.executable, "scripts/jabs/nao_regressao.py", "--base", base, "--atual", atual, "--semente", str(semente),
              "--timeout", "900", "--paralelo", "4", "--saida", str(saida / f"s{semente}" / grupo)]
     if grupo == "geral":
         return comum + ["--casos", "ARQ:10:60,AMBIFY:10:60,MCO2:50:600,OFFSET:40:20000,EARTH:40:20000,DAGSPER:10:600,"
@@ -103,7 +103,7 @@ def main():
         cmd = comando(g, a.base, a.atual, a.semente, raiz, fx)
         print("$ " + " ".join(cmd), flush=True)
         r = subprocess.run(cmd, capture_output=True, text=True)
-        (raiz / f"saida-s{a.semente}-{g}.txt").write_text(r.stdout + r.stderr)
+        (raiz / f"saida-s{a.semente}-{g}.txt").write_text(r.stdout + r.stderr, encoding="utf-8")
         print(r.stdout + r.stderr, flush=True)
         print(f"rc={r.returncode} grupo={g} semente={a.semente}", flush=True)
         pior = max(pior, r.returncode)

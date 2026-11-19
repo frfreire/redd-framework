@@ -5,19 +5,30 @@ Autoentrega = pacote cujo remetente e o proprio no receptor (Packet.getFrom() ==
 PeerBlockchainNode.processIncomingPacket. O instrumento so CONTA (por classe de consenso, tipo de mensagem e
 caminho: 'direto' = chamada de processIncomingPacket sem passar por PacketReceivingProcess; 'via-rede' = passou pela
 fila de envio, latencia e fila de recepcao do simulador). Nao altera a simulacao. Nao toca a arvore de trabalho:
-a copia vive em --copia (padrao /tmp/opencode/d2-medida), construida do git (construir-base-head.py).
+a copia vive em --copia (padrao <TMP>/opencode/d2-medida), construida do git (construir-base-head.py).
 
 Uso:
-  medir-autoentrega.py [--commit HEAD] [--copia /tmp/opencode/d2-medida] [--saida /tmp/opencode/d2-medida-saida]
+  medir-autoentrega.py [--commit HEAD] [--copia <TMP>/opencode/d2-medida] [--saida <TMP>/opencode/d2-medida-saida]
 Saida: tabela 'MEDIDA <consenso> <mensagem> <caminho> pacotes=.. bytes=..' por protocolo e n. Exit 0 ok, 2 erro.
 Nao e prova de corretude: e o inventario medido (um contador, rodada curta) pedido pela tarefa D2.
 """
 import argparse
+import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
+TMP_OPENCODE = Path(tempfile.gettempdir()) / "opencode"  # no Linux: /tmp/opencode
 AQUI = Path(__file__).resolve().parent
+
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
 ANCORA = "    public void processIncomingPacket(Packet packet) {\n        Message message = packet.getMessage();\n"
 INSTR = ANCORA + """        if (packet.getFrom() == this) {
             // via-rede = o CHAMADOR IMEDIATO e PacketReceivingProcess (o pacote percorreu fila de envio, latencia e
@@ -59,15 +70,15 @@ HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--commit", default="HEAD")
-    ap.add_argument("--copia", default="/tmp/opencode/d2-medida")
-    ap.add_argument("--saida", default="/tmp/opencode/d2-medida-saida")
+    ap.add_argument("--copia", default=str(TMP_OPENCODE / "d2-medida"))
+    ap.add_argument("--saida", default=str(TMP_OPENCODE / "d2-medida-saida"))
     ap.add_argument("--semente", type=int, default=1)
     a = ap.parse_args()
     copia = Path(a.copia)
     if not (copia / "COMMIT").exists():
         sh([sys.executable, str(AQUI / "construir-base-head.py"), "--commit", a.commit, "--destino", str(copia)])
     alvo = copia / "src/main/java/jabs/network/node/nodes/PeerBlockchainNode.java"
-    src = alvo.read_text()
+    src = alvo.read_text(encoding="utf-8")
     if "MEDIDA" not in src:
         if ANCORA not in src:
             sys.exit("ERRO: ancora de processIncomingPacket nao encontrada (script desatualizado)")
@@ -75,13 +86,13 @@ def main():
         if antes not in src:
             sys.exit("ERRO: ancora @Override nao encontrada")
         src = src.replace("    @Override\n" + ANCORA, CAMPO + INSTR.replace("    public void", "    public void", 1), 1)
-        alvo.write_text(src)
-        sh(["mvn", "-q", "-o", "clean", "compile"], cwd=str(copia))
+        alvo.write_text(src, encoding="utf-8")
+        sh([mvn_exe(), "-q", "-o", "clean", "compile"], cwd=str(copia))
     if not (copia / "target/cp.txt").exists():
-        sh(["mvn", "-q", "-o", "dependency:build-classpath", "-Dmdep.outputFile=target/cp.txt"], cwd=str(copia))
+        sh([mvn_exe(), "-q", "-o", "dependency:build-classpath", "-Dmdep.outputFile=target/cp.txt"], cwd=str(copia))
     saida = Path(a.saida)
     saida.mkdir(parents=True, exist_ok=True)
-    cp = "%s:%s" % (copia / "target/classes", (copia / "target/cp.txt").read_text().strip())
+    cp = "%s%s%s" % (copia / "target/classes", os.pathsep, (copia / "target/cp.txt").read_text(encoding="utf-8").strip())
     for proto, n, dur in CASOS:
         extra = HS if proto == "HOTSTUFF" else TM if proto == "TENDERMINT" else []
         out = saida / ("%s-%d" % (proto, n))

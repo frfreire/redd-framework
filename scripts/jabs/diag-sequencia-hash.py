@@ -7,7 +7,7 @@ muda SEM -XX:hashCode=2 quando o logger passa a consumir um numero diferente de 
 Uso (raiz do repo, depois de mvn test-compile e target/cp.txt):
   diag-sequencia-hash.py [--head-logger <arquivo .java>] [--protocolo AMBIFY --n 10 --dur 60 --semente 16346]
   (sem --head-logger usa `git show HEAD:src/main/java/jabs/log/EnhancedBlockFinalizationLogger.java`)
-Copia src/main/java para /tmp/opencode/chave-tx/diag-<variante>/src, injeta 4 sondas (antes/depois de extrair txs, depois do laco,
+Copia src/main/java para <TMP>/opencode/chave-tx/diag-<variante>/src, injeta 4 sondas (antes/depois de extrair txs, depois do laco,
 no return) que imprimem identityHashCode(new Object()) em stderr, compila com javac e roda MVPComparison. Converte cada valor em
 POSICAO na sequencia de referencia (SondaHash ref) e imprime o delta entre sondas consecutivas. Nao toca em src/.
 """
@@ -17,10 +17,11 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 RAIZ = Path.cwd()
-TMP = Path("/tmp/opencode/chave-tx")
+TMP = Path(tempfile.gettempdir()) / "opencode" / "chave-tx"  # no Linux: /tmp/opencode/chave-tx
 LOGGER_REL = "jabs/log/EnhancedBlockFinalizationLogger.java"
 
 
@@ -52,12 +53,12 @@ def preparar(nome, logger_src):
     (base / "src").mkdir(parents=True)
     shutil.copytree(RAIZ / "src/main/java", base / "src", dirs_exist_ok=True)
     alvo = base / "src" / LOGGER_REL
-    alvo.write_text(injetar(logger_src.read_text()))
+    alvo.write_text(injetar(logger_src.read_text(encoding="utf-8")), encoding="utf-8")
     for rel, conteudo in extras.items():
         if nome == "atual":
-            (base / "src" / rel).write_text(conteudo)
+            (base / "src" / rel).write_text(conteudo, encoding="utf-8")
     (base / "classes").mkdir()
-    cp = (RAIZ / "target/cp.txt").read_text().strip()
+    cp = (RAIZ / "target/cp.txt").read_text(encoding="utf-8").strip()
     fontes = [str(p) for p in (base / "src").rglob("*.java")]
     r = subprocess.run(["javac", "-nowarn", "-d", str(base / "classes"), "-cp", cp] + fontes, capture_output=True, text=True)
     if r.returncode != 0:
@@ -66,10 +67,10 @@ def preparar(nome, logger_src):
 
 
 def rodar(classes, a):
-    cp = (RAIZ / "target/cp.txt").read_text().strip()
+    cp = (RAIZ / "target/cp.txt").read_text(encoding="utf-8").strip()
     saida = TMP / ("diag-run-" + classes.parent.name)
     saida.mkdir(exist_ok=True)
-    cmd = ["java", "-cp", "%s:%s:%s" % (classes, RAIZ / "target/test-classes", cp), "jabs.example.SondaHash", "run", "0",
+    cmd = ["java", "-cp", os.pathsep.join([str(classes), str(RAIZ / "target/test-classes"), cp]), "jabs.example.SondaHash", "run", "0",
            "--protocols=" + a.protocolo, "--validators=%d" % a.n, "--trials=1", "--duration=%d" % a.dur,
            "--seed=%d" % a.semente, "--output=" + str(saida), "--csv-out=" + str(saida / "m.csv")]
     r = subprocess.run(cmd, capture_output=True, text=True)
@@ -88,7 +89,7 @@ def main():
     ap.add_argument("--semente", type=int, default=16346)
     a = ap.parse_args()
     TMP.mkdir(parents=True, exist_ok=True)
-    ref = subprocess.run(["java", "-cp", "%s:%s" % (RAIZ / "target/test-classes", (RAIZ / "target/cp.txt").read_text().strip()),
+    ref = subprocess.run(["java", "-cp", "%s%s%s" % (RAIZ / "target/test-classes", os.pathsep, (RAIZ / "target/cp.txt").read_text(encoding="utf-8").strip()),
                           "jabs.example.SondaHash", "ref", "4000000"], capture_output=True, text=True).stdout.split()
     pos = {}
     for i, v in enumerate(ref):
@@ -98,13 +99,13 @@ def main():
     else:
         head = TMP / "Logger.head.java"
         head.write_text(subprocess.run(["git", "show", "HEAD:src/main/java/" + LOGGER_REL], capture_output=True,
-                                       text=True, check=True).stdout)
+                                       text=True, encoding="utf-8", check=True).stdout, encoding="utf-8")
     if a.classe_vazia:
         vazia = TMP / "LoggerVazia.java"
-        txt = head.read_text()
+        txt = head.read_text(encoding="utf-8")
         ancora = "        this.processedHeights = new HashSet<>();\n"
         assert ancora in txt
-        vazia.write_text(txt.replace(ancora, ancora + "        new ClasseVaziaDiag();\n", 1))
+        vazia.write_text(txt.replace(ancora, ancora + "        new ClasseVaziaDiag();\n", 1), encoding="utf-8")
         extras["jabs/log/ClasseVaziaDiag.java"] = "package jabs.log;\nfinal class ClasseVaziaDiag { }\n"
         versoes = [("head", head), ("atual", vazia)]
     else:

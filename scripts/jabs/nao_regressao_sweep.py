@@ -10,6 +10,11 @@ Faz 4 execucoes sequenciais do ByzantineSweep (base-a, base-b, atual-a, atual-b;
 compara, com a funcao comparar() do nao_regressao.py (colunas *hash* e linhas '#' ignoradas), as pastas inteiras:
 o CSV agregado (`s.csv`, uma linha por f) E os CSV por trial (`tmp/<TIPO>/<n>n-<f>-<trial>.csv`).
 
+D2 (ADR-0015): para VOTING, POS, POSA e POW (tipos que separam a autoentrega) a comparacao base x atual aceita as colunas
+aditivas no FIM (avgSelfDelivery_MB, stdSelfDelivery_MB no s.csv; Cb_autoentrega_B nos CSV por trial) e a queda de
+avgTraffic/stdTraffic SO se avgTraffic(base) ~ avgTraffic(atual) + avgSelfDelivery_MB (tol. 2,5e-6; -1 = nao medido: sem
+conservacao, avgTraffic nao pode subir). DAGSPER e as comparacoes a x b: estritas. Ver reconciliar_autoentrega em nao_regressao.py.
+
 LIMITES (declarados, nao escondidos):
   - sequencial (nao paralelo): o sweep escreve em subpastas distintas, mas cada caso leva alguns segundos;
   - cobre VOTING e POSA (D3a-2a-2d-2) e, desde BYZ-UNICA (ADR-0015), tambem POS, POW e DAGSPER, com o ataque pedido, 1 valor
@@ -27,6 +32,7 @@ import argparse
 import importlib.util
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -56,16 +62,18 @@ def rodar(nr, raiz: Path, a, destino: Path, jvm):
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=a.timeout, cwd=str(raiz))
     except subprocess.TimeoutExpired:
         return "TIMEOUT", time.time() - t0, cmd
-    (destino.parent / (destino.name + ".log")).write_text(r.stdout + r.stderr)
+    (destino.parent / (destino.name + ".log")).write_text(r.stdout + r.stderr, encoding="utf-8")
     return r.returncode, time.time() - t0, cmd
 
 
 def selftest(nr):
     class A:
         tipo, validators, max_byz, trials, duration, attack, semente = "VOTING", "10", "3", "2", "60", "EQUIVOCATION", 1
-    cmd = montar_cmd("CP", A, Path("/tmp/x"), ["-XX:hashCode=2"])
+    saida_x = Path(tempfile.gettempdir()) / "x"  # so para o autoteste (funcao pura, nada e criado)
+    cmd = montar_cmd("CP", A, saida_x, ["-XX:hashCode=2"])
     assert cmd[:4] == ["java", "-XX:hashCode=2", "-cp", "CP"], cmd
-    assert "--attack=EQUIVOCATION" in cmd and "--out=/tmp/x/s.csv" in cmd, cmd
+    assert "--attack=EQUIVOCATION" in cmd and f"--out={saida_x / 's.csv'}" in cmd, cmd
+    assert set(nr.TIPOS_SWEEP_AUTOENTREGA) == {"VOTING", "POS", "POSA", "POW"} and "DAGSPER" not in nr.TIPOS_SWEEP_AUTOENTREGA
     print("SELFTEST OK")
     return 0
 
@@ -112,7 +120,10 @@ def main():
     for rot, x, y in (("baseline a x b (pre-existente?)", "base-a", "base-b"),
                       ("atual    a x b                ", "atual-a", "atual-b"),
                       ("baseline a x atual a (REGRESSAO?)", "base-a", "atual-a")):
-        v, det, lin = nr.comparar(out / f"{nome_caso}-{x}", out / f"{nome_caso}-{y}")
+        # D2 (ADR-0015): so base x atual e so para os tipos que separam a autoentrega (VOTING, POS, POSA, POW) toleram a coluna
+        # aditiva no fim e avgTraffic sob conservacao (nr.reconciliar_autoentrega); os demais tipos e a/b: comparacao estrita.
+        ae = rot.startswith("baseline a x atual") and a.tipo in nr.TIPOS_SWEEP_AUTOENTREGA
+        v, det, lin = nr.comparar(out / f"{nome_caso}-{x}", out / f"{nome_caso}-{y}", autoentrega=ae)
         print(f"   {rot}: {v} ({lin} linhas de dados, todos os CSV da pasta) {det}")
         if v == "SEM_DADOS":
             pior = max(pior, 2)

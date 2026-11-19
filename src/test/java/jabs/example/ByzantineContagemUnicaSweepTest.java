@@ -184,10 +184,19 @@ class ByzantineContagemUnicaSweepTest {
 
     @Test
     void sweep_legacy_dentro_da_faixa_nao_ganha_linhas_de_comentario() throws IOException {
+        // DAGSPER (nao separa a autoentrega): o arquivo comeca direto no cabecalho de colunas, como a baseline
         Path csv = tmp.resolve("leg").resolve("s.csv");
-        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("leg", "--type=VOTING", "--validators=10",
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("leg", "--type=DAGSPER", "--validators=10",
                 "--max-byz=3")));
         assertTrue(Files.readString(csv).startsWith("protocol,n,f,"), "legacy dentro da faixa: so o cabecalho de colunas");
+        // VOTING (separa a autoentrega, D2): so as 2 linhas '#' de D2 (nenhuma de dimensionamento/faixa) antes do cabecalho
+        Path csvV = tmp.resolve("legv").resolve("s.csv");
+        assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(sweep("legv", "--type=VOTING", "--validators=10",
+                "--max-byz=3")));
+        List<String> linhas = Files.readAllLines(csvV);
+        assertTrue(linhas.get(0).startsWith("# D2 ") && linhas.get(1).startsWith("# Seed=1 ")
+                && linhas.get(2).startsWith("protocol,n,f,"), linhas.toString());
+        assertFalse(Files.readString(csvV).contains("n_semantics") || Files.readString(csvV).contains("fora_da_faixa"));
     }
 
     // ---------- divida aceita (ADR-0015, BYZ-UNICA parte 3 -> D2): teto do laco ANTES de montar fValues ----------
@@ -212,6 +221,17 @@ class ByzantineContagemUnicaSweepTest {
         // POW (sem faixa BFT) tambem: o limite de universo vale para todos os tipos
         assertThrows(IllegalArgumentException.class,
                 () -> ByzantineSweep.run(sweep("absurdo-pow", "--type=POW", "--validators=10", "--max-byz=2147483647")));
+    }
+
+    @Test
+    void sweep_max_byz_negativo_falha_alto_sem_arquivo() {
+        for (String max : new String[] {"-1", "-2147483648"}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                    () -> ByzantineSweep.run(sweep("neg-" + max, "--type=VOTING", "--validators=10", "--max-byz=" + max)), max);
+            assertTrue(e.getMessage().contains("--max-byz") && e.getMessage().contains("negativa")
+                    && e.getMessage().contains("f=" + max), e.getMessage());
+            assertFalse(Files.exists(tmp.resolve("neg-" + max)), "nada gravado: " + max);
+        }
     }
 
     @Test

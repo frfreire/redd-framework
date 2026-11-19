@@ -58,23 +58,32 @@ Autoteste sem JVM: `checar-determinismo.py --selftest`.
 """
 import argparse
 import csv
+import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
+
+
 def classpath(jabs: Path) -> str:
     """target/classes + dependencias. `-cp target/classes` sozinho da ClassNotFoundException
     (commons-math3, fastcsv): o run-mvp.sh do JABS tem esse defeito."""
     saida = Path(tempfile.gettempdir()) / f"jabs-cp-{abs(hash(str(jabs)))}.txt"
-    r = subprocess.run(["mvn", "-q", "-o", "dependency:build-classpath", f"-Dmdep.outputFile={saida}"],
+    r = subprocess.run([mvn_exe(), "-q", "-o", "dependency:build-classpath", f"-Dmdep.outputFile={saida}"],
                        capture_output=True, text=True, cwd=str(jabs))
     if r.returncode != 0 or not saida.exists():
         print("ERRO: nao consegui montar o classpath por Maven (offline).", r.stderr[-400:])
         sys.exit(2)
-    return f"{jabs / 'target' / 'classes'}:{saida.read_text().strip()}"
+    return f"{jabs / 'target' / 'classes'}{os.pathsep}{saida.read_text(encoding='utf-8').strip()}"
 
 
 # Flags obrigatorias do TENDERMINT, sem valor padrao: MVPComparison.parseTendermintConfigIfRequested
@@ -224,14 +233,17 @@ def ler_csv(path: Path):
     return [cab[i] for i in manter], [[r[i] for i in manter if i < len(r)] for r in rows[1:]]
 
 
+SAIDA_X = Path(tempfile.gettempdir()) / "x"  # so para o autoteste (funcao pura, nada e criado)
+
+
 def selftest():
     """Autoteste sem JVM. Os valores --tm-* abaixo sao SOMENTE DE EXEMPLO, nao sao valor de pesquisa."""
     # 1) sem extras: identico ao comando das versoes anteriores (copia literal da construcao antiga)
     antigo = ["java", "-cp", "CP", "jabs.example.MVPComparison",
               "--protocols=ARQ", "--validators=7", "--trials=1",
-              "--duration=60", "--seed=1", "--output=/tmp/x"]
-    assert montar_cmd("CP", "ARQ", 7, 60, 1, 1, Path("/tmp/x")) == antigo
-    assert montar_cmd("CP", "ARQ", 7, 60, 1, 1, Path("/tmp/x"), ()) == antigo
+              "--duration=60", "--seed=1", f"--output={SAIDA_X}"]
+    assert montar_cmd("CP", "ARQ", 7, 60, 1, 1, SAIDA_X) == antigo
+    assert montar_cmd("CP", "ARQ", 7, 60, 1, 1, SAIDA_X, ()) == antigo
     # 2) nao TENDERMINT: nada exigido, mesmo com extras
     assert tm_faltantes("ARQ", []) == []
     assert tm_faltantes("ARQ", ["--outra=1"]) == []

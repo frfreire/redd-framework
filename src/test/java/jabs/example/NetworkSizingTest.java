@@ -352,19 +352,27 @@ class NetworkSizingTest {
         final String cabecalho = "protocol,n,f,trials,avgPdv,stdPdv,avgFinalizationTime,stdFinalizationTime,"
                 + "avgConfirmationLatency,stdConfirmationLatency,avgBlockCount,stdBlockCount,avgTraffic,stdTraffic,"
                 + "avgEmpiricalBFT_pct,stdEmpiricalBFT_pct,secureCount\n";
+        // D2: POS separa a autoentrega: sem linha '#' de DIMENSIONAMENTO no legacy; so as 2 linhas '#' de D2 (semantica,
+        // semente/versao/granularidade) e as 2 colunas aditivas NO FIM do cabecalho (as 17 de antes intactas)
+        final String colunasD2 = ",avgSelfDelivery_MB,stdSelfDelivery_MB";
         String legacy = sweepSoCabecalho("legacy", "--n-semantics=legacy");
-        assertEquals(cabecalho, legacy, "legacy: so o cabecalho de colunas, nenhuma linha '#'");
+        List<String> legLinhas = legacy.lines().toList();
+        assertEquals(3, legLinhas.size(), legLinhas.toString());
+        assertTrue(legLinhas.get(0).startsWith("# D2 ") && legLinhas.get(1).startsWith("# Seed=1 "), legLinhas.toString());
+        assertFalse(legacy.contains("n_semantics"), "legacy: nenhuma linha '#' de dimensionamento");
+        assertEquals(cabecalho.trim() + colunasD2, legLinhas.get(2));
         assertEquals(legacy, sweepSoCabecalho("padrao"), "sem a flag = legacy, byte a byte");
 
         String nodes = sweepSoCabecalho("nodes", "--n-semantics=nodes");
         List<String> linhas = nodes.lines().toList();
         List<String> comentarios = linhas.stream().filter(l -> l.startsWith("#")).toList();
-        assertEquals(2, comentarios.size(), comentarios.toString());
+        assertEquals(4, comentarios.size(), comentarios.toString()); // 2 de dimensionamento + 2 de D2
         assertTrue(comentarios.get(0).contains("n_semantics=nodes"), comentarios.toString());
         assertTrue(comentarios.get(1).contains("type=POS") && comentarios.get(1).contains("nodes=10")
                 && comentarios.get(1).contains("miners=") && comentarios.get(1).contains("stakeholders="),
                 comentarios.toString());
-        assertEquals(cabecalho, nodes.substring(nodes.indexOf("protocol,")),
-                "cabecalho de colunas inalterado, so precedido por '#'");
+        assertTrue(comentarios.get(2).startsWith("# D2 ") && comentarios.get(3).startsWith("# Seed=1 "), comentarios.toString());
+        assertEquals(cabecalho.trim() + colunasD2 + "\n", nodes.substring(nodes.indexOf("protocol,")),
+                "cabecalho de colunas: as 17 de antes intactas, so as 2 de D2 no fim, so precedido por '#'");
     }
 }

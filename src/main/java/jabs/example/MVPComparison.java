@@ -202,7 +202,7 @@ public class MVPComparison {
                 writeSingleResultToCSV(csvOut, protocol, validators, trials, acc);
                 if (hasSelfDeliveryColumn(protocol)) {
                     if (!selfCsvStarted) {
-                        initializeSelfDeliveryCSV(selfCsv);
+                        initializeSelfDeliveryCSV(selfCsv, baseSeed);
                         selfCsvStarted = true;
                     }
                     appendSelfDeliveryCSV(selfCsv, protocol, validators, trials, acc);
@@ -960,8 +960,23 @@ public class MVPComparison {
     static final String SELF_DELIVERY_HEADER =
             "project;n;trials;Cb_autoentrega_avg_B;Cb_autoentrega_std_B;Cb_autoentrega_consenso_avg_B";
 
-    private static void initializeSelfDeliveryCSV(String path) throws IOException {
+    /**
+     * D2 (decisao 2 do humano, 17/11/2026): semente, versao do simulador e granularidade declaradas no cabecalho do CSV.
+     * StringBuilder, nao '+': roda na thread principal antes da simulacao (indy novo consome hash de identidade, ADR-0012).
+     * {@link LinkLoadRecorder#SIMULATOR_VERSION} e constante de compilacao (inlinada: nao carrega a classe).
+     */
+    static String selfDeliveryProvenanceLine(long baseSeed) {
+        return new StringBuilder("# Seed=").append(baseSeed)
+                .append(" (semente base; semente do trial = Seed + n*1000 + indice do trial); SimulatorVersion=")
+                .append(jabs.log.LinkLoadRecorder.SIMULATOR_VERSION)
+                .append("; Granularity=media entre trials da media por bloco, no que finalizou primeiro cada altura, por (protocolo, n); bytes")
+                .toString();
+    }
+
+    private static void initializeSelfDeliveryCSV(String path, long baseSeed) throws IOException {
         try (java.io.BufferedWriter bw = Files.newBufferedWriter(java.nio.file.Paths.get(path))) {
+            bw.write(selfDeliveryProvenanceLine(baseSeed));
+            bw.write('\n');
             for (String c : SELF_DELIVERY_COMMENTS) {
                 bw.write(c);
                 bw.write('\n');

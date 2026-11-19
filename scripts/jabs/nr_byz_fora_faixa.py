@@ -19,9 +19,13 @@ Casos (mesma semente, mesmos argumentos nos dois lados, exceto onde dito):
 Saida: 0 = tudo conforme; 1 = divergencia; 2 = erro de execucao.
 """
 import argparse
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+TMP_OPENCODE = Path(tempfile.gettempdir()) / "opencode"  # no Linux: /tmp/opencode
 
 HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch-size=20", "--hs-tx-size=512",
       "--hs-individual-signature-size=64", "--hs-aggregated-signature-size=96", "--hs-aggregated-share-size=96",
@@ -34,7 +38,7 @@ def classpath(raiz: Path) -> str:
     cp = raiz / "target" / "cp.txt"
     if not cp.exists():
         sys.exit(f"ERRO: {cp} ausente (rode mvn -o dependency:build-classpath -Dmdep.outputFile=target/cp.txt em {raiz})")
-    return f"{raiz / 'target' / 'classes'}:{cp.read_text().strip()}"
+    return f"{raiz / 'target' / 'classes'}{os.pathsep}{cp.read_text(encoding='utf-8').strip()}"
 
 
 def rodar(raiz: Path, saida: Path, n, dur, semente, extras):
@@ -67,7 +71,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base", required=True, help="build do HEAD (construir-base-head.py)")
     ap.add_argument("--atual", default=".")
-    ap.add_argument("--saida", default="/tmp/opencode/byz-nr")
+    ap.add_argument("--saida", default=str(TMP_OPENCODE / "byz-nr"))
     ap.add_argument("--n", type=int, default=7)
     ap.add_argument("--duracao", type=int, default=30)
     ap.add_argument("--semente", type=int, default=1)
@@ -109,7 +113,7 @@ def main():
     exige_rc0(rodar(atual, saida / "E", n, a.duracao, a.semente, [*atq, *fora, "--allow-beyond-bft-threshold=true"]), "E")
     cabecalhos = []
     for csv in ("mvp-results.csv", "mvp-results-cb.csv"):
-        txt = (saida / "E" / csv).read_text()
+        txt = (saida / "E" / csv).read_text(encoding="utf-8")
         achou = f"# fora_da_faixa=true n={n} byzantine_count={lim + 1} limite_bft={lim}" in txt
         cabecalhos.append(achou)
         print(f"[E {csv}] {'rotulo presente' if achou else 'ROTULO AUSENTE'}")

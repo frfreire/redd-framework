@@ -58,6 +58,15 @@ class MVPComparisonAutoentregaCsvTest {
     }
 
     @Test
+    void cabecalhoDeclaraSementeVersaoDoSimuladorEGranularidade() {
+        String l = MVPComparison.selfDeliveryProvenanceLine(12345L);
+        assertTrue(l.startsWith("# Seed=12345 "), l);
+        assertTrue(l.contains("SimulatorVersion=" + jabs.log.LinkLoadRecorder.SIMULATOR_VERSION), l);
+        assertTrue(l.contains("Granularity=") && l.contains("no que finalizou primeiro cada altura") && l.contains("bytes"), l);
+        assertTrue(MVPComparison.selfDeliveryProvenanceLine(7L).startsWith("# Seed=7 "), "a semente vem do argumento");
+    }
+
+    @Test
     void arqGravaAditivoELegacyNaoGanhaColuna(@TempDir Path tmp) throws Exception {
         MVPComparison.main(new String[] {"--protocols=ARQ", "--validators=4", "--trials=1", "--duration=20",
                 "--seed=1", "--output=" + tmp});
@@ -65,7 +74,8 @@ class MVPComparisonAutoentregaCsvTest {
         assertEquals("project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std", agg.get(0),
                 "mvp-results.csv: nome e posicao das colunas intactos");
         List<String> aut = Files.readAllLines(tmp.resolve("mvp-results-autoentrega.csv"));
-        assertTrue(aut.get(0).startsWith("# mvp-results-autoentrega.csv"));
+        assertEquals(MVPComparison.selfDeliveryProvenanceLine(1L), aut.get(0), "semente declarada no cabecalho");
+        assertTrue(aut.get(1).startsWith("# mvp-results-autoentrega.csv"));
         String cab = aut.get(aut.size() - 2);
         assertEquals(MVPComparison.SELF_DELIVERY_HEADER, cab);
         String[] f = aut.get(aut.size() - 1).split(";");

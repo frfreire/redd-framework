@@ -32,17 +32,28 @@ encontrada (script desatualizado em relacao ao fonte). Nao usa git.
 """
 import argparse
 import hashlib
+import os
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
+
 
 ALVO = Path("src/main/java/jabs/consensus/algorithm/PBFT.java")
 CONF = Path("src/main/java/jabs/ledgerdata/pbft/PBFTConflictingBlock.java")
 ARQS = [ALVO, CONF]
-BACKUP = Path("/tmp/mutar-pbft-prepare.bak")
-BACKUP_CONF = Path("/tmp/mutar-pbft-prepare-conf.bak")
+BACKUP = Path(tempfile.gettempdir()) / "mutar-pbft-prepare.bak"  # no Linux: /tmp/mutar-pbft-prepare.bak
+BACKUP_CONF = Path(tempfile.gettempdir()) / "mutar-pbft-prepare-conf.bak"
 TESTES = "PBFTPrepareEquivocationTest,PBFTPrepareEquivocationNaoRegressaoTest,PBFTEquivocationTest,PBFTQuorumTest,PBFTTrafficMeasurementTest"
 
 MUTACOES = [
@@ -120,7 +131,10 @@ MUTACOES = [
 
 
 def rodar(mvn):
-    r = subprocess.run(shlex.split(mvn) + ["test", f"-Dtest={TESTES}"], capture_output=True, text=True)
+    cmd = shlex.split(mvn)
+    if cmd and cmd[0] == "mvn":
+        cmd[0] = mvn_exe()
+    r = subprocess.run(cmd + ["test", f"-Dtest={TESTES}"], capture_output=True, text=True)
     return r.returncode, r.stdout + r.stderr
 
 
@@ -149,7 +163,7 @@ def main():
             return 2
     originais = {f: f.read_bytes() for f in ARQS}
     shas = {f: hashlib.sha256(b).hexdigest() for f, b in originais.items()}
-    textos = {f: b.decode("utf-8") for f, b in originais.items()}
+    textos = {f: b.decode("utf-8").replace("\r\n", "\n") for f, b in originais.items()}  # ancoras usam LF; arvore pode estar em CRLF
     mutantes = [normaliza(m) for m in MUTACOES]
     for nome, trocas in mutantes:
         for arq, velho, novo in trocas:

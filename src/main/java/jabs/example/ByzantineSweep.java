@@ -76,6 +76,67 @@ public class ByzantineSweep {
         }
     }
 
+    /** Cabecalho de colunas de ANTES de D2 (e de hoje para os tipos que nao separam a autoentrega). */
+    static final String BASE_HEADER =
+            "protocol,n,f,trials,avgPdv,stdPdv,avgFinalizationTime,stdFinalizationTime,avgConfirmationLatency,stdConfirmationLatency,avgBlockCount,stdBlockCount,avgTraffic,stdTraffic,avgEmpiricalBFT_pct,stdEmpiricalBFT_pct,secureCount";
+
+    /** D2 (ADR-0015): colunas PROPRIAS e ADITIVAS da autoentrega, no FIM do cabecalho (MB por bloco, como avgTraffic). */
+    static final String SELF_DELIVERY_COLUMNS = ",avgSelfDelivery_MB,stdSelfDelivery_MB";
+
+    /**
+     * D2: tipos do sweep cujo consenso SEPARA a autoentrega do C_B (PBFT = VOTING, Casper = POS, Parlia = POSA, Nakamoto = POW:
+     * {@code AbstractChainBasedConsensus#separatesSelfDelivery}). DAGSPER ja filtrava a autoentrega: sem coluna, sem linha '#',
+     * arquivo identico byte a byte ao da baseline.
+     */
+    static boolean hasSelfDeliveryColumn(String type) {
+        return "VOTING".equals(type) || "POS".equals(type) || "POSA".equals(type) || "POW".equals(type);
+    }
+
+    /** Cabecalho de colunas do tipo: o de sempre, mais as 2 colunas de autoentrega no fim quando o tipo a separa. */
+    static String header(String type) {
+        return hasSelfDeliveryColumn(type) ? new StringBuilder(BASE_HEADER).append(SELF_DELIVERY_COLUMNS).toString() : BASE_HEADER;
+    }
+
+    /**
+     * D2 (decisao do humano, 17/11/2026): linhas '#' que declaram a semantica, a semente, a versao do simulador e a
+     * granularidade. So para os tipos que separam a autoentrega ({@link #hasSelfDeliveryColumn}); {@code seedRaw} e o valor
+     * de {@code --seed} como escrito (default 12345), sem parse (nao muda quando uma semente invalida falha).
+     * StringBuilder, nao '+': roda antes da simulacao (indy novo consome hash de identidade, ADR-0012);
+     * {@code SIMULATOR_VERSION} e constante de compilacao (inlinada).
+     */
+    static String[] selfDeliveryComments(String seedRaw) {
+        return new String[] {
+            new StringBuilder("# D2 (ADR-0015, registro de 10/11/2026): avgTraffic e stdTraffic EXCLUEM a autoentrega ")
+                    .append("(pacote que o proprio no entrega a si mesmo; nao e C_B: so conta pacote que passou pela rede simulada). ")
+                    .append("A autoentrega tem coluna PROPRIA e ADITIVA no fim da linha: avgSelfDelivery_MB e stdSelfDelivery_MB ")
+                    .append("(MB por bloco, mesma unidade de avgTraffic; -1 = nao medido, nunca zero). ")
+                    .append("Conservacao (medias): avgTraffic antes de D2 = avgTraffic + avgSelfDelivery_MB; o desvio nao e aditivo. ")
+                    .append("A media da autoentrega e sobre os trials em que ela foi medida; -1 se nenhum.").toString(),
+            new StringBuilder("# Seed=").append(seedRaw)
+                    .append(" (semente base; semente do trial = Seed + n*1000 + indice do trial); SimulatorVersion=")
+                    .append(jabs.log.LinkLoadRecorder.SIMULATOR_VERSION)
+                    .append("; Granularity=por linha (protocolo, n, f): media e desvio amostral entre trials do valor por trial, ")
+                    .append("que e a media por bloco no no que finalizou primeiro cada altura; MB (1 MB = 1048576 bytes)").toString()
+        };
+    }
+
+    /** {@code -1} (nao medido) sai como inteiro {@code -1}, nunca como zero; senao {@code %.6f} (como avgTraffic). */
+    static String selfFmt(double mb) {
+        return mb < 0 ? "-1" : String.format(Locale.ROOT, "%.6f", mb);
+    }
+
+    /**
+     * Media e desvio amostral (mesma formula das demais colunas) da autoentrega entre os {@code measured} trials medidos;
+     * {-1, -1} se nenhum trial a mediu (nunca zero).
+     */
+    static double[] selfDeliveryStats(double sum, double sumSq, int measured) {
+        if (measured <= 0) {
+            return new double[] {-1.0, -1.0};
+        }
+        int denom = Math.max(1, measured - 1);
+        return new double[] {sum / measured, Math.sqrt(Math.max(0, (sumSq - (sum * sum) / measured) / denom))};
+    }
+
     static void run(String[] args) throws IOException {
         java.util.Map<String, String> cli = parseArgs(args);
         // N1: semantica do n. Ausente = legacy (comportamento anterior); valor invalido falha alto (a unica validacao nova de flag).
@@ -116,6 +177,9 @@ public class ByzantineSweep {
         // negativo = laco sem fim e memoria esgotada). A flag --allow-beyond-bft-threshold NAO libera f > universo (so f >
         // floor((n-1)/3), mais abaixo): nao ha sorteio possivel de mais bizantinos que validadores. Para max-byz <= universo o
         // laco e o mesmo de antes (mesmos f, mesma ordem, mesma saida).
+        if (maxByz < 0) { // antes: laco nao rodava e o sweep seguia so com f=0 em silencio
+            throw new IllegalArgumentException("contagem bizantina f=" + maxByz + " (--max-byz) negativa: use 0 ou mais");
+        }
         if (maxByz > universeSize) {
             throw new IllegalArgumentException("contagem bizantina f=" + maxByz + " (--max-byz) maior que o universo de sorteio ("
                     + universoRotulo(type) + ", " + universeSize + " no(s)) no tipo " + type
@@ -156,8 +220,9 @@ public class ByzantineSweep {
         Files.createDirectories(outDir);
 
         try (BufferedWriter bw = Files.newBufferedWriter(outPath)) {
-            // Modo legacy: o CSV e BYTE A BYTE o da baseline 325f4e3 (comeca direto no cabecalho de colunas, sem
-            // linhas '#'); o dimensionamento legacy ja sai no stdout ("Network sizing:").
+            // Modo legacy: sem as linhas '#' de dimensionamento (o legacy ja sai no stdout, "Network sizing:"); o CSV de
+            // DAGSPER e BYTE A BYTE o da baseline 325f4e3. Os tipos que separam a autoentrega (D2) ganham, abaixo, as linhas
+            // '#' de semantica e as 2 colunas aditivas no fim.
             // Modo nodes: linhas '#' (ignoradas por scripts/jabs/*.py): a coluna n e o PEDIDO; nos construidos aqui.
             if (nodesMode) {
                 bw.write(new StringBuilder("# n_semantics=nodes")
@@ -168,8 +233,17 @@ public class ByzantineSweep {
                 bw.write(line);
                 bw.write('\n');
             }
-            bw.write(
-                    "protocol,n,f,trials,avgPdv,stdPdv,avgFinalizationTime,stdFinalizationTime,avgConfirmationLatency,stdConfirmationLatency,avgBlockCount,stdBlockCount,avgTraffic,stdTraffic,avgEmpiricalBFT_pct,stdEmpiricalBFT_pct,secureCount\n");
+            // D2: so os tipos que separam a autoentrega (VOTING, POS, POSA, POW) ganham as linhas '#' de semantica/semente/versao/
+            // granularidade e as 2 colunas aditivas no fim; DAGSPER segue byte a byte o da baseline.
+            final boolean comAutoentrega = hasSelfDeliveryColumn(type);
+            if (comAutoentrega) {
+                for (String c : selfDeliveryComments(cli.getOrDefault("seed", "12345"))) {
+                    bw.write(c);
+                    bw.write('\n');
+                }
+            }
+            bw.write(header(type));
+            bw.write('\n');
 
             for (int f : fValues) {
                 boolean anySecureInThisF = false;
@@ -187,6 +261,9 @@ public class ByzantineSweep {
                 double sumBlocksSq = 0.0;
                 double sumTrafficSq = 0.0;
                 double sumEmpiricalBFTSq = 0.0;
+                double sumSelfMb = 0.0; // D2: autoentrega (MB/bloco), so dos trials em que foi medida
+                double sumSelfMbSq = 0.0;
+                int selfMeasured = 0;
                 int secureCount = 0;
 
                 for (int t = 0; t < trials; t++) {
@@ -323,6 +400,13 @@ public class ByzantineSweep {
                         double blocksVal = metrics.getBlockCount();
                         double trafficVal = metrics.getAverageTrafficPerBlock();
                         double empiricalBFTVal = metrics.getEmpiricalByzantineFaultTolerance();
+                        double selfBytes = metrics.getAverageSelfDeliveryBytesPerBlock(); // D2: -1 = nao medido
+                        if (comAutoentrega && selfBytes >= 0) {
+                            double selfMb = selfBytes / (1024.0 * 1024.0); // mesma conversao de getAverageTrafficPerBlock
+                            sumSelfMb += selfMb;
+                            sumSelfMbSq += selfMb * selfMb;
+                            selfMeasured++;
+                        }
                         
                         sumPdv += pdvVal;
                         sumFinalTime += finalTimeVal;
@@ -406,8 +490,8 @@ public class ByzantineSweep {
                 anySecureInThisF = avgSecure;
 
                 // write aggregated row: empiricalBFT reported as percentage
-                bw.write(String.format(Locale.ROOT,
-                        "%s,%d,%d,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.0f,%.0f,%.6f,%.6f,%.6f,%.6f,%d\n",
+                String row = String.format(Locale.ROOT,
+                        "%s,%d,%d,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.0f,%.0f,%.6f,%.6f,%.6f,%.6f,%d",
                         type, n, f, trialsExecuted,
                         avgPdv, stdPdv,
                         avgFinalTime, stdFinalTime,
@@ -415,7 +499,13 @@ public class ByzantineSweep {
                         avgBlockCount, stdBlockCount,
                         avgTraffic, stdTraffic,
                         avgEmpiricalBFT * 100.0, stdEmpiricalBFT * 100.0,
-                        secureCount));
+                        secureCount);
+                if (comAutoentrega) { // D2: 2 colunas aditivas no FIM; -1 se nenhum trial mediu a autoentrega
+                    double[] self = selfDeliveryStats(sumSelfMb, sumSelfMbSq, selfMeasured);
+                    row = new StringBuilder(row).append(',').append(selfFmt(self[0])).append(',').append(selfFmt(self[1])).toString();
+                }
+                bw.write(row);
+                bw.write('\n');
                 bw.flush();
 
                 // If averaged result reports insecure for this f, stop the sweep early

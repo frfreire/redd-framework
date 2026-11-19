@@ -26,14 +26,25 @@ Nao usa git (o arquivo pode ter alteracoes nao commitadas): a restauracao e pelo
 """
 import argparse
 import hashlib
+import os
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
+
+
 ALVO = Path("src/main/java/jabs/log/AbstractCSVLogger.java")
-BACKUP = Path("/tmp/mutar-logger-lock.bak")
+BACKUP = Path(tempfile.gettempdir()) / "mutar-logger-lock.bak"  # no Linux: /tmp/mutar-logger-lock.bak
 # Ancora: o bloco synchronized de flushBuffer(int) (o unico que abre com `boolean wrote = false;`).
 VELHO = "        synchronized (writeLock) {\n            boolean wrote = false;"
 NOVO = "        {   // MUTACAO: lock removido\n            boolean wrote = false;"
@@ -72,7 +83,10 @@ MUTACOES = [
 
 
 def rodar(mvn, repeticoes):
-    cmd = shlex.split(mvn) + ["test", "-Dtest=AbstractCSVLoggerCorridaTest"]
+    cmd = shlex.split(mvn)
+    if cmd and cmd[0] == "mvn":
+        cmd[0] = mvn_exe()
+    cmd = cmd + ["test", "-Dtest=AbstractCSVLoggerCorridaTest"]
     saida = ""
     rc = 0
     for _ in range(repeticoes):
@@ -101,7 +115,7 @@ def main():
         return 2
     original = ALVO.read_bytes()
     sha = hashlib.sha256(original).hexdigest()
-    texto = original.decode("utf-8")
+    texto = original.decode("utf-8").replace("\r\n", "\n")  # ancoras usam LF; a arvore pode estar em CRLF
     for nome, velho, _ in MUTACOES:
         if texto.count(velho) != 1:
             print(f"ERRO: ancora de '{nome}' encontrada {texto.count(velho)} vez(es) (esperado 1); atualize o script")

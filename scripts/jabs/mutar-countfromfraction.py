@@ -10,11 +10,22 @@ Trabalha SEMPRE numa COPIA (pom.xml + src) em /tmp/opencode; nunca escreve em sr
 Saida: 0 = baseline passou E mutante detectado; 1 = baseline falhou ou mutante sobreviveu; 2 = ancora ausente.
 """
 import argparse
+import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+TMP_OPENCODE = Path(tempfile.gettempdir()).resolve() / "opencode"  # no Linux: /tmp/opencode
+
+
+def mvn_exe():
+    """Executavel do Maven: mvn.cmd no Windows (subprocess sem shell nao resolve `mvn`), mvn fora dele."""
+    if os.name == "nt":
+        return shutil.which("mvn.cmd") or "mvn.cmd"
+    return "mvn"
 
 ALVO = Path("src/main/java/jabs/config/ByzantineConfig.java")
 ANTIGO = "        long produto = (long) universe * num;\n        return (int) ((produto + den - 1) / den);\n"
@@ -38,15 +49,17 @@ def testar(destino: Path, mvn: list) -> tuple:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--destino", default="/tmp/opencode/byz-mut-r4")
+    ap.add_argument("--destino", default=str(TMP_OPENCODE / "byz-mut-r4"))
     ap.add_argument("--mvn", default="mvn -o -q")
     a = ap.parse_args()
     raiz = Path.cwd()
     destino = Path(a.destino)
-    if not str(destino.resolve()).startswith("/tmp/opencode/"):
-        print("ERRO: destino precisa estar em /tmp/opencode/")
+    if not str(destino.resolve()).startswith(str(TMP_OPENCODE) + os.sep):
+        print(f"ERRO: destino precisa estar em {TMP_OPENCODE}{os.sep}")
         return 2
     mvn = a.mvn.split()
+    if mvn and mvn[0] == "mvn":
+        mvn[0] = mvn_exe()
 
     copiar(raiz, destino)
     rc, _, _ = testar(destino, mvn)
@@ -55,11 +68,11 @@ def main() -> int:
         return 1
 
     alvo = destino / ALVO
-    texto = alvo.read_text()
+    texto = alvo.read_text(encoding="utf-8")
     if not RE_NOVO.search(texto):
         print("ERRO: ancora do corpo novo nao encontrada")
         return 2
-    alvo.write_text(RE_NOVO.sub(lambda _m: ANTIGO, texto, count=1))
+    alvo.write_text(RE_NOVO.sub(lambda _m: ANTIGO, texto, count=1), encoding="utf-8")
     rc, saida, falhas = testar(destino, mvn)
     print(f"M1 corpo antigo (copia): {'SOBREVIVEU (ruim)' if rc == 0 else 'DETECTADO'}; testes que falharam: {falhas}")
     if rc == 0:

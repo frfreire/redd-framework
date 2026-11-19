@@ -12,6 +12,7 @@ Variantes:
 Uso: diag_variante_logger.py --raiz /tmp/opencode/base-8c68084 --variante sincronizado --saida /tmp/opencode/b1/var-sinc
 """
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -46,7 +47,7 @@ def main():
     (src / "AbstractCSVLogger.java").write_text(texto, encoding="utf-8")
     cls = saida / "classes"
     cls.mkdir(parents=True, exist_ok=True)
-    cp = f"{raiz / 'target' / 'classes'}:{(raiz / 'target' / 'cp.txt').read_text().strip()}"
+    cp = f"{raiz / 'target' / 'classes'}{os.pathsep}{(raiz / 'target' / 'cp.txt').read_text(encoding='utf-8').strip()}"
     r = subprocess.run(["javac", "--release", "17", "-nowarn", "-cp", cp, "-d", str(cls),
                         str(src / "AbstractCSVLogger.java")], capture_output=True, text=True)
     if r.returncode != 0:

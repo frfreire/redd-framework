@@ -46,7 +46,7 @@ def estado_arvore(base_commit: str, destino: Path) -> str:
     diff = git("diff", base_commit, "--", "src", "scripts")
     arquivos_mod = git("diff", base_commit, "--name-only", "--", "src", "scripts").decode().split()
     nao_rastreados = git("ls-files", "--others", "--exclude-standard", "--", "src", "scripts").decode().split()
-    dest_rel = str(destino)
+    dest_rel = destino.as_posix()  # os caminhos do git usam "/" mesmo no Windows
     out = [f"base_commit={comp}",
            f"git diff {base_commit} -- src scripts | sha256sum = {sha256_bytes(diff)}  ({len(diff)} bytes, {linhas(diff)} linhas)",
            "arquivos rastreados modificados (entram no hash acima):"]
@@ -95,8 +95,8 @@ def main():
                     return 2
                 # rglob: casos do nao_regressao.py tem os CSV na raiz da pasta (nome simples, como antes); os do
                 # nao_regressao_sweep.py (D3a-2a-2d-2) tem tambem tmp/<TIPO>/*.csv (nome relativo, subpasta preservada)
-                nomes = sorted(str(p.relative_to(db)) for p in db.rglob("*.csv"))
-                nomes_atual = sorted(str(p.relative_to(da)) for p in da.rglob("*.csv"))
+                nomes = sorted(p.relative_to(db).as_posix() for p in db.rglob("*.csv"))
+                nomes_atual = sorted(p.relative_to(da).as_posix() for p in da.rglob("*.csv"))
                 # HS-CB-fase2 (B3): arquivos ADITIVOS CONHECIDOS (mesma lista do nao_regressao.py) existem so no atual;
                 # ficam fora do conjunto comparado e vao para a tabela como "sem base" (copia do atual-a, se couber).
                 aditivos = [x for x in nomes_atual if x in ARQUIVOS_ADITIVOS]

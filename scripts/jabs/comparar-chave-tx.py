@@ -26,6 +26,7 @@ import io
 import os
 import subprocess
 import sys
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -71,7 +72,7 @@ def commit_da_base(base):
     for _ in range(4):
         f = d / "COMMIT"
         if f.is_file():
-            return f.read_text().strip()
+            return f.read_text(encoding="utf-8").strip()
         d = d.parent
     return None
 
@@ -101,7 +102,7 @@ def main_commit_check(a):
 
 def md5_csv(path):
     """(md5, linhas) do CSV sem comentarios (#) e sem colunas com 'hash' no nome."""
-    with open(path, newline="") as f:
+    with open(path, newline="", encoding="utf-8") as f:
         linhas = [l for l in f.read().splitlines() if l and not l.startswith("#")]
     rd = list(csv.reader(io.StringIO("\n".join(linhas))))
     if not rd:
@@ -123,13 +124,13 @@ def executar(job):
         "--validators=%d" % n, "--trials=1", "--duration=%d" % dur, "--seed=%d" % semente, "--output=" + str(saida),
         "--csv-out=" + str(saida / "mvp-results.csv")] + flags
     t0 = time.time()
-    with open(saida / "stdout.txt", "w") as so:
+    with open(saida / "stdout.txt", "w", encoding="utf-8") as so:
         rc = subprocess.run(cmd, stdout=so, stderr=subprocess.STDOUT).returncode
     dt = time.time() - t0
     md5 = {}
     for p in sorted(saida.rglob("*.csv")):
         md5[str(p.relative_to(saida))] = md5_csv(p)
-    ds = sum(1 for l in (saida / "stdout.txt").read_text(errors="replace").splitlines() if "Double-spend detected" in l)
+    ds = sum(1 for l in (saida / "stdout.txt").read_text(encoding="utf-8", errors="replace").splitlines() if "Double-spend detected" in l)
     return (rotulo_classes, nome, com_flag), {"rc": rc, "parede": dt, "md5": md5, "ds": ds}
 
 
@@ -140,13 +141,14 @@ def main():
     ap.add_argument("--atual", required=True, help="diretorio de classes COM a correcao")
     ap.add_argument("--cp-file", default="target/cp.txt")
     ap.add_argument("--semente", type=int, default=16346)
-    ap.add_argument("--saida", default="/tmp/opencode/chave-tx")
+    ap.add_argument("--saida", default=str(Path(tempfile.gettempdir()) / "opencode" / "chave-tx"))
     ap.add_argument("--paralelo", type=int, default=3)
     ap.add_argument("--casos", default="", help="lista de nomes separada por virgula (padrao: todos)")
     a = ap.parse_args()
     if not main_commit_check(a):
         return 2
-    cp = open(a.cp_file).read().strip()
+    with open(a.cp_file, encoding="utf-8") as fcp:
+        cp = fcp.read().strip()
     raiz = Path(a.saida) / str(int(time.time()))
     raiz.mkdir(parents=True)
     casos = [c for c in CASOS if not a.casos or c[0] in a.casos.split(",")]
