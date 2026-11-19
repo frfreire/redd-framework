@@ -97,6 +97,11 @@ public class ByzantineSweep {
         return hasSelfDeliveryColumn(type) ? new StringBuilder(BASE_HEADER).append(SELF_DELIVERY_COLUMNS).toString() : BASE_HEADER;
     }
 
+    /** Rodada 4 do D2: trial mede a autoentrega se a coluna existe e o valor nao e a sentinela -1; zero medido CONTA. */
+    static boolean contaAutoentrega(boolean comAutoentrega, double selfBytes) {
+        return comAutoentrega && selfBytes >= 0;
+    }
+
     /**
      * D2 (decisao do humano, 17/11/2026): linhas '#' que declaram a semantica, a semente, a versao do simulador e a
      * granularidade. So para os tipos que separam a autoentrega ({@link #hasSelfDeliveryColumn}); {@code seedRaw} e o valor
@@ -401,7 +406,7 @@ public class ByzantineSweep {
                         double trafficVal = metrics.getAverageTrafficPerBlock();
                         double empiricalBFTVal = metrics.getEmpiricalByzantineFaultTolerance();
                         double selfBytes = metrics.getAverageSelfDeliveryBytesPerBlock(); // D2: -1 = nao medido
-                        if (comAutoentrega && selfBytes >= 0) {
+                        if (contaAutoentrega(comAutoentrega, selfBytes)) {
                             double selfMb = selfBytes / (1024.0 * 1024.0); // mesma conversao de getAverageTrafficPerBlock
                             sumSelfMb += selfMb;
                             sumSelfMbSq += selfMb * selfMb;

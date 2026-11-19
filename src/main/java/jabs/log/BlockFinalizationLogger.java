@@ -68,7 +68,9 @@ public class BlockFinalizationLogger extends AbstractCSVLogger {
             base = base.concat("TrafficUntilFinalization=C_B_total EXCLUDING self-delivery (D2, ADR-0015); ");
             base = base.concat("Cb_autoentrega_B=bytes the node delivered to itself (no network hop counted), own last column, ");
             base = base.concat("same node and height as TrafficUntilFinalization; -1=not measured (never zero); ");
-            base = base.concat("TrafficUntilFinalization + Cb_autoentrega_B = total counted before D2; SimulatorVersion=");
+            base = base.concat("TrafficUntilFinalization + Cb_autoentrega_B = total counted before D2; Seed=");
+            base = base.concat(Long.toString(scenario.getSeed()));
+            base = base.concat("; SimulatorVersion=");
             base = base.concat(LinkLoadRecorder.SIMULATOR_VERSION);
         }
         return base;

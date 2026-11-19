@@ -111,6 +111,7 @@ class BlockFinalizationLoggerAutoentregaTest {
         assertTrue(c.contains("-1=not measured (never zero)"), "sentinela: " + c);
         assertTrue(c.contains("TrafficUntilFinalization + Cb_autoentrega_B"), "conservacao declarada: " + c);
         assertTrue(c.contains("SimulatorVersion=" + LinkLoadRecorder.SIMULATOR_VERSION), "versao: " + c);
+        assertTrue(c.contains("Seed=1;"), "semente: " + c);
         List<String> brutas = Files.readAllLines(csv);
         assertTrue(brutas.get(0).startsWith("#") && brutas.get(0).contains("EXCLUDING self-delivery"),
                 "a declaracao esta na linha de comentario do arquivo: " + brutas.get(0));

@@ -38,7 +38,7 @@ def mvn_exe():
 RAIZ = Path(".")
 TESTES = ("AutoentregaUniformeTest,PBFTTrafficMeasurementTest,PBFTPrepareEquivocationTest,MVPComparisonAutoentregaCsvTest,"
           "ByzantineContagemUnicaSweepTest,DAGsperTrafficTest,MVPComparisonNaoRegressaoTest,"
-          "BlockFinalizationLoggerAutoentregaTest,ByzantineSweepAutoentregaCsvTest")  # jabs.log e jabs.example (D2: CSV basico e s.csv)
+          "BlockFinalizationLoggerAutoentregaTest,ByzantineSweepAutoentregaCsvTest,AutoentregaZeroMedidoTest,EnhancedLoggerAutoentregaConsensoTest")  # jabs.log e jabs.example (D2: CSV basico e s.csv)
 J = "src/main/java/jabs/"
 NODE = J + "network/node/nodes/PeerBlockchainNode.java"
 BFL = J + "log/BlockFinalizationLogger.java"
@@ -126,7 +126,7 @@ MUTACOES = [
      SWEEP, "new StringBuilder(BASE_HEADER).append(SELF_DELIVERY_COLUMNS).toString()",
      "new StringBuilder(SELF_DELIVERY_COLUMNS.substring(1)).append(',').append(BASE_HEADER).toString()"),
     ("M31 sweep: autoentrega medida igual a zero deixa de contar (>= 0 vira > 0)",
-     SWEEP, "if (comAutoentrega && selfBytes >= 0) {", "if (comAutoentrega && selfBytes > 0) {"),
+     SWEEP, "return comAutoentrega && selfBytes >= 0;", "return comAutoentrega && selfBytes > 0;"),
     ("M32 sweep: linha '#' declara a semente errada",
      SWEEP, "selfDeliveryComments(cli.getOrDefault(\"seed\", \"12345\"))", "selfDeliveryComments(\"0\")"),
     ("M33 sweep: linha '#' perde a SimulatorVersion",

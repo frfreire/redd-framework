@@ -66,12 +66,20 @@ public abstract class AbstractScenario {
      */
     abstract protected boolean simulationStopCondition();
 
+    private final long seed;
+
+    /** Semente passada ao motor de aleatoriedade (registrada no cabecalho dos CSV, rodada 4 do D2). */
+    public long getSeed() {
+        return seed;
+    }
+
     /**
      * creates an abstract scenario with a user defined name
      * @param name scenario name string
      * @param seed this value gives the simulation a randomnessEngine seed
      */
     public AbstractScenario(String name, long seed) {
+        this.seed = seed;
         this.randomnessEngine = new RandomnessEngine(seed);
         this.name = name;
         simulator = new Simulator();

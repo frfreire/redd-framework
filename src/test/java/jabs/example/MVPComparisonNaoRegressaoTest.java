@@ -102,14 +102,21 @@ class MVPComparisonNaoRegressaoTest {
     private static void confereComAutoentrega(String csvGerado, String csvReferencia, String rotulo) {
         List<List<String>> g = normaliza(csvGerado);
         List<List<String>> r = normaliza(csvReferencia);
-        assertEquals(r.get(0).size() + 1, g.get(0).size(), rotulo + ": uma coluna a mais");
-        assertEquals("Cb_autoentrega_B", g.get(0).get(g.get(0).size() - 1), rotulo + ": a coluna nova e a ULTIMA");
+        // rodada 4: no PBFT (Enhanced) ha tambem Cb_autoentrega_consenso_B, depois de Cb_autoentrega_B; nos demais so a primeira
+        boolean comConsenso = g.get(0).size() == r.get(0).size() + 2;
+        assertEquals(r.get(0).size() + (comConsenso ? 2 : 1), g.get(0).size(), rotulo + ": colunas a mais");
+        if (comConsenso) {
+            assertEquals("Cb_autoentrega_consenso_B", g.get(0).get(g.get(0).size() - 1), rotulo + ": so-consenso e a ULTIMA");
+            assertEquals("Cb_autoentrega_B", g.get(0).get(g.get(0).size() - 2), rotulo + ": total vem logo antes");
+        } else {
+            assertEquals("Cb_autoentrega_B", g.get(0).get(g.get(0).size() - 1), rotulo + ": a coluna nova e a ULTIMA");
+        }
         assertEquals(r.get(0), g.get(0).subList(0, r.get(0).size()), rotulo + ": colunas existentes: nome e posicao");
         assertEquals(r.size(), g.size(), rotulo + ": numero de linhas");
         int iTraf = r.get(0).indexOf("TrafficUntilFinalization");
         int iAvg = r.get(0).indexOf("Cb_AvgTraffic_MB");
         int iCons = r.get(0).indexOf("TrafficConsensusUntilFinalization");
-        int iAuto = g.get(0).size() - 1;
+        int iAuto = g.get(0).size() - (comConsenso ? 2 : 1);
         assertTrue(iTraf >= 0 && iAvg >= 0, rotulo);
         for (int i = 1; i < r.size(); i++) {
             for (int c = 0; c < r.get(i).size(); c++) {
@@ -118,9 +125,15 @@ class MVPComparisonNaoRegressaoTest {
                             Long.parseLong(g.get(i).get(c)) + Long.parseLong(g.get(i).get(iAuto)),
                             rotulo + ": linha " + i + ": o byte mudou de coluna, nao sumiu");
                 } else if (c == iCons) {
-                    // so o TOTAL da autoentrega e exposto por linha; a parte so-consenso dela saiu do C_B_consenso: so cai
                     assertTrue(Long.parseLong(g.get(i).get(c)) <= Long.parseLong(r.get(i).get(c)),
                             rotulo + ": linha " + i + ": C_B_consenso so pode cair");
+                    if (comConsenso) { // rodada 4: conservacao exata do consenso, e a parte so-consenso nao excede o total
+                        long auto = Long.parseLong(g.get(i).get(iAuto));
+                        long autoCons = Long.parseLong(g.get(i).get(iAuto + 1));
+                        assertEquals(Long.parseLong(r.get(i).get(c)), Long.parseLong(g.get(i).get(c)) + autoCons,
+                                rotulo + ": linha " + i + ": o byte de consenso mudou de coluna, nao sumiu");
+                        assertTrue(autoCons >= 0 && autoCons <= auto, rotulo + ": linha " + i + ": so-consenso <= total");
+                    }
                 } else if (c == iAvg) {
                     assertTrue(Double.parseDouble(g.get(i).get(c)) <= Double.parseDouble(r.get(i).get(c)) + 1e-12,
                             rotulo + ": linha " + i + ": media de trafego so pode cair");
