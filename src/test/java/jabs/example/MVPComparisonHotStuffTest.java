@@ -212,10 +212,16 @@ class MVPComparisonHotStuffTest {
         }
         // protocolo sem HotStuff: a flag segue ignorada como antes (inclusive ataque desconhecido)
         assertEquals(ByzantineConfig.AttackType.NONE,
-                MVPComparison.resolveHotStuffAttack(List.of("ARQ"), Map.of("attack", "EQUIVOCATION")));
-        // HotStuff misturado a outro protocolo com ataque ativo: os outros rodariam honestos sob o mesmo rotulo
+                MVPComparison.resolveHotStuffAttack(List.of("MCO2"), Map.of("attack", "EQUIVOCATION")));
+        // capaz misturado a incapaz com ataque ativo: o incapaz rodaria honesto sob o mesmo rotulo
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.resolveHotStuffAttack(
-                List.of("ARQ", "HOTSTUFF"), Map.of("attack", "EQUIVOCATION")));
+                List.of("MCO2", "HOTSTUFF"), Map.of("attack", "EQUIVOCATION")));
+        // ataque uniforme: HOTSTUFF, TENDERMINT e ARQ leem o ataque juntos (so EQUIVOCATION)
+        assertEquals(ByzantineConfig.AttackType.EQUIVOCATION, MVPComparison.resolveHotStuffAttack(
+                List.of("ARQ", "HOTSTUFF", " tendermint "), Map.of("attack", "EQUIVOCATION")));
+        assertThrows(IllegalArgumentException.class, () -> MVPComparison.resolveHotStuffAttack(
+                List.of("ARQ", "TENDERMINT"), Map.of("attack", "SILENT")));
+        assertEquals("HOTSTUFF,TENDERMINT,ARQ", MVPComparison.attackCapableNames(List.of("hotstuff", "AMBIFY", "TENDERMINT", "arq")));
     }
 
     @Test
@@ -223,8 +229,8 @@ class MVPComparisonHotStuffTest {
         // sem --attack, ou sem HOTSTUFF: null (o enum AttackType nao e tocado no main; D3a-2a-2d-2, ver attackForMain)
         assertNull(MVPComparison.attackForMain(List.of("HOTSTUFF"), Map.of()));
         assertNull(MVPComparison.attackForMain(List.of("ARQ", "AMBIFY"), Map.of()));
-        assertNull(MVPComparison.attackForMain(List.of("ARQ"), Map.of("attack", "EQUIVOCATION")));
-        assertNull(MVPComparison.attackForMain(List.of("ARQ"), Map.of("attack", "x-desconhecido")));
+        assertNull(MVPComparison.attackForMain(List.of("MCO2"), Map.of("attack", "EQUIVOCATION")));
+        assertNull(MVPComparison.attackForMain(List.of("AMBIFY"), Map.of("attack", "x-desconhecido")));
         // com --attack e HOTSTUFF: mesma regra de resolveHotStuffAttack (inclusive a recusa de misto e de ataque nao implementado)
         assertEquals(ByzantineConfig.AttackType.EQUIVOCATION,
                 MVPComparison.attackForMain(List.of(" hotstuff "), Map.of("attack", "equivocation")));
@@ -233,13 +239,13 @@ class MVPComparisonHotStuffTest {
         assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.attackForMain(List.of("HOTSTUFF"), Map.of("attack", "SILENT")));
         assertThrows(IllegalArgumentException.class,
-                () -> MVPComparison.attackForMain(List.of("ARQ", "HOTSTUFF"), Map.of("attack", "EQUIVOCATION")));
+                () -> MVPComparison.attackForMain(List.of("MCO2", "HOTSTUFF"), Map.of("attack", "EQUIVOCATION")));
         // null e NONE equivalem a "sem ataque" nos consumidores
         assertTrue(MVPComparison.noAttack(null));
         assertTrue(MVPComparison.noAttack(ByzantineConfig.AttackType.NONE));
         assertTrue(!MVPComparison.noAttack(ByzantineConfig.AttackType.EQUIVOCATION));
         assertEquals(List.of(), MVPComparison.attackLines(null, 0));
-        assertEquals(0, MVPComparison.resolveByzantineCount(List.of("ARQ"), null, Map.of("byzantine-count", "3"), List.of(4)));
+        assertEquals(0, MVPComparison.resolveByzantineCount(List.of("MCO2"), null, Map.of("byzantine-count", "3"), List.of(4)));
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.resolveByzantineCount(List.of("HOTSTUFF"), null,
                 Map.of("byzantine-count", "1"), List.of(4)));
     }
@@ -274,7 +280,7 @@ class MVPComparisonHotStuffTest {
         // sem ataque: 0 e aceito (ou ausente); sem HOTSTUFF a flag e ignorada como na baseline
         assertEquals(0, MVPComparison.resolveByzantineCount(List.of("HOTSTUFF"), ByzantineConfig.AttackType.NONE,
                 Map.of("byzantine-count", "0"), List.of(4)));
-        assertEquals(0, MVPComparison.resolveByzantineCount(List.of("ARQ"), ByzantineConfig.AttackType.NONE,
+        assertEquals(0, MVPComparison.resolveByzantineCount(List.of("MCO2"), ByzantineConfig.AttackType.NONE,
                 Map.of("byzantine-count", "3"), List.of(4)));
     }
 

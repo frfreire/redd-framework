@@ -136,7 +136,7 @@ public class MVPComparison {
 
         // Initialize CSV file with header
         java.util.List<String> cbHeaderLines = joinLines(beyondLines, fixtureLines);
-        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount),
+        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount, attackCapableNames(protocolList)),
                 cbHeaderLines));
         // HS-CB-fase2 (parte A): colunas ADITIVAS de C_B (soma da rede e estatisticas) so para HOTSTUFF/TENDERMINT, num
         // SEGUNDO arquivo (mvp-results-cb.csv, ao lado do mvp-results.csv). Sem esses protocolos o arquivo nem e criado:
@@ -196,6 +196,11 @@ public class MVPComparison {
                     } catch (Exception e) {
                         System.out.println("      ✗ failed: " + e.getMessage());
                         rethrowIfHotStuff(protocol, validators, runSeed, e);
+                        if (!noAttack(hotStuffAttack) && isAttackCapable(protocol)) {
+                            // ataque uniforme: trial falho sob ataque nao vira linha de zeros nem media sobre menos trials
+                            throw new IllegalStateException("trial " + normalizeProtocol(protocol) + " sob ataque falhou (n="
+                                    + validators + ", seed=" + runSeed + "): " + e.getMessage(), e);
+                        }
                     }
                 }
                 
@@ -467,12 +472,12 @@ public class MVPComparison {
         if (attack == null) {
             return null;
         }
-        boolean temHotStuff = false;
+        boolean temCapaz = false;
         for (String protocol : protocols) {
-            temHotStuff |= isHotStuff(protocol);
+            temCapaz |= isAttackCapable(protocol);
         }
-        if (!temHotStuff) {
-            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+        if (!temCapaz) {
+            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so HOTSTUFF, TENDERMINT e ARQ a leem no MVPComparison)"));
             return null;
         }
         return resolveHotStuffAttack(protocols, cli);
@@ -489,19 +494,20 @@ public class MVPComparison {
         if (attack == null) {
             return ByzantineConfig.AttackType.NONE;
         }
-        boolean temHotStuff = false;
+        boolean temCapaz = false;
         boolean temOutro = false;
         for (String protocol : protocols) {
-            if (isHotStuff(protocol)) {
-                temHotStuff = true;
+            if (isAttackCapable(protocol)) {
+                temCapaz = true;
             } else {
                 temOutro = true;
             }
         }
-        if (!temHotStuff) {
-            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+        if (!temCapaz) {
+            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so HOTSTUFF, TENDERMINT e ARQ a leem no MVPComparison)"));
             return ByzantineConfig.AttackType.NONE;
         }
+        String capazes = attackCapableNames(protocols);
         String nome = attack.trim();
         if (nome.equalsIgnoreCase("none") || nome.equalsIgnoreCase("nenhum")) {
             return ByzantineConfig.AttackType.NONE;
@@ -510,17 +516,17 @@ public class MVPComparison {
         try {
             tipo = ByzantineConfig.AttackType.valueOf(nome.toUpperCase(java.util.Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("ataque desconhecido '" + attack + "' para HOTSTUFF. Validos: "
+            throw new IllegalArgumentException("ataque desconhecido '" + attack + "' para " + capazes + ". Validos: "
                     + ByzantineConfig.validAttackNames() + " (so EQUIVOCATION implementado; none/nenhum = sem ataque)", e);
         }
         if (tipo == ByzantineConfig.AttackType.NONE) {
             return tipo;
         }
         if (tipo != ByzantineConfig.AttackType.EQUIVOCATION) {
-            throw new IllegalArgumentException("ataque " + tipo + " nao implementado para HOTSTUFF (so EQUIVOCATION)");
+            throw new IllegalArgumentException("ataque " + tipo + " nao implementado para " + capazes + " (so EQUIVOCATION)");
         }
         if (temOutro) {
-            throw new IllegalArgumentException("--attack=" + tipo + " so e aceito com --protocols contendo apenas HOTSTUFF: "
+            throw new IllegalArgumentException("--attack=" + tipo + " so e aceito com --protocols contendo apenas HOTSTUFF, TENDERMINT e ARQ: "
                     + "os demais protocolos nao leem --attack no MVPComparison e rodariam sem ataque (use ByzantineSweep)");
         }
         return tipo;
@@ -545,13 +551,13 @@ public class MVPComparison {
         String beyondBruto = cli.get(ALLOW_BEYOND_BFT_THRESHOLD);
         boolean temHotStuffGeral = false;
         for (String protocol : protocols) {
-            temHotStuffGeral |= isHotStuff(protocol);
+            temHotStuffGeral |= isAttackCapable(protocol);
         }
         boolean allowBeyond = false;
         if (beyondBruto != null) {
             if (!temHotStuffGeral) {
                 avisar(new StringBuilder("--").append(ALLOW_BEYOND_BFT_THRESHOLD).append("=").append(beyondBruto)
-                        .append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+                        .append(" ignorada (so HOTSTUFF, TENDERMINT e ARQ a leem no MVPComparison)"));
             } else {
                 allowBeyond = parseAllowBeyondBftThreshold(beyondBruto);
                 if (allowBeyond && noAttack(attack)) {
@@ -563,7 +569,7 @@ public class MVPComparison {
         if (noAttack(attack)) {
             boolean temHotStuff = false;
             for (String protocol : protocols) {
-                temHotStuff |= isHotStuff(protocol);
+                temHotStuff |= isAttackCapable(protocol);
             }
             // sem HOTSTUFF o MVPComparison nunca leu esta flag: ignorada como na baseline
             if (temHotStuff && bruto != null && !"0".equals(bruto.trim())) {
@@ -716,11 +722,16 @@ public class MVPComparison {
 
     /** Linhas '#' do CSV agregado que declaram o ataque; vazio sem ataque (o CSV honesto fica byte a byte o de sempre). */
     static java.util.List<String> attackLines(ByzantineConfig.AttackType attack, int count) {
+        return attackLines(attack, count, "HOTSTUFF");
+    }
+
+    /** {@code protocolos}: nomes canonicos dos protocolos que leram o ataque ({@link #attackCapableNames}). */
+    static java.util.List<String> attackLines(ByzantineConfig.AttackType attack, int count, String protocolos) {
         if (noAttack(attack)) {
             return java.util.Collections.emptyList();
         }
         return java.util.List.of(new StringBuilder("# attack=").append(attack).append(" byzantine_count=").append(count)
-                .append(" (HOTSTUFF; sorteio RandomnessEngine dedicado (semente do trial ^ sal) em [0,n), nao o laco do ARQ; coluna n = validadores;")
+                .append(" (").append(protocolos).append("; sorteio RandomnessEngine dedicado (semente do trial ^ sal) em [0,n), nao o laco do ARQ; coluna n = validadores;")
                 .append(" particao, abrangencia e coordenacao PROVISORIAS: ADR-0015 Q28)").toString());
     }
 
@@ -741,6 +752,33 @@ public class MVPComparison {
     /** O nome (em qualquer caixa, com espacos ao redor) designa o HotStuff? */
     static boolean isHotStuff(String protocol) {
         return protocol != null && "HOTSTUFF".equals(normalizeProtocol(protocol));
+    }
+
+    /**
+     * Protocolos que LEEM {@code --attack}/{@code --byzantine-count} no MVPComparison (ataque uniforme, backlog de
+     * 17/11/2026): HOTSTUFF, TENDERMINT e ARQ (PBFT). So {@code EQUIVOCATION}; a flag e ignorada com aviso se nenhum
+     * protocolo capaz esta na lista, e recusada se um incapaz roda junto de ataque ativo.
+     */
+    static boolean isAttackCapable(String protocol) {
+        if (protocol == null) {
+            return false;
+        }
+        String n = normalizeProtocol(protocol);
+        return "HOTSTUFF".equals(n) || "TENDERMINT".equals(n) || "ARQ".equals(n);
+    }
+
+    /** Nomes canonicos dos protocolos capazes presentes, na ordem da linha de comando, separados por virgula. */
+    static String attackCapableNames(java.util.List<String> protocols) {
+        StringBuilder sb = new StringBuilder();
+        for (String protocol : protocols) {
+            if (isAttackCapable(protocol)) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append(normalizeProtocol(protocol));
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -1132,11 +1170,11 @@ public class MVPComparison {
             case "OFFSET":
                 return runOffsetBitcoinScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "ARQ":
-                return runArqREDDScenario(validators, duration, seed, outputPath);
+                return runArqREDDScenario(validators, duration, seed, outputPath, hotStuffByzantine);
             case "DAGSPER":
                 return runDAGsperScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "TENDERMINT":
-                return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig);
+                return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig, hotStuffByzantine);
             case "HOTSTUFF":
                 return runHotStuffScenario(validators, seed, duration, outputPath, hotStuffConfig, hotStuffByzantine);
             default:
@@ -1211,7 +1249,7 @@ public class MVPComparison {
     }
 
     private static SimulationMetrics runArqREDDScenario(int totalValidators, double duration,
-            long seed, String outputPath) {
+            long seed, String outputPath, ByzantineConfig byzantine) {
         SimulationMetrics metrics = new SimulationMetrics();
         metrics.setTotalValidators(totalValidators);
         metrics.setByzantineValidators(0);
@@ -1225,7 +1263,8 @@ public class MVPComparison {
                     seed,
                     totalValidators,
                     duration,
-                    ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
+                    byzantine != null ? byzantine
+                            : ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
             scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
             scenario.addMetricsLogger(outputPath);
             attachLoadRecorder(scenario, "ARQ", seed, outputPath);
@@ -1233,8 +1272,16 @@ public class MVPComparison {
                     "Running Arq-REDD+ HYBRID (" + totalValidators + " honest nodes) ...");
             scenario.run();
             metrics = scenario.getMetrics();
+            if (byzantine != null && metrics.getBlockCount() == 0) {
+                throw new IllegalStateException("ARQ sob ataque finalizou 0 blocos em " + duration
+                        + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+            }
             printScenarioFinilizedMetrics(metrics);
         } catch (Exception e) {
+            if (byzantine != null) {
+                throw new IllegalStateException("trial ARQ sob ataque falhou (n=" + totalValidators + ", seed=" + seed
+                        + "): " + e.getMessage(), e);
+            }
             System.out.println("⚠️  Arq-REDD+ simulation failed: " + e.getMessage());
             e.printStackTrace();
         }
@@ -1280,18 +1327,25 @@ public class MVPComparison {
      * {@code --tm-*}; sem configuracao o protocolo falha alto antes da simulacao deixar rastros.
      */
     private static SimulationMetrics runTendermintScenario(int numNodes, long seed, double duration,
-            String outputPath, TendermintConsensusConfig config) throws IOException {
+            String outputPath, TendermintConsensusConfig config, ByzantineConfig byzantine) throws IOException {
         if (config == null) {
             throw new IllegalArgumentException("protocolo TENDERMINT exige flags --tm-* (timeouts, lote e tx)");
         }
-        TendermintLANScenario scenario = new TendermintLANScenario(
-                "Tendermint - " + numNodes + " validators", seed, numNodes, duration, config);
+        // Sem ataque: nome e construtor de sempre (saida identica). Com ataque: o nome declara ataque e contagem.
+        TendermintLANScenario scenario = byzantine == null
+                ? new TendermintLANScenario("Tendermint - " + numNodes + " validators", seed, numNodes, duration, config)
+                : new TendermintLANScenario("Tendermint - " + numNodes + " validators, " + byzantine.getAttackType()
+                        + " f=" + byzantine.getByzantineCount(), seed, numNodes, duration, config, byzantine);
         scenario.addMetricsLogger(outputPath);
         attachLoadRecorder(scenario, "TENDERMINT", seed, outputPath);
         System.out.println("Running Tendermint scenario (" + numNodes + " validators, seed=" + seed + ") ...");
         scenario.run();
         SimulationMetrics metrics = scenario.getMetrics();
         metrics.setCbRede(CbRedeMedida.medir(scenario.getNetwork().getAllNodes(), metrics)); // HS-CB-fase2
+        if (byzantine != null && metrics.getBlockCount() == 0) {
+            throw new IllegalStateException("TENDERMINT sob ataque finalizou 0 blocos em " + duration
+                    + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+        }
         printScenarioFinilizedMetrics(metrics);
         return metrics;
     }
