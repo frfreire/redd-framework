@@ -82,6 +82,28 @@ class MVPComparisonAtaqueUniformeTest {
         }
     }
 
+    /** Sob ataque, trial com 0 blocos finalizados NAO vira linha de zeros (duracao curta demais para finalizar). */
+    @Test
+    void zeroBlocosSobAtaqueFalhaAltoEmTendermintEArq(@TempDir Path tmp) {
+        String[][] casos = {{"TENDERMINT", "0.01"}, {"ARQ", "0.5"}};
+        for (String[] c : casos) {
+            Path out = tmp.resolve(c[0] + "-zero");
+            // a repeticao de --duration: a ULTIMA ocorrencia vence (parseArgs)
+            IllegalStateException e = assertThrows(IllegalStateException.class, () -> MVPComparison.main(
+                    args(out, c[0], "--duration=" + c[1], "--attack=EQUIVOCATION", "--byzantine-count=1")), c[0]);
+            assertTrue(e.getMessage().contains("0 blocos") || (e.getCause() != null && e.getCause().getMessage() != null
+                    && e.getCause().getMessage().contains("0 blocos")), c[0] + ": " + e.getMessage());
+            try {
+                if (Files.exists(out.resolve("mvp-results.csv"))) {
+                    assertTrue(Files.readAllLines(out.resolve("mvp-results.csv")).stream()
+                            .noneMatch(l -> l.startsWith(c[0] + ";")), c[0] + ": nenhuma linha de dados");
+                }
+            } catch (java.io.IOException ex) {
+                throw new java.io.UncheckedIOException(ex);
+            }
+        }
+    }
+
     @Test
     void ataqueExigeContagemEIncapazMisturadoFalhaAltoAntesDeCriarSaida(@TempDir Path tmp) {
         Path out = tmp.resolve("sem-contagem");
