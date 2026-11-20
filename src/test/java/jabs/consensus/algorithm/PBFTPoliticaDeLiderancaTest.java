@@ -42,6 +42,14 @@ class PBFTPoliticaDeLiderancaTest {
         sc.setMaxFutureHorizon(1000L);
         IllegalStateException e = assertThrows(IllegalStateException.class, sc::run);
         assertTrue(e.getMessage().contains("leaderPolicy"), e.getMessage());
+        // o construtor publico do PBFT tambem recusa politica nula (nao cai em silencio em ROTATING)
+        assertThrows(IllegalArgumentException.class, () -> new PBFT<PBFTBlock, jabs.ledgerdata.pbft.PBFTTx>(
+                new jabs.consensus.blockchain.LocalBlockTree<>(jabs.network.node.nodes.pbft.PBFTNode.PBFT_GENESIS_BLOCK), 4, 1000L, null));
+        // ARQ (cenario hibrido) sem setLeaderPolicy: falha alto em createNetwork
+        jabs.scenario.ArqReddVotingScenario arq = new jabs.scenario.ArqReddVotingScenario("arq-sem-politica", 1L, 4, 5.0);
+        arq.setMaxFutureHorizon(1000L);
+        IllegalStateException e2 = assertThrows(IllegalStateException.class, arq::run);
+        assertTrue(e2.getMessage().contains("leaderPolicy"), e2.getMessage());
     }
 
     @Test

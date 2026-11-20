@@ -1414,7 +1414,7 @@ public class MVPComparison {
             throws IOException {
         PBFTLANScenario scenario = new PBFTLANScenario("PBFT - " + numNodes + " validators", seed, numNodes, duration);
         scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
-            scenario.setLeaderPolicy(requirePbftLeaderPolicy());
+        scenario.setLeaderPolicy(requirePbftLeaderPolicy());
         scenario.addMetricsLogger(outputPath);
         attachLoadRecorder(scenario, "PBFT", seed, outputPath);
         System.out.println("Running PBFT scenario (" + numNodes + " validators, seed=" + seed + ") ...");
