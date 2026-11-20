@@ -15,7 +15,11 @@ integridade exige blocos_mvp > 0 e MD5 igual entre as JVMs, nunca so rc == 0.
 import gzip
 import hashlib
 import json
-import resource
+import os
+try:
+    import resource  # so Unix; no Windows o pico de RSS fica -1 (NAO MEDIDO, nunca zero)
+except ImportError:
+    resource = None
 import shutil
 import subprocess
 import sys
@@ -29,8 +33,8 @@ FLAG_OBRIGATORIA = "-XX:hashCode=2"
 
 
 def classpath(extra=False):
-    cp = f"{DEST}/target/classes:" + (DEST / "cp.txt").read_text().strip()
-    return (f"{DEST}/harness-classes:" + cp) if extra else cp
+    cp = f"{DEST}/target/classes{os.pathsep}" + (DEST / "cp.txt").read_text().strip()
+    return (f"{DEST}/harness-classes{os.pathsep}" + cp) if extra else cp
 
 
 def flags_tm(cfg):
@@ -105,7 +109,7 @@ def main():
     so_obs = cfg["bloco"] == "vb"
     rc1, dt1 = (None, 0.0) if so_obs else rodar(cmd_mvp(cfg, str(saida)), saida, "mvp")
     rc2, dt2 = rodar(cmd_obs(cfg, str(saida)), saida, "observador")
-    rss_mb = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024
+    rss_mb = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024 if resource is not None else -1.0  # -1 = nao medido (Windows)
     res = {"id": cfg["id"], "rc_mvp": rc1, "rc_observador": rc2, "tempo_parede_mvp_s": round(dt1, 2),
            "tempo_parede_observador_s": round(dt2, 2), "max_rss_mb": round(rss_mb, 1), "so_observador": so_obs}
     for nome, arq, dest in (("mvp", saida / f"tendermint-{cfg['n']}v-t0.csv", saida), ("obs", saida / "obs" / "tendermint-obs.csv", saida / "obs")):
