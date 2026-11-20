@@ -1,0 +1,26 @@
+{
+ "_comentario": "ESPECIFICACAO de V-A do PBFT puro (V-ABC-pbft). Consumida por scripts/gerar-celulas-pbft.py. Nenhum valor de pesquisa mora no script. PBFT puro = MVPComparison --protocols=PBFT (PBFTLANScenario), sem ataque, sem gerador de transacoes (Tt nao medido), politica de lideranca STABLE (modo do estudo, ADR-0010 PI-14), sem view change. Decisoes do humano de 22/11/2026 (aceitar todas as sugestoes): 300 s e minimo de 50 alturas; tolerancia de fidelidade 1 %; V-B e V-C fora; pino = o do Tendermint.",
+ "bloco": "va",
+ "descricao": "V-A agregado de rede (e por no, das MESMAS celulas): n varia, resto fixo. PBFT puro sem ataque (f = 0), lider estavel (no 0), uma decisao por altura (T6).",
+ "n": [4, 7, 10, 16, 31],
+ "sementes": 5,
+ "semente_base": 1120345,
+ "duracao_s": 300,
+ "min_alturas_regime": 50,
+ "tolerancia_F": 0.01,
+ "attack": null,
+ "prefixo": "pva",
+ "jvm_flags": ["-Xmx2g", "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"],
+ "pbft": {
+  "max_future_horizon": 1000,
+  "leader_policy": "STABLE",
+  "H_hash_B": 32,
+  "O_overhead_B": 10
+ },
+ "pbft_origem": {
+  "max_future_horizon": "1000 = DECIDIDO (ADR-0015, paridade com o maxFutureViewHorizon do HotStuff; PARIDADE fechada em 20/11/2026)",
+  "leader_policy": "STABLE = modo do estudo (ADR-0010 PI-14); ROTATING (T6) nao e rodado neste V-A",
+  "H_hash_B": "tamanho do hash do bloco (PBFTBlock.PBFT_BLOCK_HASH_SIZE = 32), fixture sem fonte",
+  "O_overhead_B": "PBFTBlockVote.PBFT_VOTE_SIZE_OVERHEAD = 10, fixture sem fonte"
+ }
+}
