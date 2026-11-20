@@ -24,7 +24,12 @@ MARCA_TABELA = "### Artefatos (SHA-256)"
 
 
 def sha(p):
-    return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    """SHA-256 do conteudo com fim de linha NORMALIZADO para LF (arquivo de texto): o hash nao pode depender de core.autocrlf do
+    checkout (Windows grava CRLF na arvore de trabalho; o blob do git e LF). Arquivo binario (com NUL) e hasheado como esta."""
+    b = Path(p).read_bytes()
+    if b"\0" not in b:
+        b = b.replace(b"\r\n", b"\n")
+    return hashlib.sha256(b).hexdigest()
 
 
 def pino_pendente():
