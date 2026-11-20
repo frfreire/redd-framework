@@ -1,0 +1,148 @@
+{
+ "integridade": {
+  "esperadas": 25,
+  "obtidas": 25,
+  "faltando": [],
+  "extras": [],
+  "nao_integras": []
+ },
+ "va": {
+  "rede_msgs": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 27.0,
+     "min": 27.0,
+     "max": 27.0,
+     "formula": 27,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 90.0,
+     "min": 90.0,
+     "max": 90.0,
+     "formula": 90,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 189.0,
+     "min": 189.0,
+     "max": 189.0,
+     "formula": 189,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 495.0,
+     "min": 495.0,
+     "max": 495.0,
+     "formula": 495,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1890.0,
+     "min": 1890.0,
+     "max": 1890.0,
+     "formula": 1890,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    }
+   },
+   "expoente_b": 2.071529353668582,
+   "classe_medida": "O(n^2)",
+   "b_previsto_pela_formula": 2.071529353668582,
+   "classe_prevista_pela_formula": "O(n^2)",
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  },
+  "rede_consenso": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1038.0,
+     "min": 1038.0,
+     "max": 1038.0,
+     "formula": 1038,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 3588.0,
+     "min": 3588.0,
+     "max": 3588.0,
+     "formula": 3588,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 7650.0,
+     "min": 7650.0,
+     "max": 7650.0,
+     "formula": 7650,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 20310.0,
+     "min": 20310.0,
+     "max": 20310.0,
+     "formula": 20310,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 78420.0,
+     "min": 78420.0,
+     "max": 78420.0,
+     "formula": 78420,
+     "erro_rel_max": 0.0,
+     "fiel": true
+    }
+   },
+   "expoente_b": 2.1078692940838133,
+   "classe_medida": "O(n^2)",
+   "b_previsto_pela_formula": 2.1078692940838133,
+   "classe_prevista_pela_formula": "O(n^2)",
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  }
+ },
+ "rede_total_ROTULO_NAO_DECIDE": {
+  "expoente_b": 1.113472451735904,
+  "classe_medida": "O(n)",
+  "nota": "ROTULO, nao decide: o bloco e amostrado de BITCOIN_BLOCK_SIZE_2020"
+ },
+ "va_veredito_preregistrado": {
+  "veredito": "CONSISTENTE",
+  "motivos": []
+ },
+ "tolerancia_F": 0.01,
+ "min_alturas_regime": 50,
+ "por_no_ROTULO_NAO_DECIDE": {
+  "no_lider_msgs": 25.2,
+  "no_validador_msgs": 26.2,
+  "no_lider_bytes_consenso": 1058.4,
+  "no_validador_bytes_consenso": 1068.4
+ }
+}

@@ -1,0 +1,15 @@
+{
+ "n": 10,
+ "run_seed": 1130347,
+ "duracao_s": 300.0,
+ "pbft_max_future_horizon": 1000,
+ "pbft_leader_policy": "STABLE",
+ "altura_maxima_finalizada": 320,
+ "finalizacoes_locais_total": 3200,
+ "max_finalizacoes_do_mesmo_no_na_mesma_altura": 1,
+ "pre_prepare_rejeitados_nao_primario_total": 0,
+ "votos_descartados_alem_do_teto_total": 0,
+ "sem_altura_bytes_total": 0,
+ "sem_altura_pacotes_total": 0,
+ "tempo_parede_s": 5.7345582
+}
