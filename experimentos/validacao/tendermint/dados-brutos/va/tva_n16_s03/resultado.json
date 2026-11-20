@@ -1,0 +1,15 @@
+{
+ "id": "tva_n16_s03",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 13.9,
+ "tempo_parede_observador_s": 13.75,
+ "max_rss_mb": -1.0,
+ "so_observador": false,
+ "csv_mvp": "tendermint-16v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "0dc8e35c5768d7c6ba52f0cdaae9a89f",
+ "blocos_mvp": 1138,
+ "csv_obs": "tendermint-obs.csv.gz",
+ "md5_sem_hashcode_obs": "0dc8e35c5768d7c6ba52f0cdaae9a89f",
+ "blocos_obs": 1138
+}

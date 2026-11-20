@@ -1,0 +1,30 @@
+{
+ "nota": "so fatos medidos; V-C numerico PROPOSTO INVIAVEL (aguarda confirmacao do humano); ver FONTES-V-C.md",
+ "integridade": {
+  "esperadas": 10,
+  "obtidas": 10,
+  "faltando": [],
+  "nao_integras": [],
+  "com_timeout": []
+ },
+ "por_n": {
+  "n4": {
+   "celulas_integras": 5,
+   "Tb_avg_s": 0.06540628319918666,
+   "vazao_tx_por_s_media": 1457.2
+  },
+  "n16": {
+   "celulas_integras": 5,
+   "Tb_avg_s": 0.10320811450554908,
+   "vazao_tx_por_s_media": 948.2
+  }
+ },
+ "ordem_n4_n16": {
+  "ordem_ok": true,
+  "Tb_4": 0.06540628319918666,
+  "Tb_16": 0.10320811450554908,
+  "vazao_4": 1457.2,
+  "vazao_16": 948.2
+ },
+ "rotulo": "TESTE ORDINAL FRACO; NAO e confronto numerico; nao valida magnitude; fora do veredito de V-A"
+}

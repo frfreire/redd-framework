@@ -1,0 +1,15 @@
+{
+ "id": "tvc_n4_s03",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 4.76,
+ "tempo_parede_observador_s": 4.18,
+ "max_rss_mb": -1.0,
+ "so_observador": false,
+ "csv_mvp": "tendermint-4v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "860853a27a8a38813eda6b0dac883f9e",
+ "blocos_mvp": 1747,
+ "csv_obs": "tendermint-obs.csv.gz",
+ "md5_sem_hashcode_obs": "860853a27a8a38813eda6b0dac883f9e",
+ "blocos_obs": 1747
+}

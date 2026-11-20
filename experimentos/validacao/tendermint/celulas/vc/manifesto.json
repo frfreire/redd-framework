@@ -1,0 +1,51 @@
+{
+ "n_celulas": 10,
+ "celulas": [
+  "tvc_n4_s01",
+  "tvc_n4_s02",
+  "tvc_n4_s03",
+  "tvc_n4_s04",
+  "tvc_n4_s05",
+  "tvc_n16_s01",
+  "tvc_n16_s02",
+  "tvc_n16_s03",
+  "tvc_n16_s04",
+  "tvc_n16_s05"
+ ],
+ "fatores": {
+  "_comentario": "ESPECIFICACAO de V-C do Tendermint (RASCUNHO). V-C NUMERICO PROPOSTO INVIAVEL (proposta, aguarda confirmacao do humano): nenhum numero VERIFICADO comparavel (FONTES-V-C.md). Resta SO o teste ORDINAL fraco, que NAO e confronto numerico.",
+  "bloco": "vc",
+  "n": [
+   4,
+   16
+  ],
+  "L": 100,
+  "sementes": 5,
+  "semente_base": 920345,
+  "duracao_s": 120,
+  "t0_transiente_s": 20.0,
+  "attack": null,
+  "prefixo": "tvc",
+  "jvm_flags": [
+   "-Xmx2g",
+   "-XX:+UnlockExperimentalVMOptions",
+   "-XX:hashCode=2"
+  ],
+  "tm": {
+   "s_tx": 512,
+   "assinatura_voto_B": 64,
+   "assinatura_proponente_B": 64,
+   "overhead_msg_B": 10,
+   "max_future_horizon": 1000,
+   "timeouts_s": {
+    "propose": 3.0,
+    "propose_delta": 0.5,
+    "prevote": 1.0,
+    "prevote_delta": 0.5,
+    "precommit": 1.0,
+    "precommit_delta": 0.5
+   }
+  },
+  "tm_a_definir": "idem fatores-va.json (todos os parametros --tm-* sao a definir com o humano; valores provisorios identicos aos de V-A)"
+ }
+}

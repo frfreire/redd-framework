@@ -1,0 +1,578 @@
+{
+ "integridade": {
+  "esperadas": 25,
+  "obtidas": 25,
+  "faltando": [],
+  "extras": [],
+  "nao_integras": [],
+  "com_timeout": []
+ },
+ "va": {
+  "rede_msgs": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 26.9841912458724,
+     "min": 26.970807097882084,
+     "max": 26.993135011441648,
+     "formula": 27,
+     "erro_rel_max": 0.0010812185969598695,
+     "fiel": false
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 89.93503324109402,
+     "min": 89.92084432717678,
+     "max": 89.95241242564441,
+     "formula": 90,
+     "erro_rel_max": 0.0008795074758135494,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 188.86495319265265,
+     "min": 188.80132450331126,
+     "max": 188.9205882352941,
+     "formula": 189,
+     "erro_rel_max": 0.0010511931041732067,
+     "fiel": false
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 494.4182316936177,
+     "min": 494.3121693121693,
+     "max": 494.57634598411295,
+     "formula": 495,
+     "erro_rel_max": 0.001389556945112491,
+     "fiel": false
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1878.1975506458573,
+     "min": 1877.2817955112218,
+     "max": 1879.2134831460673,
+     "formula": 1890,
+     "erro_rel_max": 0.006729208724221247,
+     "fiel": false
+    }
+   },
+   "expoente_b": 2.068984879489409,
+   "classe_medida": "O(n^2)",
+   "b_previsto": 2.07153,
+   "classe_prevista_pela_formula": "O(n^2)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": false,
+   "pontos_sem_celula_integra": []
+  },
+  "rede_consenso": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 2860.3242,
+     "min": 2858.906,
+     "max": 2861.272,
+     "formula": 2862,
+     "erro_rel_max": 0.0010810621942697592,
+     "fiel": false
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 9533.1136,
+     "min": 9531.609,
+     "max": 9534.956,
+     "formula": 9540,
+     "erro_rel_max": 0.0008795597484276333,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 20019.685,
+     "min": 20012.94,
+     "max": 20025.582,
+     "formula": 20034,
+     "erro_rel_max": 0.0010512129380054562,
+     "fiel": false
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 52408.3326,
+     "min": 52397.09,
+     "max": 52425.093,
+     "formula": 52470,
+     "erro_rel_max": 0.0013895559367258145,
+     "fiel": false
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 199088.9402,
+     "min": 198991.87,
+     "max": 199196.629,
+     "formula": 200340,
+     "erro_rel_max": 0.006729210342417913,
+     "fiel": false
+    }
+   },
+   "expoente_b": 2.0689848880289685,
+   "classe_medida": "O(n^2)",
+   "b_previsto": 2.07153,
+   "classe_prevista_pela_formula": "O(n^2)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": false,
+   "pontos_sem_celula_integra": []
+  },
+  "rede_total": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 156460.3242,
+     "min": 156458.906,
+     "max": 156461.272,
+     "formula": 156462,
+     "erro_rel_max": 1.977476959269263e-05,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 316733.1136,
+     "min": 316731.609,
+     "max": 316734.956,
+     "formula": 316740,
+     "erro_rel_max": 2.649175980300328e-05,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 480819.68499999994,
+     "min": 480812.94,
+     "max": 480825.582,
+     "formula": 480834,
+     "erro_rel_max": 4.3798899412266333e-05,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 820408.3326,
+     "min": 820397.09,
+     "max": 820425.093,
+     "formula": 820470,
+     "erro_rel_max": 8.886370007438736e-05,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1735088.9401999998,
+     "min": 1734991.87,
+     "max": 1735196.629,
+     "formula": 1736340,
+     "erro_rel_max": 0.0007764205167190114,
+     "fiel": true
+    }
+   },
+   "expoente_b": 1.1701591535690612,
+   "classe_medida": "O(n)",
+   "b_previsto": 1.17048,
+   "classe_prevista_pela_formula": "O(n)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  }
+ },
+ "va_veredito_preregistrado": {
+  "veredito": "INCONSISTENTE",
+  "motivos": [
+   "rede_msgs: ponto infiel a formula do codigo",
+   "rede_consenso: ponto infiel a formula do codigo"
+  ],
+  "rotulos_nao_decisorios": [
+   "rede_total (so rotulo): classe O(n) (prevista O(n)), fiel=True, b=1.170"
+  ]
+ },
+ "va_por_no_ROTULO_NAO_DECIDE": {
+  "no_validador_msgs": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 6.996257782583662,
+     "min": 6.992940278572791,
+     "max": 6.998474446987033,
+     "formula": 7,
+     "erro_rel_max": 0.0010085316324583665,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 12.990976839040837,
+     "min": 12.98900615655233,
+     "max": 12.993390614672835,
+     "formula": 13,
+     "erro_rel_max": 0.0008456802652053815,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 18.98666204371878,
+     "min": 18.9803777287221,
+     "max": 18.992156862745098,
+     "formula": 19,
+     "erro_rel_max": 0.0010327511198894594,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 30.963801083158433,
+     "min": 30.957201646090535,
+     "max": 30.973639305678137,
+     "formula": 31,
+     "erro_rel_max": 0.0013805920615956367,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 60.61969885414429,
+     "min": 60.59019118869493,
+     "max": 60.65243445692884,
+     "formula": 61,
+     "erro_rel_max": 0.006718177234509333,
+     "fiel": true
+    }
+   },
+   "expoente_b": 1.0528804393138624,
+   "classe_medida": "O(n)",
+   "b_previsto": 1.05544,
+   "classe_prevista_pela_formula": "O(n)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  },
+  "no_proponente_msgs": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 5.9954178981214135,
+     "min": 5.991986262163709,
+     "max": 5.997711670480549,
+     "formula": 6,
+     "erro_rel_max": 0.0013356229727151299,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 11.989172206849002,
+     "min": 11.986807387862797,
+     "max": 11.992068737607402,
+     "formula": 12,
+     "erro_rel_max": 0.0010993843447669367,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 17.98499479918363,
+     "min": 17.97792494481236,
+     "max": 17.991176470588236,
+     "formula": 18,
+     "erro_rel_max": 0.001226391954868807,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 29.96121544624118,
+     "min": 29.954144620811288,
+     "max": 29.971756398940865,
+     "formula": 30,
+     "erro_rel_max": 0.0015285126396237321,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 59.60658502152857,
+     "min": 59.576059850374065,
+     "max": 59.640449438202246,
+     "formula": 60,
+     "erro_rel_max": 0.007065669160432246,
+     "fiel": true
+    }
+   },
+   "expoente_b": 1.1173818264389537,
+   "classe_medida": "O(n)",
+   "b_previsto": 1.11998,
+   "classe_prevista_pela_formula": "O(n)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  },
+  "no_validador_bytes_consenso": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 741.6033249538682,
+     "min": 741.251669528716,
+     "max": 741.8382913806254,
+     "formula": 742,
+     "erro_rel_max": 0.0010085316324582492,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1377.0435449383285,
+     "min": 1376.834652594547,
+     "max": 1377.2994051553205,
+     "formula": 1378,
+     "erro_rel_max": 0.0008456802652054253,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 2012.5861766341907,
+     "min": 2011.9200392445427,
+     "max": 2013.1686274509805,
+     "formula": 2014,
+     "erro_rel_max": 0.0010327511198893993,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 3282.162914814794,
+     "min": 3281.463374485597,
+     "max": 3283.205766401883,
+     "formula": 3286,
+     "erro_rel_max": 0.0013805920615955912,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 6425.688078539295,
+     "min": 6422.560266001662,
+     "max": 6429.158052434456,
+     "formula": 6466,
+     "erro_rel_max": 0.006718177234509425,
+     "fiel": true
+    }
+   },
+   "expoente_b": 1.0528804393138622,
+   "classe_medida": "O(n)",
+   "b_previsto": 1.05544,
+   "classe_prevista_pela_formula": "O(n)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  },
+  "no_proponente_bytes_consenso": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 635.5142972008698,
+     "min": 635.1505437893532,
+     "max": 635.7574370709382,
+     "formula": 636,
+     "erro_rel_max": 0.001335622972715172,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1270.8522539259943,
+     "min": 1270.6015831134564,
+     "max": 1271.1592861863846,
+     "formula": 1272,
+     "erro_rel_max": 0.0010993843447669814,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1906.4094487134648,
+     "min": 1905.6600441501105,
+     "max": 1907.0647058823529,
+     "formula": 1908,
+     "erro_rel_max": 0.0012263919548687213,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 3175.888837301565,
+     "min": 3175.1393298059966,
+     "max": 3177.0061782877315,
+     "formula": 3180,
+     "erro_rel_max": 0.001528512639623721,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 6318.298012282029,
+     "min": 6315.062344139651,
+     "max": 6321.887640449439,
+     "formula": 6360,
+     "erro_rel_max": 0.0070656691604322275,
+     "fiel": true
+    }
+   },
+   "expoente_b": 1.117381826438954,
+   "classe_medida": "O(n)",
+   "b_previsto": 1.11998,
+   "classe_prevista_pela_formula": "O(n)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  },
+  "no_validador_bytes_total": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 51941.60332495387,
+     "min": 51941.25166952872,
+     "max": 51941.83829138062,
+     "formula": 51942,
+     "erro_rel_max": 1.4407039992308664e-05,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 52577.04354493834,
+     "min": 52576.834652594545,
+     "max": 52577.29940515532,
+     "formula": 52578,
+     "erro_rel_max": 2.2164163822409902e-05,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 53212.586176634184,
+     "min": 53211.92003924454,
+     "max": 53213.16862745098,
+     "formula": 53214,
+     "erro_rel_max": 3.908672070241214e-05,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 54482.1629148148,
+     "min": 54481.4633744856,
+     "max": 54483.20576640188,
+     "formula": 54486,
+     "erro_rel_max": 8.326222358777608e-05,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 57625.68807853929,
+     "min": 57622.56026600167,
+     "max": 57629.15805243446,
+     "formula": 57666,
+     "erro_rel_max": 0.000753298893599927,
+     "fiel": true
+    }
+   },
+   "expoente_b": 0.05038675243038118,
+   "classe_medida": "O(1)",
+   "b_previsto": 0.0507,
+   "classe_prevista_pela_formula": "O(1)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  },
+  "no_proponente_bytes_total": {
+   "por_n": {
+    "4": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 635.5142972008698,
+     "min": 635.1505437893532,
+     "max": 635.7574370709382,
+     "formula": 636,
+     "erro_rel_max": 0.001335622972715172,
+     "fiel": true
+    },
+    "7": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1270.8522539259943,
+     "min": 1270.6015831134564,
+     "max": 1271.1592861863846,
+     "formula": 1272,
+     "erro_rel_max": 0.0010993843447669814,
+     "fiel": true
+    },
+    "10": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 1906.4094487134648,
+     "min": 1905.6600441501105,
+     "max": 1907.0647058823529,
+     "formula": 1908,
+     "erro_rel_max": 0.0012263919548687213,
+     "fiel": true
+    },
+    "16": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 3175.888837301565,
+     "min": 3175.1393298059966,
+     "max": 3177.0061782877315,
+     "formula": 3180,
+     "erro_rel_max": 0.001528512639623721,
+     "fiel": true
+    },
+    "31": {
+     "celulas": 5,
+     "integras": 5,
+     "media": 6318.298012282029,
+     "min": 6315.062344139651,
+     "max": 6321.887640449439,
+     "formula": 6360,
+     "erro_rel_max": 0.0070656691604322275,
+     "fiel": true
+    }
+   },
+   "expoente_b": 1.117381826438954,
+   "classe_medida": "O(n)",
+   "b_previsto": 1.11998,
+   "classe_prevista_pela_formula": "O(n)",
+   "bate_com_formula": true,
+   "todos_fieis_a_formula": true,
+   "pontos_sem_celula_integra": []
+  }
+ },
+ "retencao_sem_ataque_e_sem_timeout": {
+  "pico_mensagens_de_altura_futura_max_entre_celulas": 57,
+  "max_lead_de_alturas": 3,
+  "nota": "contador do nucleo (peakFutureMessages); o TETO da PARIDADE ainda nao existe no codigo: a checagem 'teto nao atingido' so e mecanica se, no commit pinado, o codigo expuser um contador de descarte por teto (a definir; observador a ajustar e re-hashear)"
+ }
+}

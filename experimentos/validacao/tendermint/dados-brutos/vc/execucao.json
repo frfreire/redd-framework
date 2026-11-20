@@ -1,0 +1,63 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "E:\\Projetos\\redd-framework\\experimentos\\validacao\\tendermint\\celulas\\vc",
+   "n_esperadas": 10,
+   "executadas_agora": [
+    {
+     "id": "tvc_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 9.5
+    },
+    {
+     "id": "tvc_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 9.3
+    },
+    {
+     "id": "tvc_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 9.1
+    },
+    {
+     "id": "tvc_n4_s04",
+     "rc": 0,
+     "tempo_parede_s": 9.2
+    },
+    {
+     "id": "tvc_n4_s05",
+     "rc": 0,
+     "tempo_parede_s": 9.2
+    },
+    {
+     "id": "tvc_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 27.4
+    },
+    {
+     "id": "tvc_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 27.4
+    },
+    {
+     "id": "tvc_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 27.5
+    },
+    {
+     "id": "tvc_n16_s04",
+     "rc": 0,
+     "tempo_parede_s": 23.8
+    },
+    {
+     "id": "tvc_n16_s05",
+     "rc": 0,
+     "tempo_parede_s": 23.9
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 33.1
+  }
+ ]
+}

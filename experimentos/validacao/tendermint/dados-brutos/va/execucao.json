@@ -1,0 +1,138 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "E:\\Projetos\\redd-framework\\experimentos\\validacao\\tendermint\\celulas\\va",
+   "n_esperadas": 25,
+   "executadas_agora": [
+    {
+     "id": "tva_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 10.0
+    },
+    {
+     "id": "tva_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 10.2
+    },
+    {
+     "id": "tva_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 10.5
+    },
+    {
+     "id": "tva_n4_s04",
+     "rc": 0,
+     "tempo_parede_s": 10.4
+    },
+    {
+     "id": "tva_n4_s05",
+     "rc": 0,
+     "tempo_parede_s": 10.1
+    },
+    {
+     "id": "tva_n7_s01",
+     "rc": 0,
+     "tempo_parede_s": 17.9
+    },
+    {
+     "id": "tva_n7_s02",
+     "rc": 0,
+     "tempo_parede_s": 17.8
+    },
+    {
+     "id": "tva_n7_s03",
+     "rc": 0,
+     "tempo_parede_s": 17.7
+    },
+    {
+     "id": "tva_n7_s04",
+     "rc": 0,
+     "tempo_parede_s": 15.9
+    },
+    {
+     "id": "tva_n7_s05",
+     "rc": 0,
+     "tempo_parede_s": 15.8
+    },
+    {
+     "id": "tva_n10_s01",
+     "rc": 0,
+     "tempo_parede_s": 21.1
+    },
+    {
+     "id": "tva_n10_s02",
+     "rc": 0,
+     "tempo_parede_s": 20.9
+    },
+    {
+     "id": "tva_n10_s03",
+     "rc": 0,
+     "tempo_parede_s": 21.1
+    },
+    {
+     "id": "tva_n10_s04",
+     "rc": 0,
+     "tempo_parede_s": 19.6
+    },
+    {
+     "id": "tva_n10_s05",
+     "rc": 0,
+     "tempo_parede_s": 20.2
+    },
+    {
+     "id": "tva_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 28.8
+    },
+    {
+     "id": "tva_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 27.5
+    },
+    {
+     "id": "tva_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 27.8
+    },
+    {
+     "id": "tva_n16_s04",
+     "rc": 0,
+     "tempo_parede_s": 27.7
+    },
+    {
+     "id": "tva_n16_s05",
+     "rc": 0,
+     "tempo_parede_s": 28.1
+    },
+    {
+     "id": "tva_n31_s01",
+     "rc": 0,
+     "tempo_parede_s": 43.5
+    },
+    {
+     "id": "tva_n31_s02",
+     "rc": 0,
+     "tempo_parede_s": 43.4
+    },
+    {
+     "id": "tva_n31_s03",
+     "rc": 0,
+     "tempo_parede_s": 43.3
+    },
+    {
+     "id": "tva_n31_s04",
+     "rc": 0,
+     "tempo_parede_s": 40.8
+    },
+    {
+     "id": "tva_n31_s05",
+     "rc": 0,
+     "tempo_parede_s": 37.9
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 91.3
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+ "id": "tva_n7_s01",
+ "protocolo": "TENDERMINT",
+ "n": 7,
+ "carga": "estacionaria",
+ "byzantinos": 0,
+ "semente": 627346,
+ "replicacao": 1,
+ "duracao_s": 120,
+ "simulador_commit": "2980d2695436ff4efea0138275aaf04a796ff6ff",
+ "gerado_em": "2026-11-20T21:32:01+00:00",
+ "bloco": "va",
+ "grupo": "tva_n7",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "fatores_origem": "experimentos\\validacao\\tendermint\\config\\fatores-va.json",
+ "variante": {
+  "L": 100,
+  "s_tx": 512,
+  "sig_voto_B": 64,
+  "sig_proponente_B": 64,
+  "overhead_msg_B": 10,
+  "max_future_horizon": 1000,
+  "tm_propose": 3.0,
+  "tm_propose_delta": 0.5,
+  "tm_prevote": 1.0,
+  "tm_prevote_delta": 0.5,
+  "tm_precommit": 1.0,
+  "tm_precommit_delta": 0.5,
+  "attack": null
+ },
+ "t0_transiente_s": null,
+ "fora_da_faixa": false,
+ "flags_extras": []
+}

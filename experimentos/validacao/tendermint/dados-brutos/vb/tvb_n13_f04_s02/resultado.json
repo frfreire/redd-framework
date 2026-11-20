@@ -1,0 +1,14 @@
+{
+ "id": "tvb_n13_f04_s02",
+ "rc_mvp": null,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 0.0,
+ "tempo_parede_observador_s": 5.0,
+ "max_rss_mb": -1.0,
+ "so_observador": true,
+ "csv_mvp": null,
+ "blocos_mvp": null,
+ "csv_obs": "tendermint-obs.csv.gz",
+ "md5_sem_hashcode_obs": "3b1772abfa4f9253925a9f8963259c69",
+ "blocos_obs": 301
+}

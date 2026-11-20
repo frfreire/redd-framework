@@ -1,0 +1,15 @@
+{
+ "id": "tvc_n16_s02",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 15.3,
+ "tempo_parede_observador_s": 11.96,
+ "max_rss_mb": -1.0,
+ "so_observador": false,
+ "csv_mvp": "tendermint-16v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "efb760e8048d0005440ab3ce45d903c4",
+ "blocos_mvp": 1136,
+ "csv_obs": "tendermint-obs.csv.gz",
+ "md5_sem_hashcode_obs": "efb760e8048d0005440ab3ce45d903c4",
+ "blocos_obs": 1136
+}
