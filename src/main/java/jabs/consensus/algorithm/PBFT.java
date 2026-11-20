@@ -46,6 +46,13 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     private final HashMap<B, LinkedHashMap<Node, PBFTBlockVote<B>>> pendingPrepares = new HashMap<>();
     private final HashMap<B, LinkedHashMap<Node, PBFTBlockVote<B>>> pendingCommits = new HashMap<>();
     private final HashSet<B> committedBlocks = new HashSet<>();
+    /**
+     * Soma da REDE por altura (mesmo acumulador do HotStuff/Tendermint; HS-CB-fase2): alimentado no MESMO ponto em que
+     * o hook ja conta o pacote (so pacote que atravessou a rede simulada; autoentrega nunca chega aqui), sem corte local
+     * e sem ser zerado. Nao altera nenhum contador do protocolo. Trafego alem do teto de retencao NAO cria celula por
+     * altura (memoria limitada): vai para o contador sem altura.
+     */
+    private final jabs.metrics.NetworkHeightLedger heightLedger = new jabs.metrics.NetworkHeightLedger();
     // PBFT-prepare-equivocation (rodada 4, criterio 8): este no NAO guarda o bloco B conflitante fabricado para o
     // PREPARE equivocado de cada A. Antes havia um mapa A -> B que so era podado quando A finalizava neste no; uma
     // sequencia de A que nunca finalizam o fazia crescer sem limite. B e FUNCAO PURA de (A, este no)
@@ -208,6 +215,11 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     }
 
     /** Votos descartados por estarem alem do teto de retencao (nao retidos). */
+    /** Soma da rede por altura deste no (HS-CB-fase2); lida por {@link jabs.metrics.CbRedeMedida}. */
+    public jabs.metrics.NetworkHeightLedger getHeightLedger() {
+        return heightLedger;
+    }
+
     public long getDiscardedBeyondHorizon() {
         return discardedBeyondHorizon;
     }
@@ -225,6 +237,11 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
      * "posterior"; pacotes de bloco conflitante vao ao contador agregado "conflitante". Nenhum byte some.
      */
     public void addBlockTraffic(B block, long bytes) {
+        if (!(block instanceof PBFTConflictingBlock) && beyondHorizon(block)) {
+            heightLedger.addUnattributed(bytes);
+        } else {
+            heightLedger.addBlockPacket(block.getHeight(), bytes);
+        }
         if (block instanceof PBFTConflictingBlock) {
             conflictingTotalBytes += bytes;
             return;
@@ -246,6 +263,9 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
      * sem a carga do bloco carregada no PRE_PREPARE). Mesma regra de destino de {@link #addBlockTraffic}.
      */
     public void addConsensusMessageTraffic(B block, long bytes) {
+        if (block instanceof PBFTConflictingBlock || !beyondHorizon(block)) {
+            heightLedger.addConsensusBytes(block.getHeight(), bytes);
+        }
         if (block instanceof PBFTConflictingBlock) {
             conflictingConsensusBytes += bytes;
             return;
@@ -516,6 +536,7 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                     case PRE_PREPARING:
                         this.currentViewNumber += 1;
                         this.currentMainChainHead = block;
+                        heightLedger.markFinalized(block.getHeight()); // so rotula (i); o corte nao muda
                         updateChain();
 
                         // Fire BlockFinalizationEvent for metrics collection

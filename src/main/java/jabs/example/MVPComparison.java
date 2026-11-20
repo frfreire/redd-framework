@@ -136,8 +136,8 @@ public class MVPComparison {
 
         // Initialize CSV file with header
         java.util.List<String> cbHeaderLines = joinLines(beyondLines, fixtureLines);
-        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount, attackCapableNames(protocolList)),
-                cbHeaderLines));
+        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount, attackCapableNames(protocolList)),
+                cbHeaderLines), pbftTtLines(protocolList)));
         // HS-CB-fase2 (parte A): colunas ADITIVAS de C_B (soma da rede e estatisticas) so para HOTSTUFF/TENDERMINT, num
         // SEGUNDO arquivo (mvp-results-cb.csv, ao lado do mvp-results.csv). Sem esses protocolos o arquivo nem e criado:
         // a saida dos demais e byte a byte a de antes (mvp-results.csv nunca muda).
@@ -185,6 +185,9 @@ public class MVPComparison {
                             metrics.getAverageTrafficPerBlock(),
                             metrics.getAverageTransactionConfirmationLatency()
                         );
+                        if ("PBFT".equals(normalizeProtocol(protocol))) {
+                            acc.markTtNotMeasured(); // PBFT puro sem gerador de transacoes: Tt = -1, nunca zero
+                        }
                         acc.addSelfDelivery(metrics.getAverageSelfDeliveryBytesPerBlock(),
                             metrics.getAverageSelfDeliveryConsensusBytesPerBlock());
                         
@@ -328,7 +331,8 @@ public class MVPComparison {
     static Long parsePbftMaxFutureHorizonIfRequested(java.util.List<String> protocolList, java.util.Map<String, String> cli) {
         boolean requested = false;
         for (String p : protocolList) {
-            if ("ARQ".equals(p.trim().toUpperCase(java.util.Locale.ROOT))) {
+            String pn = p.trim().toUpperCase(java.util.Locale.ROOT);
+            if ("ARQ".equals(pn) || "PBFT".equals(pn)) {
                 requested = true;
                 break;
             }
@@ -336,7 +340,7 @@ public class MVPComparison {
         if (!requested) {
             return null;
         }
-        return requiredLong(cli, "pbft-max-future-horizon", "ARQ");
+        return requiredLong(cli, "pbft-max-future-horizon", "ARQ/PBFT");
     }
 
     private static long requirePbftMaxFutureHorizon() {
@@ -658,6 +662,17 @@ public class MVPComparison {
         return linhas == null ? java.util.Collections.emptyList() : linhas;
     }
 
+    /** Linha '#' que declara Tt nao medido do PBFT puro; vazia (sem alocar) quando PBFT nao esta na lista. */
+    static java.util.List<String> pbftTtLines(java.util.List<String> protocols) {
+        for (String protocol : protocols) {
+            if ("PBFT".equals(normalizeProtocol(protocol))) {
+                return java.util.List.of("# PBFT: Tt_avg e Tt_std = -1 (NAO MEDIDO: o PBFT puro nao tem gerador de transacoes; nunca zero). "
+                        + "Tb e Cb sao medidos; a soma da rede por altura esta em mvp-results-cb.csv.");
+            }
+        }
+        return java.util.Collections.emptyList();
+    }
+
     /** Concatena linhas '#' sem alocar quando uma das listas e vazia (o caminho sem trava devolve a lista original). */
     static java.util.List<String> joinLines(java.util.List<String> a, java.util.List<String> b) {
         if (b.isEmpty()) {
@@ -940,6 +955,7 @@ public class MVPComparison {
             }
             case "HOTSTUFF":
             case "TENDERMINT":
+            case "PBFT":
                 return sb.append(" n_semantics=").append(rot).append(" n_requested=").append(n).append(" nodes=")
                         .append(n).append(" validators=").append(n).toString();
             default:
@@ -1031,7 +1047,7 @@ public class MVPComparison {
      */
     static boolean hasSelfDeliveryColumn(String protocol) {
         String p = normalizeProtocol(protocol);
-        return "ARQ".equals(p) || "MCO2".equals(p) || "TREE".equals(p) || "AMBIFY".equals(p)
+        return "ARQ".equals(p) || "PBFT".equals(p) || "MCO2".equals(p) || "TREE".equals(p) || "AMBIFY".equals(p)
                 || "OFFSET".equals(p) || "EARTH".equals(p);
     }
 
@@ -1093,7 +1109,7 @@ public class MVPComparison {
     /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): so HOTSTUFF e TENDERMINT. Os demais: nao medido. */
     static boolean hasCbRede(String protocol) {
         String p = normalizeProtocol(protocol);
-        return "HOTSTUFF".equals(p) || "TENDERMINT".equals(p);
+        return "HOTSTUFF".equals(p) || "TENDERMINT".equals(p) || "PBFT".equals(p);
     }
 
     private static void initializeCbCSV(String path, java.util.List<String> fixtureLines) throws IOException {
@@ -1175,6 +1191,8 @@ public class MVPComparison {
                 return runDAGsperScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "TENDERMINT":
                 return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig, hotStuffByzantine);
+            case "PBFT":
+                return runPbftScenario(validators, seed, duration, outputPath);
             case "HOTSTUFF":
                 return runHotStuffScenario(validators, seed, duration, outputPath, hotStuffConfig, hotStuffByzantine);
             default:
@@ -1227,7 +1245,11 @@ public class MVPComparison {
 
         double getAvgTb() { return count > 0 ? sumTb / count : 0.0; }
         double getAvgCb() { return count > 0 ? sumCb / count : 0.0; }
-        double getAvgTt() { return count > 0 ? sumTt / count : 0.0; }
+        private boolean ttNotMeasured;
+
+        void markTtNotMeasured() { ttNotMeasured = true; }
+
+        double getAvgTt() { return ttNotMeasured ? -1.0 : (count > 0 ? sumTt / count : 0.0); }
 
         double getStdTb() {
             if (count <= 1) return 0.0;
@@ -1242,6 +1264,7 @@ public class MVPComparison {
         }
 
         double getStdTt() {
+            if (ttNotMeasured) return -1.0;
             if (count <= 1) return 0.0;
             double var = (sumTtSq - (sumTt * sumTt) / count) / (count - 1);
             return Math.sqrt(Math.max(0, var));
@@ -1326,6 +1349,30 @@ public class MVPComparison {
      * Tendermint honesto (ADR-0006): {@code numNodes} e o numero de validadores (n >= 4). A config vem das flags
      * {@code --tm-*}; sem configuracao o protocolo falha alto antes da simulacao deixar rastros.
      */
+    /**
+     * PBFT PURO (n validadores na LAN de malha completa, {@link PBFTLANScenario}), distinto do ARQ (topologia hibrida).
+     * Sem ataque. Mesmas metricas e CSV por bloco dos demais; a SOMA DA REDE por altura sai do {@code NetworkHeightLedger}.
+     * Nao ha gerador de transacoes no PBFT puro: Tt NAO e medido (marcado -1 no CSV agregado, nunca zero). Falha alto,
+     * sem inventar zero, se a corrida nao finalizou bloco.
+     */
+    private static SimulationMetrics runPbftScenario(int numNodes, long seed, double duration, String outputPath)
+            throws IOException {
+        PBFTLANScenario scenario = new PBFTLANScenario("PBFT - " + numNodes + " validators", seed, numNodes, duration);
+        scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
+        scenario.addMetricsLogger(outputPath);
+        attachLoadRecorder(scenario, "PBFT", seed, outputPath);
+        System.out.println("Running PBFT scenario (" + numNodes + " validators, seed=" + seed + ") ...");
+        scenario.run();
+        SimulationMetrics metrics = scenario.getMetrics();
+        metrics.setCbRede(CbRedeMedida.medir(scenario.getNetwork().getAllNodes(), metrics));
+        if (metrics.getBlockCount() == 0) {
+            throw new IllegalStateException("PBFT finalizou 0 blocos em " + duration
+                    + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+        }
+        printScenarioFinilizedMetrics(metrics);
+        return metrics;
+    }
+
     private static SimulationMetrics runTendermintScenario(int numNodes, long seed, double duration,
             String outputPath, TendermintConsensusConfig config, ByzantineConfig byzantine) throws IOException {
         if (config == null) {
