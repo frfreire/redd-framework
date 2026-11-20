@@ -199,6 +199,11 @@ public class MVPComparison {
                     } catch (Exception e) {
                         System.out.println("      ✗ failed: " + e.getMessage());
                         rethrowIfHotStuff(protocol, validators, runSeed, e);
+                        if ("PBFT".equals(normalizeProtocol(protocol))) {
+                            // PBFT puro e protocolo NOVO (sem comportamento legado a preservar): trial falho NAO vira linha de zeros
+                            throw new IllegalStateException("trial PBFT falhou (n=" + validators + ", seed=" + runSeed
+                                    + "): " + e.getMessage(), e);
+                        }
                         if (!noAttack(hotStuffAttack) && isAttackCapable(protocol)) {
                             // ataque uniforme: trial falho sob ataque nao vira linha de zeros nem media sobre menos trials
                             throw new IllegalStateException("trial " + normalizeProtocol(protocol) + " sob ataque falhou (n="
@@ -1106,7 +1111,7 @@ public class MVPComparison {
         return v < 0 ? "-1" : String.format(java.util.Locale.ROOT, "%.3f", v);
     }
 
-    /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): so HOTSTUFF e TENDERMINT. Os demais: nao medido. */
+    /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): HOTSTUFF, TENDERMINT e PBFT (puro). Os demais: nao medido. */
     static boolean hasCbRede(String protocol) {
         String p = normalizeProtocol(protocol);
         return "HOTSTUFF".equals(p) || "TENDERMINT".equals(p) || "PBFT".equals(p);

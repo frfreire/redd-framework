@@ -48,6 +48,19 @@ class MVPComparisonPbftPuroTest {
         assertTrue(Files.notExists(out), "falha antes de criar saida");
     }
 
+    /** Trial falho (aqui: 0 blocos em 0,5 s) NAO vira linha de zeros nem exit 0: falha alto, sem Tt = 0. */
+    @Test
+    void trialFalhoDoPbftPuroFalhaAltoSemLinhaDeZeros(@TempDir Path tmp) throws Exception {
+        Path out = tmp.resolve("zero");
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> MVPComparison.main(
+                args(out, "--pbft-max-future-horizon=1000", "--duration=0.5", "--trials=2")));
+        assertTrue(e.getMessage().contains("trial PBFT falhou") && e.getMessage().contains("0 blocos"), e.getMessage());
+        if (Files.exists(out.resolve("mvp-results.csv"))) {
+            assertTrue(Files.readAllLines(out.resolve("mvp-results.csv")).stream().noneMatch(l -> l.startsWith("PBFT;")),
+                    "nenhuma linha de dados do PBFT");
+        }
+    }
+
     @Test
     void ataqueComPbftPuroFalhaAlto(@TempDir Path tmp) {
         Path out = tmp.resolve("ataque");
