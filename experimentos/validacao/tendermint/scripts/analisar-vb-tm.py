@@ -16,7 +16,7 @@ Classes por celula (mecanicas, nesta ordem):
   OUTRA_FALHA          qualquer outra coisa (celula faltante; rc_observador != 0 sem a mensagem da regra, p.ex. falha do logger com 0 blocos; mensagem da
         regra mas o observador terminou; outra IllegalStateException de EQUIVOCATION). Relatada; NAO conta como ruptura nem como sucesso; o ponto
         (n,f) fica INCONCLUSIVO. NAO ha parte do HotStuff "MVPComparison falhou com `finalizou 0 blocos`": zero blocos vira OUTRA_FALHA se rc != 0.
-MIN_EXEC = 6 celulas executaveis (VIVA + SEM_VIVACIDADE) por ponto (decisao do humano, vigente para o HotStuff; PROPOSTA manter).
+MIN_EXEC = 4 celulas executaveis (VIVA + SEM_VIVACIDADE) por ponto (decisao do humano de 21/11/2026, antes dos dados; o HotStuff usou 6).
 Veredito: ver `veredito_ponto` e `veredito_n`. Criterio inteiro (decisao 16/11): f* = floor((n-1)/3)+1; L(f)=1 dentro da faixa e L(f*)=0.
 Uso:  analisar-vb-tm.py <dados-brutos/vb> [--saida analise-vb.json]   |   analisar-vb-tm.py --autoteste (dado SINTETICO)
 """
@@ -30,7 +30,7 @@ from pathlib import Path
 
 VAL = Path(__file__).resolve().parent.parent
 T_VIVA_S = 20.0
-MIN_EXEC = 6
+MIN_EXEC = 4
 RE_REGRA = re.compile(r"EQUIVOCATION em (PROPOSAL|PREVOTE|PRECOMMIT) \(no (\d+)\) exige ao menos (2 vizinhos|1 destinatario honesto)"
                       r".*Ataque nao aplicado: simulacao abortada em vez de degradar", re.S)
 RE_OUTRA_EQ = re.compile(r"EQUIVOCATION")
@@ -214,10 +214,11 @@ def autoteste():
     def P(v, s, o=0, x=0):
         c = {"viva": v, "sem": s, "outra": o, "nexec": x}
         return {**veredito_ponto(c), **c}
-    assert P(6, 0, 0, 4)["estado"] == "DECIDIDO" and P(5, 0, 0, 5)["estado"] == "INCONCLUSIVO" and P(10, 0, 1)["estado"] == "INCONCLUSIVO"
+    assert P(6, 0, 0, 4)["estado"] == "DECIDIDO" and P(4, 0, 0, 6)["estado"] == "DECIDIDO" and P(3, 0, 0, 7)["estado"] == "INCONCLUSIVO" and P(10, 0, 1)["estado"] == "INCONCLUSIVO"
     ok4 = {0: P(10, 0), 1: P(10, 0), 2: P(0, 6, 0, 4)}
     assert veredito_n(4, ok4)[0] == "CONSISTENTE"
-    assert veredito_n(4, {**ok4, 2: P(0, 4, 0, 6)})[0] == "INCONCLUSIVO"   # ESTE e o caso previsto (6 abortam, k_exec=4 < 6)
+    assert veredito_n(4, {**ok4, 2: P(0, 4, 0, 6)})[0] == "CONSISTENTE"    # caso previsto (6 abortam, k_exec=4 >= MIN_EXEC=4): decidido
+    assert veredito_n(4, {**ok4, 2: P(0, 3, 0, 7)})[0] == "INCONCLUSIVO"   # k_exec=3 < 4
     assert veredito_n(4, {**ok4, 2: P(2, 4, 0, 4)})[0] == "MISTO"
     assert veredito_n(4, {**ok4, 2: P(6, 0, 0, 4)})[0] == "INCONSISTENTE"
     assert veredito_n(4, {**ok4, 1: P(9, 1)})[0] == "INCONSISTENTE"

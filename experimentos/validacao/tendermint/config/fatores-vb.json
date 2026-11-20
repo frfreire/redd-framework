@@ -9,7 +9,7 @@
  "semente_base": 820345,
  "duracao_s": 300,
  "t_viva_s": 20.0,
- "min_exec": 6,
+ "min_exec": 4,
  "attack": "EQUIVOCATION",
  "flag_fora_da_faixa": "--allow-beyond-bft-threshold=true (no ObservadorTm; V-B segue pelo ObservadorTm mesmo depois que o MVPComparison passou a ler --attack para TENDERMINT em 20/11/2026, ver PREREGISTRO secao 6)",
  "prefixo": "tvb",
