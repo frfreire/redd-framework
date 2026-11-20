@@ -559,4 +559,127 @@ class TendermintCoreTest {
         assertThrows(IllegalArgumentException.class, () -> coreComTeto(0));
         assertThrows(IllegalArgumentException.class, () -> coreComTeto(-3));
     }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // P4b (locking e votos nil, revisao dedicada de 22/11/2026): casos que mutantes de TendermintCore sobreviviam.
+    // n = 4, self = 3: strong = 3 (2f+1), weak = 2 (f+1).
+    // ---------------------------------------------------------------------------------------------------------
+
+    /** Leva o no ao round 1 sem ter visto a proposta do round 0 (prevote nil por timeout), com o round 0 ainda aberto aos votos. */
+    private static TendermintCore<String> noNoRound1SemProposta() {
+        TendermintCore<String> c = core();
+        c.start();
+        c.onTimeout(TimeoutKind.PROPOSE, 0, 0);
+        skipTo(c, 1, new ArrayList<>());
+        return c;
+    }
+
+    /** Regra 28 exige 2f+1 prevotes do valor em vr: f+1 (2) NAO bastam; o terceiro basta (mutante: limiar weak). */
+    @Test
+    void regra28ExigeQuorumForteDePrevotesEmVrEnaoOFraco() {
+        TendermintCore<String> c = noNoRound1SemProposta();
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 1, "B", 0));
+        assertTrue(votes(as, Type.PREVOTE).isEmpty(), "sem polka em vr = 0 o no espera");
+        as = new ArrayList<>(c.onVote(prevote(0, 0, "B", 0)));
+        as.addAll(c.onVote(prevote(0, 0, "B", 1)));
+        assertTrue(votes(as, Type.PREVOTE).isEmpty(), "2 = f+1 prevotes em vr NAO e polka: ainda espera");
+        as = c.onVote(prevote(0, 0, "B", 2));
+        assertEquals("B", votes(as, Type.PREVOTE).get(0).vote().value(), "3 = 2f+1: agora prevota B (regra 28)");
+    }
+
+    /** Voto nil nao conta para a polka da regra 28: 1 voto em B + 2 nil somam 3 mas NAO sao polka de B (mutante: nil como polka). */
+    @Test
+    void regra28NaoContaVotoNilComoPolka() {
+        TendermintCore<String> c = noNoRound1SemProposta();
+        List<TendermintAction<String>> as = new ArrayList<>(c.onProposal(prop(0, 1, "B", 0)));
+        as.addAll(c.onVote(prevote(0, 0, "B", 0)));
+        as.addAll(c.onVote(prevote(0, 0, null, 1)));
+        as.addAll(c.onVote(prevote(0, 0, null, 2)));
+        assertTrue(votes(as, Type.PREVOTE).isEmpty(), "1 prevote em B + 2 nil NAO e polka de B");
+    }
+
+    /** O lock persiste por mais de um round: travado em A no round 0, no round 2 uma proposta B com vr = -1 recebe nil (mutante: lock relaxado). */
+    @Test
+    void lockPersisteAposDoisRoundsSemPolka() {
+        TendermintCore<String> c = core();
+        c.start();
+        c.onProposal(prop(0, 0, "A", -1));
+        c.onVote(prevote(0, 0, "A", 0));
+        c.onVote(prevote(0, 0, "A", 1)); // lock A, round 0
+        assertEquals(0, c.lockedRound());
+        skipTo(c, 2, new ArrayList<>());
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 2, "B", -1));
+        assertNull(votes(as, Type.PREVOTE).get(0).vote().value(), "travado em A ha 2 rounds: B sem polka continua recebendo nil");
+        assertEquals("A", c.lockedValue());
+        assertEquals(0, c.lockedRound());
+    }
+
+    /** Regra 22: o no travado ainda prevota o PROPRIO valor travado quando ele volta com vr = -1 (mutante: sem v.equals(lockedValue)). */
+    @Test
+    void regra22PrevotaOValorTravadoQuandoVoltaComVrMenos1() {
+        TendermintCore<String> c = core();
+        c.start();
+        c.onProposal(prop(0, 0, "A", -1));
+        c.onVote(prevote(0, 0, "A", 0));
+        c.onVote(prevote(0, 0, "A", 1));
+        skipTo(c, 1, new ArrayList<>());
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 1, "A", -1));
+        assertEquals("A", votes(as, Type.PREVOTE).get(0).vote().value());
+    }
+
+    /** Regra 28: lockedRound > vr, mas v == lockedValue: prevota v (mutante: sem v.equals(lockedValue) na regra 28). */
+    @Test
+    void regra28PrevotaOValorTravadoMesmoComLockMaisNovoQueVr() {
+        TendermintCore<String> c = core();
+        c.start();
+        c.onTimeout(TimeoutKind.PROPOSE, 0, 0); // round 0 sem proposta: prevote nil, nao trava
+        c.onVote(prevote(0, 0, "A", 0));
+        c.onVote(prevote(0, 0, "A", 1));
+        c.onVote(prevote(0, 0, "A", 2)); // polka de A no round 0
+        skipTo(c, 1, new ArrayList<>());
+        c.onProposal(prop(0, 1, "A", -1));
+        c.onVote(prevote(0, 1, "A", 0));
+        c.onVote(prevote(0, 1, "A", 1)); // lock A, round 1
+        assertEquals(1, c.lockedRound());
+        skipTo(c, 2, new ArrayList<>());
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 2, "A", 0));
+        assertEquals("A", votes(as, Type.PREVOTE).get(0).vote().value(), "lockedRound 1 > vr 0, mas lockedValue == A");
+    }
+
+    /** Regra 36 exige step >= prevote: com step == propose uma polka corrente NAO trava nem consome o "pela primeira vez" (mutante: sem o guard). */
+    @Test
+    void regra36SoTravaComStepPrevote() {
+        TendermintCore<String> c = core();
+        c.start();
+        skipTo(c, 1, new ArrayList<>());
+        assertEquals(TendermintStep.PROPOSE, c.step());
+        c.onProposal(prop(0, 1, "B", 0)); // vr = 0 sem polka em 0: o no espera, step segue em propose
+        assertEquals(TendermintStep.PROPOSE, c.step());
+        List<TendermintAction<String>> as = new ArrayList<>();
+        as.addAll(c.onVote(prevote(0, 1, "B", 0)));
+        as.addAll(c.onVote(prevote(0, 1, "B", 1)));
+        as.addAll(c.onVote(prevote(0, 1, "B", 2)));
+        assertTrue(votes(as, Type.PRECOMMIT).isEmpty(), "step == propose: a polka corrente nao gera precommit");
+        assertEquals(-1, c.lockedRound(), "e nao trava");
+        // o timeout de proposta leva o no a prevote (nil); a polka corrente (ainda nao tratada) agora trava e precommita B
+        as = c.onTimeout(TimeoutKind.PROPOSE, 0, 1);
+        assertEquals("B", c.lockedValue(), "step >= prevote: a polka corrente trava");
+        assertEquals(1, c.lockedRound());
+        assertEquals("B", votes(as, Type.PRECOMMIT).get(0).vote().value());
+    }
+
+    /** Regra 28: valor invalido nunca recebe prevote, mesmo com polka em vr (mutante: sem valid na regra 28). */
+    @Test
+    void regra28ValorInvalidoRecebeNilMesmoComPolkaEmVr() {
+        TendermintCore<String> c = new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h,
+                (h, v) -> !"X".equals(v), 1000L);
+        c.start();
+        c.onTimeout(TimeoutKind.PROPOSE, 0, 0);
+        c.onVote(prevote(0, 0, "X", 0));
+        c.onVote(prevote(0, 0, "X", 1));
+        c.onVote(prevote(0, 0, "X", 2));
+        skipTo(c, 1, new ArrayList<>());
+        List<TendermintAction<String>> as = c.onProposal(prop(0, 1, "X", 0));
+        assertNull(votes(as, Type.PREVOTE).get(0).vote().value(), "valid(h, X) = false: nil, mesmo com polka de X em vr");
+    }
 }
