@@ -140,13 +140,25 @@ def comparar_sweep_autoentrega(rotulo, a: Path, b: Path):
     return True
 
 
+def com_semantica_n(extras):
+    """Q32 A: --n-semantics e obrigatoria onde n difere (MCO2/TREE/AMBIFY, POS/POSA); a nao regressao fixa legacy
+    quando o chamador nao pediu outra."""
+    return list(extras) if any(e.startswith("--n-semantics=") for e in extras) else ["--n-semantics=legacy", *extras]
+
+
 def mvp(raiz, saida: Path, proto, n, dur, semente, extras=()):
+    extras = com_semantica_n(extras)
+    if proto == "ARQ" and not any(e.startswith("--pbft-max-future-horizon=") for e in extras):
+        extras = [*extras, "--pbft-max-future-horizon=1000"]  # PARIDADE: teto obrigatorio, sem padrao
     return java(raiz, ["jabs.example.MVPComparison", f"--protocols={proto}", f"--validators={n}", "--trials=1",
                        f"--duration={dur}", f"--seed={semente}", f"--output={saida}", *extras])
 
 
 def sweep(raiz, saida: Path, tipo, n, maxbyz, ataque, semente, trials=1, dur=30, extras=()):
     saida.mkdir(parents=True, exist_ok=True)
+    extras = com_semantica_n(extras)
+    if tipo == "VOTING" and not any(e.startswith("--pbft-max-future-horizon=") for e in extras):
+        extras = [*extras, "--pbft-max-future-horizon=1000"]  # PARIDADE: teto obrigatorio, sem padrao
     return java(raiz, ["jabs.example.ByzantineSweep", f"--type={tipo}", f"--validators={n}", f"--max-byz={maxbyz}",
                        f"--trials={trials}", f"--duration={dur}", f"--attack={ataque}", f"--seed={semente}",
                        f"--out={saida / 's.csv'}", *extras])
