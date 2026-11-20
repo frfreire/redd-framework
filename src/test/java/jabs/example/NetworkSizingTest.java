@@ -190,7 +190,7 @@ class NetworkSizingTest {
         assertEquals(Map.of("n-semantics", "legacy", "seed", "2"), MVPComparison.parseArgs(repetida));
         assertEquals(Map.of("n-semantics", "legacy", "seed", "2"), ByzantineSweep.parseArgs(repetida));
         // AVISO so no stderr, so para o que a baseline ignorava; nada para flags conhecidas
-        String[] limpos = {"--protocols=ARQ", "--validators=7", "--n-semantics=legacy"};
+        String[] limpos = {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--n-semantics=legacy"};
         assertEquals("", capturarStderr(() -> MVPComparison.parseArgs(limpos)));
         assertEquals("", capturarStderr(() -> ByzantineSweep.parseArgs(new String[]{"--type=POS", "--validators=10"})));
         String aviso = capturarStderr(() -> MVPComparison.parseArgs(new String[]{"--byzantine=0,33"}));
@@ -282,13 +282,13 @@ class NetworkSizingTest {
         Path sem = tmp.resolve("sem");
         String err = capturarStderr(() -> {
             try {
-                MVPComparison.main(new String[]{"--protocols=ARQ", "--validators=7", "--trials=1", "--duration=5",
+                MVPComparison.main(new String[]{"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=5",
                         "--seed=1", "--byzantine=0,33", "--output=" + com});
             } catch (IOException e) {
                 throw new java.io.UncheckedIOException(e);
             }
         });
-        MVPComparison.main(new String[]{"--protocols=ARQ", "--validators=7", "--trials=1", "--duration=5",
+        MVPComparison.main(new String[]{"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=5",
                 "--seed=1", "--output=" + sem});
         assertTrue(err.startsWith("AVISO: flag desconhecida '--byzantine'"), err);
         assertEquals(1, err.lines().filter(l -> l.startsWith("AVISO")).count(), "um unico aviso: " + err);
@@ -308,19 +308,19 @@ class NetworkSizingTest {
     void legacyNaoEscreveComentariosNoCsvEnodesEscreve() throws IOException {
         final String cabecalho = "project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std";
         Path outL = tmp.resolve("mvp-legacy");
-        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
+        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0",
                 "--duration=10", "--seed=1", "--n-semantics=legacy", "--output=" + outL});
         String bruto = Files.readString(outL.resolve("mvp-results.csv"));
         assertTrue(bruto.startsWith(cabecalho + "\n"), "legacy: o arquivo comeca no cabecalho de colunas: " + bruto);
         assertFalse(bruto.contains("#"), "legacy: nenhuma linha '#': " + bruto);
         // padrao (sem a flag) = legacy: mesmo conteudo
         Path outP = tmp.resolve("mvp-padrao");
-        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
+        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0",
                 "--duration=10", "--seed=1", "--output=" + outP});
         assertEquals(bruto, Files.readString(outP.resolve("mvp-results.csv")), "sem a flag = legacy, byte a byte");
 
         Path outN = tmp.resolve("mvp-nodes");
-        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--validators=10", "--trials=0",
+        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0",
                 "--duration=10", "--seed=1", "--n-semantics=nodes", "--output=" + outN});
         List<String> linhas = Files.readAllLines(outN.resolve("mvp-results.csv"));
         List<String> comentarios = linhas.stream().filter(l -> l.startsWith("#")).toList();

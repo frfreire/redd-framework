@@ -61,7 +61,7 @@ class GarantiaHashCodeTest {
     }
 
     private Saida mvp(String nome, List<String> jvm, boolean registro) throws Exception {
-        List<String> a = new ArrayList<>(List.of("--protocols=ARQ", "--validators=7", "--trials=1", "--duration=30",
+        List<String> a = new ArrayList<>(List.of("--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=30",
                 "--seed=1", "--output=" + tmp.resolve(nome)));
         if (registro) {
             a.add("--load-record=true");
@@ -118,7 +118,7 @@ class GarantiaHashCodeTest {
     @Test
     void mvpComRegistroLigadoSemHashCodeNaoAvisaFlagDesconhecidaAntesDeFalhar() throws Exception {
         // parseArgs avisa no stderr sobre flag desconhecida: isso tambem e saida e nao pode vir antes da garantia.
-        List<String> a = List.of("--protocols=ARQ", "--validators=7", "--trials=1", "--duration=30", "--seed=1",
+        List<String> a = List.of("--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=30", "--seed=1",
                 "--output=" + tmp.resolve("mvp-aviso"), "--flag-inexistente=1", "--load-record=true",
                 "--load-record-t0=10");
         Saida s = filha("mvp-aviso", List.of(), "jabs.example.MVPComparison", a.toArray(new String[0]));

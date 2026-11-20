@@ -47,9 +47,11 @@ HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch
       "--hs-voter-encoding=BITMAP"]
 TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
-      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10"]
-EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM}
+      "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
+PBFT = ["--pbft-max-future-horizon=1000"]  # teto de retencao do PBFT: obrigatorio, sem padrao (a base antiga ignora o flag)
+EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM, "ARQ": PBFT}
 COLUNA_NOVA = "Cb_autoentrega_B"
+COLUNA_CONSENSO = "Cb_autoentrega_consenso_B"
 COL_TRAFEGO = {"TrafficUntilFinalization", "Cb_AvgTraffic_MB", "TrafficConsensusUntilFinalization"}
 ADITIVO = "mvp-results-autoentrega.csv"
 COLS_SWEEP = ["avgSelfDelivery_MB", "stdSelfDelivery_MB"]  # colunas aditivas do s.csv do ByzantineSweep (no fim)
@@ -205,7 +207,9 @@ def caso_b(base, atual, saida, semente):
                 continue
             cb, rb = ler_csv(b / k)
             ca, ra = ler_csv(a / k)
-            if ca[:len(cb)] != cb or ca[len(cb):] != [COLUNA_NOVA]:
+            # rodada 4 do D2: no PBFT o Enhanced ganha tambem a coluna so-consenso, logo depois de COLUNA_NOVA
+            tem_cons = ca[len(cb):] == [COLUNA_NOVA, COLUNA_CONSENSO]
+            if ca[:len(cb)] != cb or (ca[len(cb):] != [COLUNA_NOVA] and not tem_cons):
                 print(f"[{rot}] DIVERGENTE: cabecalho. base={cb} atual={ca}")
                 ok = False
                 continue
@@ -230,8 +234,21 @@ def caso_b(base, atual, saida, semente):
             avg_ruins = [j for j, (x, y) in enumerate(zip(rb, ra)) if num(y[ic]) > num(x[ic]) + 1e-12]
             cons_cons = [j for j, (x, y) in enumerate(zip(rb, ra))
                          if num(x[icons]) >= 0 and (num(y[icons]) > num(x[icons]) or num(y[icons]) < 0)]
-            if cons_ruins or avg_ruins or cons_cons:
-                print(f"[{rot}] DIVERGENTE B2 em {k}: conservacao={len(cons_ruins)} avg>base={len(avg_ruins)} consenso={len(cons_cons)}")
+            # rodada 4: conservacao do consenso LINHA A LINHA (base == atual + autoentrega so-consenso; -1 = nao medido
+            # na base ou no atual: sem conservacao, o valor tem de ser igual)
+            cons_cons_ruins = []
+            if tem_cons:
+                ico = len(cb) + 1
+                for j, (x, y) in enumerate(zip(rb, ra)):
+                    bc, ac, ec = num(x[icons]), num(y[icons]), num(y[ico])
+                    if bc < 0 or ec < 0:
+                        if bc != ac:
+                            cons_cons_ruins.append(j)
+                    elif bc != ac + ec or ec > num(y[iauto]):
+                        cons_cons_ruins.append(j)
+            if cons_ruins or avg_ruins or cons_cons or cons_cons_ruins:
+                print(f"[{rot}] DIVERGENTE B2 em {k}: conservacao={len(cons_ruins)} avg>base={len(avg_ruins)} "
+                      f"consenso={len(cons_cons)} conservacao_consenso={len(cons_cons_ruins)}")
                 ok = False
             soma_auto = sum(num(y[iauto]) for y in ra)
             nneg = sum(1 for y in ra if num(y[iauto]) < 0)
@@ -269,7 +286,7 @@ def sweep(raiz, saida: Path, tipo, n, maxbyz, ataque, semente, dur, extras=()):
     saida.mkdir(parents=True, exist_ok=True)
     return java(raiz, ["jabs.example.ByzantineSweep", f"--type={tipo}", f"--validators={n}", f"--max-byz={maxbyz}",
                        "--trials=1", f"--duration={dur}", f"--attack={ataque}", f"--seed={semente}",
-                       f"--out={saida / 's.csv'}", *extras], timeout=3600)
+                       f"--out={saida / 's.csv'}", *(["--pbft-max-future-horizon=1000"] if tipo == "VOTING" else []), *extras], timeout=3600)
 
 
 def caso_c(base, atual, saida, semente):

@@ -32,7 +32,7 @@ class MVPComparisonFixtureTravaTest {
     private static final String[] TM_RESTO = {
             "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
             "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-signature-size=64",
-            "--tm-proposer-signature-size=80", "--tm-message-overhead=10"};
+            "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"};
 
     private static HotStuffConsensusConfig hs(int batch, int tx) {
         return MVPComparison.parseHotStuffConfigIfRequested(List.of("HOTSTUFF"), mapa(batch, tx, "hs"));

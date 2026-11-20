@@ -215,6 +215,7 @@ PROTOCOLOS_POR_ADITIVO = {"mvp-results-cb.csv": PROTOCOLOS_COM_ADITIVO,
                           "mvp-results-autoentrega.csv": PROTOCOLOS_AUTOENTREGA}
 # D2: coluna aditiva do CSV por trial (no FIM) e colunas aditivas do s.csv do ByzantineSweep (no FIM).
 COL_AUTOENTREGA = "Cb_autoentrega_B"
+COL_AUTOENTREGA_CONSENSO = "Cb_autoentrega_consenso_B"  # rodada 4 do D2: so no Enhanced do PBFT, depois de COL_AUTOENTREGA
 COLS_SWEEP_AUTOENTREGA = ["avgSelfDelivery_MB", "stdSelfDelivery_MB"]
 TOL_CONSERVACAO_SWEEP = 2.5e-6  # arredondamento de 6 casas (%.6f) das duas parcelas
 # Maximo de JVMs simultaneas (B1/HS-CB-fase2): com ate 4 nao houve divergencia em 100 execucoes por protocolo; carga
@@ -279,7 +280,8 @@ def reconciliar_autoentrega(rel, ca, ra, cb, rb):
     notas = []
     if len(ra) != len(rb):
         return cb, rb, notas, False
-    if cb == ca + [COL_AUTOENTREGA] and "TrafficUntilFinalization" in ca:
+    tem_cons = cb == ca + [COL_AUTOENTREGA, COL_AUTOENTREGA_CONSENSO]
+    if (cb == ca + [COL_AUTOENTREGA] or tem_cons) and "TrafficUntilFinalization" in ca:
         k = len(ca)
         it = ca.index("TrafficUntilFinalization")
         ic = ca.index("Cb_AvgTraffic_MB") if "Cb_AvgTraffic_MB" in ca else None
@@ -301,7 +303,18 @@ def reconciliar_autoentrega(rel, ca, ra, cb, rb):
                 y2[ic] = x[ic]
             if icons is not None and len(y) > icons and _num(x[icons]) is not None and _num(y[icons]) is not None \
                     and _num(x[icons]) >= 0 and 0 <= _num(y[icons]) <= _num(x[icons]):
-                y2[icons] = x[icons]
+                if tem_cons:
+                    # rodada 4: conservacao do consenso (base == atual + autoentrega so-consenso; -1 = nao medido: igual)
+                    ec = _num(y[k + 1]) if len(y) > k + 1 else None
+                    if ec is None:
+                        notas.append(f"{rel} linha {i}: autoentrega so-consenso nao numerica ou linha curta")
+                    elif (_num(x[icons]) == _num(y[icons]) + ec and ec <= auto) if ec >= 0                             else (_num(x[icons]) == _num(y[icons])):
+                        y2[icons] = x[icons]
+                    else:
+                        notas.append(f"{rel} linha {i}: consenso base={x[icons]} atual={y[icons]} {COL_AUTOENTREGA_CONSENSO}="
+                                     f"{y[k + 1]} (base != atual + autoentrega so-consenso)")
+                else:
+                    y2[icons] = x[icons]
             novo.append(y2)
         return ca, novo, notas[:3], True
     if cb == ca + COLS_SWEEP_AUTOENTREGA and "avgTraffic" in ca:

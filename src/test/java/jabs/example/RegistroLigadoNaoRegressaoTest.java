@@ -75,7 +75,7 @@ class RegistroLigadoNaoRegressaoTest {
     private void rodar(Path out, String proto, String n, boolean ligado) throws Exception {
         List<String> cmd = new ArrayList<>(List.of(java()));
         cmd.addAll(FLAGS_HASH);
-        cmd.addAll(List.of("-cp", classpath(), "jabs.example.MVPComparison", "--protocols=" + proto,
+        cmd.addAll(List.of("-cp", classpath(), "jabs.example.MVPComparison", "--protocols=" + proto, "--pbft-max-future-horizon=1000",
                 "--validators=" + n, "--trials=1", "--duration=60", "--seed=1", "--output=" + out));
         if (ligado) {
             cmd.add("--load-record=true");

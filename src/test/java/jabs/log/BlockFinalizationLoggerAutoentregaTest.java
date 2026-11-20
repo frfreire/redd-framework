@@ -62,6 +62,7 @@ class BlockFinalizationLoggerAutoentregaTest {
 
     private static Captura rodaArq(Path csv) throws IOException {
         ArqReddVotingScenario sc = new ArqReddVotingScenario("autoentrega-basic", 1, 4, 20.0);
+        sc.setMaxFutureHorizon(1000L);
         Captura logger = new Captura(csv);
         sc.AddNewLogger(logger);
         sc.run();
@@ -111,6 +112,7 @@ class BlockFinalizationLoggerAutoentregaTest {
         assertTrue(c.contains("-1=not measured (never zero)"), "sentinela: " + c);
         assertTrue(c.contains("TrafficUntilFinalization + Cb_autoentrega_B"), "conservacao declarada: " + c);
         assertTrue(c.contains("SimulatorVersion=" + LinkLoadRecorder.SIMULATOR_VERSION), "versao: " + c);
+        assertTrue(c.contains("Seed=1;"), "semente: " + c);
         List<String> brutas = Files.readAllLines(csv);
         assertTrue(brutas.get(0).startsWith("#") && brutas.get(0).contains("EXCLUDING self-delivery"),
                 "a declaracao esta na linha de comentario do arquivo: " + brutas.get(0));

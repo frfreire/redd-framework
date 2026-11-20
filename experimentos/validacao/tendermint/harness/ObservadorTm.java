@@ -222,7 +222,8 @@ public class ObservadorTm {
                 .messageOverheadBytes(Integer.parseInt(req(cli, "tm-message-overhead")))
                 .signatureSizeBytes(Integer.parseInt(req(cli, "tm-signature-size")))
                 .proposerSignatureSizeBytes(Integer.parseInt(req(cli, "tm-proposer-signature-size")))
-                .build();
+                
+                .maxFutureHorizon(1000L).build();
         config.validateFor(n);
 
         ByzantineConfig byz = null;

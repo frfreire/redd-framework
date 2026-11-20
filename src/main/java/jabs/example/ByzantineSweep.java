@@ -97,6 +97,21 @@ public class ByzantineSweep {
         return hasSelfDeliveryColumn(type) ? new StringBuilder(BASE_HEADER).append(SELF_DELIVERY_COLUMNS).toString() : BASE_HEADER;
     }
 
+    /** Teto de retencao do PBFT (VOTING): flag {@code --pbft-max-future-horizon} obrigatoria, sem padrao, {@code > 0}. */
+    static long pbftMaxFutureHorizon(java.util.Map<String, String> cli) {
+        String v = cli.get("pbft-max-future-horizon");
+        if (v == null || v.isBlank()) {
+            throw new IllegalArgumentException("tipo VOTING exige --pbft-max-future-horizon=valor (teto de retencao do PBFT; "
+                    + "obrigatorio, sem padrao; valor do estudo 1000)");
+        }
+        return Long.parseLong(v.trim());
+    }
+
+        /** Rodada 4 do D2: trial mede a autoentrega se a coluna existe e o valor nao e a sentinela -1; zero medido CONTA. */
+    static boolean contaAutoentrega(boolean comAutoentrega, double selfBytes) {
+        return comAutoentrega && selfBytes >= 0;
+    }
+
     /**
      * D2 (decisao do humano, 17/11/2026): linhas '#' que declaram a semantica, a semente, a versao do simulador e a
      * granularidade. So para os tipos que separam a autoentrega ({@link #hasSelfDeliveryColumn}); {@code seedRaw} e o valor
@@ -284,6 +299,7 @@ public class ByzantineSweep {
                                         configFor(type, n, f, seed, attack, sizing));
                                 String tmp = outDir.resolve("tmp/" + type + "/" + n + "n-" + f + "-" + t + ".csv")
                                         .toString();
+                                scenario.setMaxFutureHorizon(pbftMaxFutureHorizon(cli));
                                 Files.createDirectories(Paths.get(tmp).getParent());
                                 scenario.addMetricsLogger(tmp, metrics);
                                 scenario.run();
@@ -401,7 +417,7 @@ public class ByzantineSweep {
                         double trafficVal = metrics.getAverageTrafficPerBlock();
                         double empiricalBFTVal = metrics.getEmpiricalByzantineFaultTolerance();
                         double selfBytes = metrics.getAverageSelfDeliveryBytesPerBlock(); // D2: -1 = nao medido
-                        if (comAutoentrega && selfBytes >= 0) {
+                        if (contaAutoentrega(comAutoentrega, selfBytes)) {
                             double selfMb = selfBytes / (1024.0 * 1024.0); // mesma conversao de getAverageTrafficPerBlock
                             sumSelfMb += selfMb;
                             sumSelfMbSq += selfMb * selfMb;
@@ -582,7 +598,7 @@ public class ByzantineSweep {
 
     /** Flags que o programa le (as demais sao ignoradas com aviso no stderr). Array: sem colecao hash nem classe nova. */
     private static final String[] KNOWN = {"validators", "max-byz", "trials", "duration", "type", "attack",
-            "enable-tx", "tx-interval", "out", "seed", "turn-length", "epoch-length", "max-pdv-pct",
+            "enable-tx", "tx-interval", "out", "seed", "turn-length", "epoch-length", "max-pdv-pct", "pbft-max-future-horizon",
             NetworkSizing.FLAG, ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD};
 
     /** Flags aceitas, como conjunto (para testes e mensagens). */

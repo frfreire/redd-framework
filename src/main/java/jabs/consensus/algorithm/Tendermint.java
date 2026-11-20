@@ -142,7 +142,8 @@ public class Tendermint<B extends SingleParentBlock<B>, T extends Tx<T>> extends
         this.numAllParticipants = numAllParticipants;
         this.currentMainChainHead = localBlockTree.getGenesisBlock();
         this.core = new TendermintCore<>(self, numAllParticipants,
-                TendermintCore.roundRobin(numAllParticipants), this::proposeValue, this::isValidValue);
+                TendermintCore.roundRobin(numAllParticipants), this::proposeValue, this::isValidValue,
+                config.getMaxFutureHorizon());
     }
 
     /**

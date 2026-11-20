@@ -103,11 +103,28 @@ public class ArqReddVotingScenario extends AbstractScenario {
         this.metrics.setTotalValidators(numNodes);
     }
 
+    private Long maxFutureHorizon;
+
+    /**
+     * Teto de retencao do PBFT (paridade com o {@code maxFutureViewHorizon} do HotStuff). OBRIGATORIO e sem padrao:
+     * chame antes de {@code run()}; sem ele {@code createNetwork()} falha alto. Valor do estudo: 1000 (ADR-0015).
+     */
+    public void setMaxFutureHorizon(long maxFutureHorizon) {
+        if (maxFutureHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureHorizon deve ser > 0: " + maxFutureHorizon);
+        }
+        this.maxFutureHorizon = maxFutureHorizon;
+    }
+
     @Override
     public void createNetwork() {
+        if (maxFutureHorizon == null) {
+            throw new IllegalStateException("maxFutureHorizon e obrigatorio e nao tem padrao: chame setMaxFutureHorizon(long) "
+                    + "antes de run() (PARIDADE-teto-retencao-pbft-tendermint; valor do estudo 1000)");
+        }
         // Create pBFT-based network (voting consensus substrate)
         network = new PBFTLocalLANNetwork(randomnessEngine);
-        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig());
+        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig(maxFutureHorizon));
 
         // If Byzantine config exists, mark nodes as Byzantine
         if (byzantineConfig != null) {

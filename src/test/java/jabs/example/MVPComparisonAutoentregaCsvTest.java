@@ -68,7 +68,7 @@ class MVPComparisonAutoentregaCsvTest {
 
     @Test
     void arqGravaAditivoELegacyNaoGanhaColuna(@TempDir Path tmp) throws Exception {
-        MVPComparison.main(new String[] {"--protocols=ARQ", "--validators=4", "--trials=1", "--duration=20",
+        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=4", "--trials=1", "--duration=20",
                 "--seed=1", "--output=" + tmp});
         List<String> agg = Files.readAllLines(tmp.resolve("mvp-results.csv"));
         assertEquals("project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std", agg.get(0),
@@ -83,7 +83,7 @@ class MVPComparisonAutoentregaCsvTest {
         assertTrue(Double.parseDouble(f[3]) > 0, "PBFT mede autoentrega > 0: " + aut.get(aut.size() - 1));
         // o CSV por trial ganha a coluna no FIM
         String cabTrial = Files.readAllLines(tmp.resolve("arq-4v-t0.csv")).get(1);
-        assertTrue(cabTrial.endsWith(",TrafficConsensusUntilFinalization,Cb_autoentrega_B"), cabTrial);
+        assertTrue(cabTrial.endsWith(",TrafficConsensusUntilFinalization,Cb_autoentrega_B,Cb_autoentrega_consenso_B"), cabTrial); // rodada 4: PBFT ganha tambem a coluna so-consenso
     }
 
     @Test

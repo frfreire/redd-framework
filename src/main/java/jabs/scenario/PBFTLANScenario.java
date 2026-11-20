@@ -20,10 +20,23 @@ public class PBFTLANScenario extends AbstractScenario {
         this.simulationStopTime = simulationStopTime;
     }
 
+    private Long maxFutureHorizon;
+
+    /** Teto de retencao do PBFT: obrigatorio, sem padrao; chame antes de {@code run()} (valor do estudo 1000). */
+    public void setMaxFutureHorizon(long maxFutureHorizon) {
+        if (maxFutureHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureHorizon deve ser > 0: " + maxFutureHorizon);
+        }
+        this.maxFutureHorizon = maxFutureHorizon;
+    }
+
     @Override
     public void createNetwork() {
+        if (maxFutureHorizon == null) {
+            throw new IllegalStateException("maxFutureHorizon e obrigatorio e nao tem padrao: chame setMaxFutureHorizon(long)");
+        }
         network = new PBFTLocalLANNetwork(randomnessEngine);
-        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig());
+        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig(maxFutureHorizon));
     }
 
     @Override

@@ -23,7 +23,7 @@ class TendermintCoreTest {
     private static final int SELF = 3;
 
     private static TendermintCore<String> core() {
-        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h, (h, v) -> true);
+        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h, (h, v) -> true, 1000L);
     }
 
     private static TendermintProposal<String> prop(long h, int r, String v, int vr) {
@@ -415,7 +415,7 @@ class TendermintCoreTest {
     @Test
     void valorInvalidoRecebeNil() {
         TendermintCore<String> c = new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "ok",
-                (h, v) -> !v.startsWith("ruim"));
+                (h, v) -> !v.startsWith("ruim"), 1000L);
         c.start();
         List<TendermintAction<String>> as = c.onProposal(prop(0, 0, "ruim", -1));
         assertNull(votes(as, Type.PREVOTE).get(0).vote().value());
@@ -464,7 +464,7 @@ class TendermintCoreTest {
                 (h, v) -> {
                     alturasVistas.add(h);
                     return v.startsWith("h" + h + ":");
-                });
+                }, 1000L);
     }
 
     @Test
@@ -518,9 +518,45 @@ class TendermintCoreTest {
     @Test
     void argumentosInvalidos() {
         assertThrows(IllegalArgumentException.class, () -> new TendermintCore<String>(4, 4,
-                TendermintCore.roundRobin(4), h -> "v", (h, v) -> true));
+                TendermintCore.roundRobin(4), h -> "v", (h, v) -> true, 1000L));
         assertThrows(IllegalArgumentException.class, () -> new TendermintProposal<>(0, 1, "A", 1, 1));
         assertThrows(IllegalArgumentException.class, () -> new TendermintProposal<>(0, 1, null, -1, 1));
         assertThrows(IllegalArgumentException.class, () -> new TendermintVote<>(null, 0, 0, "A", 1));
+    }
+
+    // ---------- teto de retencao (PARIDADE-teto-retencao-pbft-tendermint) ----------
+
+    private static TendermintCore<String> coreComTeto(long teto) {
+        return new TendermintCore<>(SELF, N, TendermintCore.roundRobin(N), h -> "fresco-" + h, (h, v) -> true, teto);
+    }
+
+    @Test
+    void alturaNoLimiteDoTetoEhRetidaEUmAlemEhDescartada() {
+        TendermintCore<String> c = coreComTeto(5);
+        c.start(); // altura corrente 0
+        c.onVote(prevote(5, 0, "A", 0)); // distancia 5 == teto: retida
+        assertEquals(0, c.discardCount(TendermintDiscardReason.FUTURE_BEYOND_HORIZON));
+        assertEquals(1, c.futureMessages());
+        c.onVote(prevote(6, 0, "A", 0)); // distancia 6 > teto: descartada, nao entra na retencao
+        c.onProposal(prop(8, 0, "A", -1)); // proponente de (8, 0) nao e o proprio no
+        assertEquals(2, c.discardCount(TendermintDiscardReason.FUTURE_BEYOND_HORIZON));
+        assertEquals(1, c.futureMessages(), "o descartado nao ocupa a retencao");
+    }
+
+    @Test
+    void roundNoLimiteDoTetoEhRetidoEUmAlemEhDescartado() {
+        TendermintCore<String> c = coreComTeto(5);
+        c.start(); // altura 0, round 0
+        c.onVote(prevote(0, 5, "A", 0)); // round 5 - 0 == teto: aceito
+        assertEquals(0, c.discardCount(TendermintDiscardReason.FUTURE_BEYOND_HORIZON));
+        c.onVote(prevote(0, 6, "A", 0)); // 6 > teto: descartado
+        c.onVote(prevote(2, 6, "A", 1)); // altura futura: round conta a partir de 0 -> 6 > teto
+        assertEquals(2, c.discardCount(TendermintDiscardReason.FUTURE_BEYOND_HORIZON));
+    }
+
+    @Test
+    void tetoNaoPositivoFalhaAlto() {
+        assertThrows(IllegalArgumentException.class, () -> coreComTeto(0));
+        assertThrows(IllegalArgumentException.class, () -> coreComTeto(-3));
     }
 }

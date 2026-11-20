@@ -129,7 +129,7 @@ class ByzantineSweepAutoentregaCsvTest {
     @Test
     void conservacao_antigo_igual_novo_mais_coluna_contra_o_csv_bruto_por_trial() throws IOException {
         Path out = tmp.resolve("e2e").resolve("s.csv");
-        ByzantineSweep.run(new String[] {"--type=VOTING", "--validators=10", "--max-byz=1", "--trials=1", "--duration=40",
+        ByzantineSweep.run(new String[] {"--type=VOTING", "--pbft-max-future-horizon=1000", "--validators=10", "--max-byz=1", "--trials=1", "--duration=40",
                 "--attack=EQUIVOCATION", "--seed=1", "--out=" + out});
         List<String> linhas = Files.readAllLines(out);
         assertTrue(linhas.get(0).startsWith("# D2 ") && linhas.get(1).startsWith("# Seed=1 "), linhas.toString());

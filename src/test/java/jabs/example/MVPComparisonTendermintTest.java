@@ -26,7 +26,7 @@ class MVPComparisonTendermintTest {
             // FIXTURE somente de teste, nao e valor de pesquisa (ADR-0010 PI-16: a definir com o humano)
             "--tm-proposer-signature-size=80",
             // FIXTURE somente de teste, nao e valor de pesquisa (ADR-0010 PI-08: a definir com o humano)
-            "--tm-message-overhead=10"
+            "--tm-message-overhead=10", "--tm-max-future-horizon=1000"
     };
 
     /** Mapa mutavel a partir de pares chave, valor (Map.of so aceita ate 10 pares). */
@@ -51,7 +51,7 @@ class MVPComparisonTendermintTest {
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "2.0", "tm-prevote-delta", "0.25",
                 "tm-precommit-timeout", "3.0", "tm-precommit-delta", "0.1",
-                "tm-batch-size", "40", "tm-tx-size", "256", "tm-message-overhead", "12",
+                "tm-batch-size", "40", "tm-tx-size", "256", "tm-message-overhead", "12", "tm-max-future-horizon", "1000",
                 // FIXTURE somente de teste, nao e valor de pesquisa
                 "tm-signature-size", "48", "tm-proposer-signature-size", "52");
         TendermintConsensusConfig config =
@@ -71,7 +71,7 @@ class MVPComparisonTendermintTest {
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                 "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10",
+                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10", "tm-max-future-horizon", "1000",
                 "tm-proposer-signature-size", "80");
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli));
@@ -82,7 +82,7 @@ class MVPComparisonTendermintTest {
                 "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5",
                 "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
                 "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
-                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10",
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10", "--tm-max-future-horizon=1000",
                 "--tm-proposer-signature-size=80"};
         IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.main(args));
@@ -139,7 +139,7 @@ class MVPComparisonTendermintTest {
                         "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                         "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                         "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                        "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10");
+                        "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10", "tm-max-future-horizon", "1000");
                 cli.put("tm-signature-size", "64");
                 cli.put("tm-proposer-signature-size", "80");
                 cli.put(flag, ruim);
@@ -154,7 +154,7 @@ class MVPComparisonTendermintTest {
                 "--tm-propose-timeout=1.0", "--tm-propose-delta=0",
                 "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
                 "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
-                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64", "--tm-message-overhead=10",
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-signature-size=64", "--tm-message-overhead=10", "--tm-max-future-horizon=1000",
                 "--tm-proposer-signature-size=80"};
         IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.main(args));
@@ -174,7 +174,7 @@ class MVPComparisonTendermintTest {
                 "tm-propose-timeout", "1.0", "tm-propose-delta", "0.5",
                 "tm-prevote-timeout", "1.0", "tm-prevote-delta", "0.5",
                 "tm-precommit-timeout", "1.0", "tm-precommit-delta", "0.5",
-                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10",
+                "tm-batch-size", "20", "tm-tx-size", "512", "tm-message-overhead", "10", "tm-max-future-horizon", "1000",
                 "tm-signature-size", "64");
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.parseTendermintConfigIfRequested(List.of("TENDERMINT"), cli));
@@ -190,7 +190,7 @@ class MVPComparisonTendermintTest {
                 "--tm-propose-timeout=1.0", "--tm-propose-delta=0.5",
                 "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
                 "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5",
-                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10",
+                "--tm-batch-size=20", "--tm-tx-size=512", "--tm-message-overhead=10", "--tm-max-future-horizon=1000",
                 "--tm-signature-size=64"};
         IllegalArgumentException main = assertThrows(IllegalArgumentException.class,
                 () -> MVPComparison.main(args));

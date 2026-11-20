@@ -46,6 +46,7 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
     private final int messageOverheadBytes;
     private final int signatureSizeBytes;
     private final int proposerSignatureSizeBytes;
+    private final long maxFutureHorizon;
 
     private TendermintConsensusConfig(Builder b) {
         if (b.timeouts == null) {
@@ -87,7 +88,15 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
         if (b.messageOverheadBytes < 0) {
             throw new IllegalArgumentException("messageOverheadBytes deve ser >= 0: " + b.messageOverheadBytes);
         }
+        if (b.maxFutureHorizon == null) {
+            throw new IllegalStateException("maxFutureHorizon e obrigatorio e nao tem padrao"
+                    + " (teto de retencao; paridade com o HotStuff; valor do estudo 1000, ADR-0015)");
+        }
+        if (b.maxFutureHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureHorizon deve ser > 0: " + b.maxFutureHorizon);
+        }
         blockSizeBytes(b.batchSize, b.txSizeBytes);
+        this.maxFutureHorizon = b.maxFutureHorizon;
         this.timeouts = b.timeouts;
         this.batchSize = b.batchSize;
         this.txSizeBytes = b.txSizeBytes;
@@ -145,6 +154,8 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
     /** Bytes de assinatura por voto; parametro de pesquisa sem padrao (ADR-0010 PI-08/PI-16). */
     public int getSignatureSizeBytes() { return signatureSizeBytes; }
     /** Bytes de assinatura do proponente por proposta; separado do voto; sem padrao (ADR-0010 PI-08/PI-16). */
+    /** Teto de retencao de alturas e rounds futuros (&gt; 0). */
+    public long getMaxFutureHorizon() { return maxFutureHorizon; }
     public int getProposerSignatureSizeBytes() { return proposerSignatureSizeBytes; }
 
     public static final class Builder {
@@ -154,6 +165,7 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
         private Integer messageOverheadBytes;
         private Integer signatureSizeBytes;
         private Integer proposerSignatureSizeBytes;
+        private Long maxFutureHorizon;
 
         private Builder() { }
 
@@ -166,6 +178,8 @@ public final class TendermintConsensusConfig implements ConsensusAlgorithmConfig
         public Builder signatureSizeBytes(int v) { this.signatureSizeBytes = v; return this; }
         /** Tamanho da assinatura do proponente na proposta em bytes (&gt; 0), separado do voto. Obrigatorio, sem padrao. */
         public Builder proposerSignatureSizeBytes(int v) { this.proposerSignatureSizeBytes = v; return this; }
+        /** Teto de retencao de alturas e rounds futuros (&gt; 0). Obrigatorio, sem padrao. */
+        public Builder maxFutureHorizon(long v) { this.maxFutureHorizon = v; return this; }
 
         /**
          * @throws IllegalStateException se timeouts, batchSize, txSizeBytes, messageOverheadBytes, signatureSizeBytes ou proposerSignatureSizeBytes nao foram informados

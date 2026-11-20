@@ -115,11 +115,34 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             base = base.concat("      Cb_autoentrega_B=bytes the node delivered to itself (no network hop counted), "
                     .concat("EXCLUDED from TrafficUntilFinalization/TrafficConsensusUntilFinalization (D2, ADR-0015); same node and "
                     .concat("height as the Cb columns; -1=not measured (never zero)")));
+            if (selfDeliveryConsensusColumn()) {
+                base = base.concat("      Cb_autoentrega_consenso_B=consensus-only part of Cb_autoentrega_B (same node and height; -1=not measured)");
+            }
+            base = base.concat("      Seed=").concat(Long.toString(scenario.getSeed()))
+                    .concat("; SimulatorVersion=").concat(LinkLoadRecorder.SIMULATOR_VERSION);
         }
         return base;
     }
 
     private Boolean selfDeliveryColumn;
+    private Boolean selfDeliveryConsensusColumn;
+
+    /** Rodada 4 do D2: coluna so-consenso da autoentrega existe so no PBFT (aditiva, depois de Cb_autoentrega_B). */
+    private boolean selfDeliveryConsensusColumn() {
+        if (selfDeliveryConsensusColumn == null) {
+            boolean on = false;
+            if (selfDeliveryColumn() && this.scenario.getNetwork() != null) {
+                for (Object o : this.scenario.getNetwork().getAllNodes()) {
+                    if (o instanceof PeerBlockchainNode) {
+                        on = ((PeerBlockchainNode<?, ?>) o).getConsensusAlgorithm() instanceof jabs.consensus.algorithm.PBFT;
+                        break;
+                    }
+                }
+            }
+            selfDeliveryConsensusColumn = on;
+        }
+        return selfDeliveryConsensusColumn;
+    }
 
     /**
      * D2: a coluna de autoentrega existe so se o consenso dos nos separa a autoentrega
@@ -513,6 +536,10 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
         if (selfDeliveryColumn()) { // D2: coluna ADITIVA no fim; nome e posicao das existentes intactos
             cols = java.util.Arrays.copyOf(cols, cols.length + 1);
             cols[cols.length - 1] = "Cb_autoentrega_B";
+            if (selfDeliveryConsensusColumn()) {
+                cols = java.util.Arrays.copyOf(cols, cols.length + 1);
+                cols[cols.length - 1] = "Cb_autoentrega_consenso_B";
+            }
         }
         return cols;
     }
@@ -551,6 +578,10 @@ public class EnhancedBlockFinalizationLogger extends AbstractCSVLogger {
             if (selfDeliveryColumn()) { // D2: autoentrega do mesmo no e bloco; -1 = nao medido
                 row = java.util.Arrays.copyOf(row, row.length + 1);
                 row[row.length - 1] = Long.toString(finalizationEvent.getSelfDeliveryTraffic());
+                if (selfDeliveryConsensusColumn()) {
+                    row = java.util.Arrays.copyOf(row, row.length + 1);
+                    row[row.length - 1] = Long.toString(finalizationEvent.getSelfDeliveryConsensusTraffic());
+                }
             }
             return row;
         }

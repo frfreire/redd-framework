@@ -27,6 +27,9 @@ import java.nio.file.Paths;
  * Status: Ready for hybrid architecture validation
  */
 public class HybridArchitectureValidation {
+
+    /** Teto de retencao do PBFT usado por este exemplo: valor do estudo (ADR-0015), explicito porque o parametro nao tem padrao. */
+    private static final long STUDY_MAX_FUTURE_HORIZON = 1000L;
     
     public static void main(String[] args) throws IOException {
         System.out.println("╔════════════════════════════════════════════════════════╗");
@@ -59,6 +62,7 @@ public class HybridArchitectureValidation {
                 simulationTime
             );
             
+            baselineScenario.setMaxFutureHorizon(STUDY_MAX_FUTURE_HORIZON);
             baselineScenario.addMetricsLogger("output/hybrid-validation/baseline-metrics.csv");
             
             System.out.println("Running baseline simulation (100% public transactions)...");
@@ -100,6 +104,7 @@ public class HybridArchitectureValidation {
                 nodeDistribution
             );
             
+            hybridScenario.setMaxFutureHorizon(STUDY_MAX_FUTURE_HORIZON);
             hybridScenario.addMetricsLogger("output/hybrid-validation/hybrid-metrics.csv");
             
             System.out.println("Running hybrid simulation...");
@@ -152,6 +157,7 @@ public class HybridArchitectureValidation {
                         ByzantineConfig.AttackType.EQUIVOCATION.name(), randomSeed + 2)
             );
             
+            byzantineHybrid.setMaxFutureHorizon(STUDY_MAX_FUTURE_HORIZON);
             byzantineHybrid.addMetricsLogger("output/hybrid-validation/hybrid-byzantine-metrics.csv");
             
             System.out.println("Running hybrid simulation with Byzantine validators...");

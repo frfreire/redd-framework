@@ -66,7 +66,7 @@ class PBFTQuorumTest {
         RandomnessEngine rng = new RandomnessEngine(5);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig());
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
         PBFTNode receptor = net.getAllNodes().get(0);
         @SuppressWarnings("unchecked")
         PBFT<PBFTBlock, ?> pbft = (PBFT<PBFTBlock, ?>) receptor.getConsensusAlgorithm();
@@ -255,7 +255,7 @@ class PBFTQuorumTest {
         RandomnessEngine rng = new RandomnessEngine(seed);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig());
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
         for (int c : crash) net.getAllNodes().get(c).crash();
         net.startConsensusRound(sim, stop);
 

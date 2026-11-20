@@ -61,7 +61,7 @@ class AutoentregaUniformeTest {
 
         @SuppressWarnings("unchecked")
         CenaPbft() {
-            net.populateNetwork(sim, 4, new jabs.consensus.config.PBFTConsensusConfig());
+            net.populateNetwork(sim, 4, new jabs.consensus.config.PBFTConsensusConfig(1000L));
             receptor = net.getAllNodes().get(1);
             outro = net.getAllNodes().get(0);
             pbft = (PBFT<PBFTBlock, ?>) receptor.getConsensusAlgorithm();
@@ -106,7 +106,7 @@ class AutoentregaUniformeTest {
         RandomnessEngine rng = new RandomnessEngine(1);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, 7, new jabs.consensus.config.PBFTConsensusConfig());
+        net.populateNetwork(sim, 7, new jabs.consensus.config.PBFTConsensusConfig(1000L));
         net.startConsensusRound(sim, 30.0);
         int vistos = 0;
         long total = 0;

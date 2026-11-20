@@ -101,8 +101,17 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
         COMMITTING
     }
 
-    public PBFT(LocalBlockTree<B> localBlockTree, int numAllParticipants) {
+    /**
+     * @param maxFutureHorizon teto de retencao: bloco a mais de {@code maxFutureHorizon} alturas a frente da cabeca da
+     *                         cadeia deste no tem o voto descartado sem guardar e seus bytes vao a um contador agregado
+     *                         (paridade com o {@code maxFutureViewHorizon} do HotStuff). {@code > 0}, sem padrao.
+     */
+    public PBFT(LocalBlockTree<B> localBlockTree, int numAllParticipants, long maxFutureHorizon) {
         super(localBlockTree);
+        if (maxFutureHorizon <= 0L) {
+            throw new IllegalArgumentException("maxFutureHorizon deve ser > 0: " + maxFutureHorizon);
+        }
+        this.maxFutureHorizon = maxFutureHorizon;
         this.numAllParticipants = numAllParticipants;
         this.maxFaulty = maxFaultyNodes(numAllParticipants);
         this.requiredVotes = quorumSize(numAllParticipants);
@@ -187,6 +196,25 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     private long afterFinalizationTotalBytes;
     private long afterFinalizationConsensusBytes;
     private long conflictingTotalBytes;
+    // PARIDADE-teto-retencao-pbft-tendermint: votos de blocos alem do teto de alturas a frente sao descartados e contados
+    private final long maxFutureHorizon;
+    private long beyondHorizonTotalBytes;
+    private long beyondHorizonConsensusBytes;
+    private long discardedBeyondHorizon;
+
+    /** Bloco a mais de {@code maxFutureHorizon} alturas a frente da cabeca da cadeia deste no (so olha altura; sem overflow). */
+    private boolean beyondHorizon(B block) {
+        return (long) block.getHeight() - (long) currentMainChainHead.getHeight() > maxFutureHorizon;
+    }
+
+    /** Votos descartados por estarem alem do teto de retencao (nao retidos). */
+    public long getDiscardedBeyondHorizon() {
+        return discardedBeyondHorizon;
+    }
+
+    public long getMaxFutureHorizon() {
+        return maxFutureHorizon;
+    }
     private long conflictingConsensusBytes;
 
     /**
@@ -199,6 +227,10 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     public void addBlockTraffic(B block, long bytes) {
         if (block instanceof PBFTConflictingBlock) {
             conflictingTotalBytes += bytes;
+            return;
+        }
+        if (beyondHorizon(block)) {
+            beyondHorizonTotalBytes += bytes;
             return;
         }
         if (committedBlocks.contains(block)) {
@@ -216,6 +248,10 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     public void addConsensusMessageTraffic(B block, long bytes) {
         if (block instanceof PBFTConflictingBlock) {
             conflictingConsensusBytes += bytes;
+            return;
+        }
+        if (beyondHorizon(block)) {
+            beyondHorizonConsensusBytes += bytes;
             return;
         }
         if (committedBlocks.contains(block)) {
@@ -324,11 +360,12 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
      * Versao C_B_total; {@link #getAccountedConsensusBytes()} e a de C_B_consenso.
      */
     public long getAccountedVoteBytes() {
-        return attributedTotalBytes + afterFinalizationTotalBytes + conflictingTotalBytes;
+        return attributedTotalBytes + afterFinalizationTotalBytes + conflictingTotalBytes + beyondHorizonTotalBytes;
     }
 
     public long getAccountedConsensusBytes() {
-        return attributedConsensusBytes + afterFinalizationConsensusBytes + conflictingConsensusBytes;
+        return attributedConsensusBytes + afterFinalizationConsensusBytes + conflictingConsensusBytes
+                + beyondHorizonConsensusBytes;
     }
 
     /** Entradas abertas nos mapas por bloco (blockTraffic): nunca inclui bloco conflitante. */
@@ -350,6 +387,10 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
         if (vote instanceof PBFTBlockVote) { // for the time being, the view change votes are not supported
             PBFTBlockVote<B> blockVote = (PBFTBlockVote<B>) vote;
             B block = blockVote.getBlock();
+            if (!(block instanceof PBFTConflictingBlock) && beyondHorizon(block)) {
+                discardedBeyondHorizon++; // teto de retencao: nao guarda nem conta o voto
+                return;
+            }
             switch (blockVote.getVoteType()) {
                 case PRE_PREPARE :
                     if (!this.localBlockTree.contains(block)) {

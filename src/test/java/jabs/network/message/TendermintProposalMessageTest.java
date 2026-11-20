@@ -28,7 +28,8 @@ class TendermintProposalMessageTest {
                 .messageOverheadBytes(overhead)
                 .signatureSizeBytes(voteSig)
                 .proposerSignatureSizeBytes(proposerSig)
-                .build();
+                
+                .maxFutureHorizon(1000L).build();
     }
 
     private static TendermintProposalMessage proposta(TendermintConsensusConfig cfg) {

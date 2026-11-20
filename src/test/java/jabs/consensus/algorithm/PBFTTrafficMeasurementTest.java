@@ -43,7 +43,7 @@ class PBFTTrafficMeasurementTest {
         RandomnessEngine rng = new RandomnessEngine(seed);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig());
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
         if (noSilencioso != null) {
             net.getAllNodes().get(noSilencioso).crash();
         }
@@ -69,7 +69,7 @@ class PBFTTrafficMeasurementTest {
         RandomnessEngine rng = new RandomnessEngine(7);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, 4, new jabs.consensus.config.PBFTConsensusConfig());
+        net.populateNetwork(sim, 4, new jabs.consensus.config.PBFTConsensusConfig(1000L));
         PBFTNode receptor = net.getAllNodes().get(1);
         PBFTNode emissor = net.getAllNodes().get(0);
         PBFT<PBFTBlock, ?> pbft = (PBFT<PBFTBlock, ?>) receptor.getConsensusAlgorithm();
@@ -103,7 +103,7 @@ class PBFTTrafficMeasurementTest {
         RandomnessEngine rng = new RandomnessEngine(7);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, 4, new jabs.consensus.config.PBFTConsensusConfig());
+        net.populateNetwork(sim, 4, new jabs.consensus.config.PBFTConsensusConfig(1000L));
         PBFTNode receptor = net.getAllNodes().get(1);
         PBFTNode emissor = net.getAllNodes().get(0);
         PBFT<PBFTBlock, ?> pbft = (PBFT<PBFTBlock, ?>) receptor.getConsensusAlgorithm();
