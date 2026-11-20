@@ -26,6 +26,7 @@ class ByzantineContagemInteiraCenariosTest {
     private static void criaRede(AbstractScenario s) throws Exception {
         if (s instanceof jabs.scenario.ArqReddVotingScenario) {
             ((jabs.scenario.ArqReddVotingScenario) s).setMaxFutureHorizon(1000L);
+            ((jabs.scenario.ArqReddVotingScenario) s).setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         }
         Method m = AbstractScenario.class.getDeclaredMethod("createNetwork");
         m.setAccessible(true);

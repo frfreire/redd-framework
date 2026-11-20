@@ -57,7 +57,7 @@ def comando(grupo, base, atual, semente, saida, fx):
     if grupo == "geral":
         return comum + ["--casos", "ARQ:10:60,AMBIFY:10:60,MCO2:50:600,OFFSET:40:20000,EARTH:40:20000,DAGSPER:10:600,"
                         "TENDERMINT:4:20,TENDERMINT:7:20", "--baseline-tem", "TENDERMINT"] + extras("TENDERMINT", flags_tm(fx)) \
-            + extras("ARQ", [("--pbft-max-future-horizon", "1000")]) + extras("AMBIFY", [("--n-semantics", "legacy")]) \
+            + extras("ARQ", [("--pbft-max-future-horizon", "1000"), ("--pbft-leader-policy", "ROTATING")]) + extras("AMBIFY", [("--n-semantics", "legacy")]) \
             + extras("MCO2", [("--n-semantics", "legacy")])
     if grupo == "tree":
         return comum + ["--casos", "TREE:50:6000"] + HASH2 + extras("TREE", [("--n-semantics", "legacy")])

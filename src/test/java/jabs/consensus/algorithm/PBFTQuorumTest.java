@@ -66,7 +66,7 @@ class PBFTQuorumTest {
         RandomnessEngine rng = new RandomnessEngine(5);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         PBFTNode receptor = net.getAllNodes().get(0);
         @SuppressWarnings("unchecked")
         PBFT<PBFTBlock, ?> pbft = (PBFT<PBFTBlock, ?>) receptor.getConsensusAlgorithm();
@@ -255,7 +255,7 @@ class PBFTQuorumTest {
         RandomnessEngine rng = new RandomnessEngine(seed);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         // T6 / ADR-0007: o primario da altura 1 e o no 0 e, SEM view change, um primario em crash trava a cadeia. Os
         // indices do parametro contam a partir do FIM da lista (0 = ultimo no), para o primeiro bloco poder ser proposto.
         for (int c : crash) net.getAllNodes().get(n - 1 - c).crash();

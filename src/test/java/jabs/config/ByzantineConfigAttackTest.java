@@ -128,7 +128,7 @@ class ByzantineConfigAttackTest {
         EthereumBlock gEth = EthereumBlock.generateGenesisBlock(2097);
         BitcoinBlockWithoutTx gBtc = BitcoinBlockWithoutTx.generateGenesisBlock(225);
         Map<String, AbstractConsensusAlgorithm<?, ?>> m = new java.util.LinkedHashMap<>();
-        m.put("PBFT", new PBFT<>(new LocalBlockTree<>(PBFT_GENESIS_BLOCK), 4, 1000L));
+        m.put("PBFT", new PBFT<>(new LocalBlockTree<>(PBFT_GENESIS_BLOCK), 4, 1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         m.put("CasperFFG", new CasperFFG<>(new LocalBlockTree<>(gEth), new CasperFFGConfig<>(gEth, 15, 14, 10)));
         m.put("Parlia", new Parlia<>(new LocalBlockTree<>(gEth), 3, 21));
         m.put("Nakamoto", new NakamotoConsensus<>(new LocalBlockTree<>(gBtc),

@@ -37,7 +37,7 @@ class PBFTTetoRetencaoTest {
         RandomnessEngine rng = new RandomnessEngine(5);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, 4, new PBFTConsensusConfig(TETO));
+        net.populateNetwork(sim, 4, new PBFTConsensusConfig(TETO, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         PBFTNode receptor = net.getAllNodes().get(0);
         @SuppressWarnings("unchecked")
         PBFT<PBFTBlock, ?> pbft = (PBFT<PBFTBlock, ?>) receptor.getConsensusAlgorithm();
@@ -114,10 +114,10 @@ class PBFTTetoRetencaoTest {
 
     @Test
     void tetoInvalidoOuAusenteFalhaAlto() {
-        assertThrows(IllegalArgumentException.class, () -> new PBFTConsensusConfig(0L));
-        assertThrows(IllegalArgumentException.class, () -> new PBFTConsensusConfig(-1L));
+        assertThrows(IllegalArgumentException.class, () -> new PBFTConsensusConfig(0L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
+        assertThrows(IllegalArgumentException.class, () -> new PBFTConsensusConfig(-1L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         assertThrows(IllegalArgumentException.class, () -> new PBFT<PBFTBlock, jabs.ledgerdata.pbft.PBFTTx>(
-                new jabs.consensus.blockchain.LocalBlockTree<>(PBFT_GENESIS_BLOCK), 4, 0L));
+                new jabs.consensus.blockchain.LocalBlockTree<>(PBFT_GENESIS_BLOCK), 4, 0L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         PBFTLANScenario sc = new PBFTLANScenario("sem-teto", 1L, 4, 5.0);
         IllegalStateException e = assertThrows(IllegalStateException.class, sc::run);
         assertTrue(e.getMessage().contains("maxFutureHorizon"), e.getMessage());

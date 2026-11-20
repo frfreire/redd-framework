@@ -595,7 +595,7 @@ class MVPComparisonHotStuffTest {
     @Test
     void outrosProtocolosNaoExigemFlagsHs(@TempDir Path tmp) throws Exception {
         Path out = tmp.resolve("arq");
-        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=5",
+        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=7", "--trials=1", "--duration=5",
                 "--seed=1", "--output=" + out, "--csv-out=" + out.resolve("r.csv")});
         assertTrue(Files.readString(out.resolve("r.csv")).contains("ARQ;7;"));
     }

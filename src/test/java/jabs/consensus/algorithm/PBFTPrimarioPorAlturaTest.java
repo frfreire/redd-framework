@@ -41,7 +41,7 @@ class PBFTPrimarioPorAlturaTest {
     @Test
     void primarioPorAlturaERotacionaDe0() {
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(new RandomnessEngine(5));
-        net.populateNetwork(new Simulator(), 4, new PBFTConsensusConfig(1000L));
+        net.populateNetwork(new Simulator(), 4, new PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         PBFT<PBFTBlock, ?> p = pbft(net.getAllNodes().get(0));
         assertEquals(0, p.primaryForHeight(1), "altura 1: no 0");
         assertEquals(1, p.primaryForHeight(2));
@@ -55,7 +55,7 @@ class PBFTPrimarioPorAlturaTest {
         RandomnessEngine rng = new RandomnessEngine(5);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, 4, new PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, 4, new PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         PBFTNode receptor = net.getAllNodes().get(2);
         PBFT<PBFTBlock, ?> p = pbft(receptor);
         PBFTBlock b = BlockFactory.samplePBFTBlockWithTx(sim, rng, net.getAllNodes().get(1), PBFT_GENESIS_BLOCK, 5);
@@ -77,7 +77,7 @@ class PBFTPrimarioPorAlturaTest {
         committed.setAccessible(true);
         for (int n : new int[] {4, 7}) {
             PBFTLANScenario sc = new PBFTLANScenario("t6", 1L, n, 40.0);
-            sc.setMaxFutureHorizon(1000L);
+            sc.setMaxFutureHorizon(1000L); sc.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
             sc.run();
             TreeMap<Long, long[]> porAltura = new TreeMap<>();
             for (PBFTNode nd : sc.getNetwork().getAllNodes()) {
@@ -108,7 +108,7 @@ class PBFTPrimarioPorAlturaTest {
     void semPropostaPeriodicaDoGenesis() throws Exception {
         // Antes: a cada 5 s o agendador propunha outro filho do genesis (cadeia nova). Agora so ha UMA proposta inicial.
         PBFTLANScenario sc = new PBFTLANScenario("t6b", 1L, 4, 30.0);
-        sc.setMaxFutureHorizon(1000L);
+        sc.setMaxFutureHorizon(1000L); sc.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         sc.run();
         List<Integer> alturasComMaisDeUmPrePrepare = new ArrayList<>();
         for (PBFTNode nd : sc.getNetwork().getAllNodes()) {

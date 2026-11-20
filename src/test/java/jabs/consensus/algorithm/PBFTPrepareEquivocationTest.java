@@ -50,7 +50,7 @@ class PBFTPrepareEquivocationTest {
         RandomnessEngine rng = new RandomnessEngine(5);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         List<PBFTNode> todos = new ArrayList<>(net.getAllNodes());
         PBFTNode r = todos.get(Math.min(R, n - 1));
         if (ataque != null) {
@@ -360,7 +360,7 @@ class PBFTPrepareEquivocationTest {
         RandomnessEngine rng = new RandomnessEngine(semente);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         ByzantineConfig cfg = new ByzantineConfig(n, bizantinos, "EQUIVOCATION", semente);
         for (int id : bizantinos) {
             net.getAllNodes().get(id).getConsensusAlgorithm().setByzantineConfig(cfg);
@@ -483,7 +483,7 @@ class PBFTPrepareEquivocationTest {
         RandomnessEngine rng = new RandomnessEngine(semente);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         if (ataque != null) {
             ByzantineConfig cfg = new ByzantineConfig(n, bizantinos, ataque, semente);
             for (int id : bizantinos) net.getAllNodes().get(id).getConsensusAlgorithm().setByzantineConfig(cfg);
@@ -553,7 +553,7 @@ class PBFTPrepareEquivocationTest {
         RandomnessEngine rng = new RandomnessEngine(1);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         ByzantineConfig cfg = new ByzantineConfig(n, bizantinos, "EQUIVOCATION", 1);
         for (int id : bizantinos) net.getAllNodes().get(id).getConsensusAlgorithm().setByzantineConfig(cfg);
         net.startConsensusRound(sim, 60.0);

@@ -97,6 +97,16 @@ public class ByzantineSweep {
         return hasSelfDeliveryColumn(type) ? new StringBuilder(BASE_HEADER).append(SELF_DELIVERY_COLUMNS).toString() : BASE_HEADER;
     }
 
+    /** Politica de lideranca do PBFT (VOTING; PI-14): {@code --pbft-leader-policy=STABLE|ROTATING}, obrigatoria e sem padrao. */
+    static jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy pbftLeaderPolicy(java.util.Map<String, String> cli) {
+        String v = cli.get("pbft-leader-policy");
+        if (v == null || v.isBlank()) {
+            throw new IllegalArgumentException("tipo VOTING exige --pbft-leader-policy=STABLE|ROTATING (politica de lideranca do PBFT; "
+                    + "obrigatoria, sem padrao; STABLE = modo do estudo, PI-14)");
+        }
+        return jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.fromFlag(v);
+    }
+
     /** Teto de retencao do PBFT (VOTING): flag {@code --pbft-max-future-horizon} obrigatoria, sem padrao, {@code > 0}. */
     static long pbftMaxFutureHorizon(java.util.Map<String, String> cli) {
         String v = cli.get("pbft-max-future-horizon");
@@ -305,6 +315,7 @@ public class ByzantineSweep {
                                 String tmp = outDir.resolve("tmp/" + type + "/" + n + "n-" + f + "-" + t + ".csv")
                                         .toString();
                                 scenario.setMaxFutureHorizon(pbftMaxFutureHorizon(cli));
+                                scenario.setLeaderPolicy(pbftLeaderPolicy(cli));
                                 Files.createDirectories(Paths.get(tmp).getParent());
                                 scenario.addMetricsLogger(tmp, metrics);
                                 scenario.run();
@@ -603,7 +614,7 @@ public class ByzantineSweep {
 
     /** Flags que o programa le (as demais sao ignoradas com aviso no stderr). Array: sem colecao hash nem classe nova. */
     private static final String[] KNOWN = {"validators", "max-byz", "trials", "duration", "type", "attack",
-            "enable-tx", "tx-interval", "out", "seed", "turn-length", "epoch-length", "max-pdv-pct", "pbft-max-future-horizon",
+            "enable-tx", "tx-interval", "out", "seed", "turn-length", "epoch-length", "max-pdv-pct", "pbft-max-future-horizon", "pbft-leader-policy",
             NetworkSizing.FLAG, ByzantineConfig.ALLOW_BEYOND_BFT_THRESHOLD};
 
     /** Flags aceitas, como conjunto (para testes e mensagens). */

@@ -34,7 +34,7 @@ class EnhancedLoggerAutoentregaConsensoTest {
     void pbftGanhaColunaDeAutoentregaSoConsensoNoFimComSementeEVersao(@TempDir Path dir) throws IOException {
         Path csv = dir.resolve("arq-enhanced.csv");
         ArqReddVotingScenario sc = new ArqReddVotingScenario("autoentrega-enhanced", 7, 4, 20.0);
-        sc.setMaxFutureHorizon(1000L);
+        sc.setMaxFutureHorizon(1000L); sc.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         sc.AddNewLogger(new EnhancedBlockFinalizationLogger(csv, sc.getMetrics()));
         sc.run();
 

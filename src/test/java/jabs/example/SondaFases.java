@@ -55,7 +55,7 @@ public final class SondaFases {
     public static void main(String[] a) throws Exception {
         boolean on = !a[0].equals("off");
         ArqReddVotingScenario s = new ArqReddVotingScenario("ARQ-fases", 1L, 7, 30.0);
-        s.setMaxFutureHorizon(1000L);
+        s.setMaxFutureHorizon(1000L); s.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         s.AddNewLogger(new Sonda("A"));
         if (on) {
             s.AddNewLogger(new LinkLoadRecorder(System.getProperty("java.io.tmpdir") + "/sonda-fases", "ARQ", 1L, 10.0));

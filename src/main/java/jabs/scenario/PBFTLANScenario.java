@@ -42,6 +42,15 @@ public class PBFTLANScenario extends AbstractScenario {
     }
 
     private Long maxFutureHorizon;
+    private PBFTConsensusConfig.LeaderPolicy leaderPolicy;
+
+    /** Politica de lideranca do PBFT (PI-14): obrigatoria, sem padrao; chame antes de {@code run()}. */
+    public void setLeaderPolicy(PBFTConsensusConfig.LeaderPolicy leaderPolicy) {
+        if (leaderPolicy == null) {
+            throw new IllegalArgumentException("leaderPolicy e obrigatorio e nao tem padrao (STABLE ou ROTATING)");
+        }
+        this.leaderPolicy = leaderPolicy;
+    }
 
     /** Teto de retencao do PBFT: obrigatorio, sem padrao; chame antes de {@code run()} (valor do estudo 1000). */
     public void setMaxFutureHorizon(long maxFutureHorizon) {
@@ -57,7 +66,10 @@ public class PBFTLANScenario extends AbstractScenario {
             throw new IllegalStateException("maxFutureHorizon e obrigatorio e nao tem padrao: chame setMaxFutureHorizon(long)");
         }
         network = new PBFTLocalLANNetwork(randomnessEngine);
-        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig(maxFutureHorizon));
+        if (leaderPolicy == null) {
+            throw new IllegalStateException("leaderPolicy e obrigatorio e nao tem padrao: chame setLeaderPolicy(...)");
+        }
+        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig(maxFutureHorizon, leaderPolicy));
     }
 
     @Override
