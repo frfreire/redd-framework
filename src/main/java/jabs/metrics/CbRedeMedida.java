@@ -2,6 +2,7 @@ package jabs.metrics;
 
 import jabs.consensus.algorithm.AbstractChainBasedConsensus;
 import jabs.consensus.algorithm.HotStuff;
+import jabs.consensus.algorithm.PBFT;
 import jabs.consensus.algorithm.Tendermint;
 import jabs.network.node.nodes.PeerBlockchainNode;
 
@@ -141,6 +142,8 @@ public final class CbRedeMedida {
                 ledgers.add(((HotStuff<?, ?>) ca).getHeightLedger());
             } else if (ca instanceof Tendermint) {
                 ledgers.add(((Tendermint<?, ?>) ca).getHeightLedger());
+            } else if (ca instanceof PBFT) {
+                ledgers.add(((PBFT<?, ?>) ca).getHeightLedger());
             }
         }
         if (ledgers.isEmpty()) {

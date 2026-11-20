@@ -1,6 +1,8 @@
 package jabs.scenario;
 
 import jabs.consensus.config.PBFTConsensusConfig;
+import jabs.log.EnhancedBlockFinalizationLogger;
+import jabs.metrics.SimulationMetrics;
 import jabs.ledgerdata.pbft.PBFTPrePrepareVote;
 import jabs.network.message.VoteMessage;
 import jabs.ledgerdata.BlockFactory;
@@ -8,16 +10,35 @@ import jabs.network.networks.pbft.PBFTLocalLANNetwork;
 import jabs.network.node.nodes.Node;
 import jabs.network.node.nodes.pbft.PBFTNode;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import static jabs.network.node.nodes.pbft.PBFTNode.PBFT_GENESIS_BLOCK;
 
 public class PBFTLANScenario extends AbstractScenario {
     protected int numNodes;
     protected double simulationStopTime;
+    private final SimulationMetrics metrics = new SimulationMetrics();
 
     public PBFTLANScenario(String name, long seed, int numNodes, double simulationStopTime) {
         super(name, seed);
         this.numNodes = numNodes;
         this.simulationStopTime = simulationStopTime;
+        this.metrics.setTotalValidators(numNodes);
+        this.metrics.setConsensusType(SimulationMetrics.ConsensusType.VOTING);
+    }
+
+    /** Logger de metricas por bloco gravando em {@code outputPath} (mesmo do Tendermint/HotStuff). */
+    public void addMetricsLogger(String outputPath) throws IOException {
+        this.AddNewLogger(new EnhancedBlockFinalizationLogger(Paths.get(outputPath), this.metrics));
+    }
+
+    public SimulationMetrics getMetrics() {
+        return metrics;
+    }
+
+    public jabs.network.networks.pbft.PBFTLocalLANNetwork getNetwork() {
+        return (jabs.network.networks.pbft.PBFTLocalLANNetwork) network;
     }
 
     private Long maxFutureHorizon;

@@ -11,7 +11,7 @@
  "t_viva_s": 20.0,
  "min_exec": 6,
  "attack": "EQUIVOCATION",
- "flag_fora_da_faixa": "--allow-beyond-bft-threshold=true (no ObservadorTm; o MVPComparison NAO le --attack para TENDERMINT, ver PREREGISTRO secao 6)",
+ "flag_fora_da_faixa": "--allow-beyond-bft-threshold=true (no ObservadorTm; V-B segue pelo ObservadorTm mesmo depois que o MVPComparison passou a ler --attack para TENDERMINT em 20/11/2026, ver PREREGISTRO secao 6)",
  "prefixo": "tvb",
  "jvm_flags": ["-Xmx2g", "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2"],
  "tm": {
@@ -19,6 +19,7 @@
   "assinatura_voto_B": 64,
   "assinatura_proponente_B": 64,
   "overhead_msg_B": 10,
+  "max_future_horizon": 1000,
   "timeouts_s": {"propose": 3.0, "propose_delta": 0.5, "prevote": 1.0, "prevote_delta": 0.5, "precommit": 1.0, "precommit_delta": 0.5}
  },
  "tm_a_definir": "idem fatores-va.json. Sob falha o criterio 'zero timeouts' NAO se aplica; os timeouts so fixam o tempo de recuperacao por round (3 s + ~1 s por round falho).",

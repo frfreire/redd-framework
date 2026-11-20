@@ -2,7 +2,7 @@
 """Executa UMA celula do V-ABC do Tendermint (RASCUNHO; so roda depois do pino e do commit do pre-registro).
 
 V-A e V-C (cfg["bloco"] in va, vc): DUAS JVMs em serie, uma semente, mesma convencao do HotStuff.
-  JVM 1: jabs.example.MVPComparison --protocols=TENDERMINT (oficial; 11 flags --tm-* obrigatorias, sem padrao; --seed = semente - n*1000).
+  JVM 1: jabs.example.MVPComparison --protocols=TENDERMINT (oficial; 12 flags --tm-* obrigatorias, sem padrao; --seed = semente - n*1000).
   JVM 2: ObservadorTm (mesma semente/config) para contar timeouts DISPARADOS, pacotes por altura e por no, e conferir que o CSV por bloco e
          identico ao da JVM 1 (MD5 sem BlockHashCode).
 V-B (bloco vb): SO a JVM 2. O MVPComparison NAO le --attack para TENDERMINT (so HOTSTUFF: MVPComparison.attackForMain) e o ByzantineSweep nao tem
@@ -39,7 +39,8 @@ def flags_tm(cfg):
             f"--tm-prevote-timeout={v['tm_prevote']}", f"--tm-prevote-delta={v['tm_prevote_delta']}",
             f"--tm-precommit-timeout={v['tm_precommit']}", f"--tm-precommit-delta={v['tm_precommit_delta']}",
             f"--tm-batch-size={v['L']}", f"--tm-tx-size={v['s_tx']}", f"--tm-message-overhead={v['overhead_msg_B']}",
-            f"--tm-signature-size={v['sig_voto_B']}", f"--tm-proposer-signature-size={v['sig_proponente_B']}"]
+            f"--tm-signature-size={v['sig_voto_B']}", f"--tm-proposer-signature-size={v['sig_proponente_B']}",
+            f"--tm-max-future-horizon={v['max_future_horizon']}"]
 
 
 def cmd_mvp(cfg, saida):

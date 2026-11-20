@@ -110,7 +110,7 @@ class MVPComparisonBeyondThresholdTest {
         assertEquals(0, MVPComparison.resolveByzantineCount(HS, null, Map.of("allow-beyond-bft-threshold", "false"), List.of(4)));
         assertEquals(0, MVPComparison.resolveByzantineCount(HS, null, Map.of(), List.of(4)));
         // sem HOTSTUFF: ignorada (aviso no stderr), como --attack/--byzantine-count
-        assertEquals(0, MVPComparison.resolveByzantineCount(List.of("ARQ"), null,
+        assertEquals(0, MVPComparison.resolveByzantineCount(List.of("MCO2"), null,
                 Map.of("allow-beyond-bft-threshold", "true"), List.of(4)));
         assertTrue(MVPComparison.knownFlags().contains("allow-beyond-bft-threshold"));
     }

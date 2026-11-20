@@ -58,6 +58,8 @@ public class MVPComparison {
         configureLoadRecord(cli.get("load-record"), cli.get("load-record-t0"));
         java.util.List<Integer> validatorsList = parseIntList(cli.getOrDefault("validators", "200"));
         java.util.List<String> protocolList = parseStringList(cli.getOrDefault("protocols", "EARTH"));
+        exigirSemanticaDeN(cli.get(NetworkSizing.FLAG), protocolList);
+        exigirNMinimoDoPbftPuro(protocolList, validatorsList);
         pbftMaxFutureHorizon = parsePbftMaxFutureHorizonIfRequested(protocolList, cli);
         TendermintConsensusConfig tendermintConfig = parseTendermintConfigIfRequested(protocolList, cli);
         if (tendermintConfig != null) {
@@ -135,8 +137,8 @@ public class MVPComparison {
 
         // Initialize CSV file with header
         java.util.List<String> cbHeaderLines = joinLines(beyondLines, fixtureLines);
-        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount),
-                cbHeaderLines));
+        initializeCSV(csvOut, nodesMode, sizingLines, joinLines(joinLines(attackLines(hotStuffAttack, hotStuffByzantineCount, attackCapableNames(protocolList)),
+                cbHeaderLines), pbftTtLines(protocolList)));
         // HS-CB-fase2 (parte A): colunas ADITIVAS de C_B (soma da rede e estatisticas) so para HOTSTUFF/TENDERMINT, num
         // SEGUNDO arquivo (mvp-results-cb.csv, ao lado do mvp-results.csv). Sem esses protocolos o arquivo nem e criado:
         // a saida dos demais e byte a byte a de antes (mvp-results.csv nunca muda).
@@ -184,6 +186,9 @@ public class MVPComparison {
                             metrics.getAverageTrafficPerBlock(),
                             metrics.getAverageTransactionConfirmationLatency()
                         );
+                        if ("PBFT".equals(normalizeProtocol(protocol))) {
+                            acc.markTtNotMeasured(); // PBFT puro sem gerador de transacoes: Tt = -1, nunca zero
+                        }
                         acc.addSelfDelivery(metrics.getAverageSelfDeliveryBytesPerBlock(),
                             metrics.getAverageSelfDeliveryConsensusBytesPerBlock());
                         
@@ -195,6 +200,16 @@ public class MVPComparison {
                     } catch (Exception e) {
                         System.out.println("      ✗ failed: " + e.getMessage());
                         rethrowIfHotStuff(protocol, validators, runSeed, e);
+                        if ("PBFT".equals(normalizeProtocol(protocol))) {
+                            // PBFT puro e protocolo NOVO (sem comportamento legado a preservar): trial falho NAO vira linha de zeros
+                            throw new IllegalStateException("trial PBFT falhou (n=" + validators + ", seed=" + runSeed
+                                    + "): " + e.getMessage(), e);
+                        }
+                        if (!noAttack(hotStuffAttack) && isAttackCapable(protocol)) {
+                            // ataque uniforme: trial falho sob ataque nao vira linha de zeros nem media sobre menos trials
+                            throw new IllegalStateException("trial " + normalizeProtocol(protocol) + " sob ataque falhou (n="
+                                    + validators + ", seed=" + runSeed + "): " + e.getMessage(), e);
+                        }
                     }
                 }
                 
@@ -322,7 +337,8 @@ public class MVPComparison {
     static Long parsePbftMaxFutureHorizonIfRequested(java.util.List<String> protocolList, java.util.Map<String, String> cli) {
         boolean requested = false;
         for (String p : protocolList) {
-            if ("ARQ".equals(p.trim().toUpperCase(java.util.Locale.ROOT))) {
+            String pn = p.trim().toUpperCase(java.util.Locale.ROOT);
+            if ("ARQ".equals(pn) || "PBFT".equals(pn)) {
                 requested = true;
                 break;
             }
@@ -330,7 +346,7 @@ public class MVPComparison {
         if (!requested) {
             return null;
         }
-        return requiredLong(cli, "pbft-max-future-horizon", "ARQ");
+        return requiredLong(cli, "pbft-max-future-horizon", "ARQ/PBFT");
     }
 
     private static long requirePbftMaxFutureHorizon() {
@@ -466,12 +482,12 @@ public class MVPComparison {
         if (attack == null) {
             return null;
         }
-        boolean temHotStuff = false;
+        boolean temCapaz = false;
         for (String protocol : protocols) {
-            temHotStuff |= isHotStuff(protocol);
+            temCapaz |= isAttackCapable(protocol);
         }
-        if (!temHotStuff) {
-            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+        if (!temCapaz) {
+            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so HOTSTUFF, TENDERMINT e ARQ a leem no MVPComparison)"));
             return null;
         }
         return resolveHotStuffAttack(protocols, cli);
@@ -488,19 +504,20 @@ public class MVPComparison {
         if (attack == null) {
             return ByzantineConfig.AttackType.NONE;
         }
-        boolean temHotStuff = false;
+        boolean temCapaz = false;
         boolean temOutro = false;
         for (String protocol : protocols) {
-            if (isHotStuff(protocol)) {
-                temHotStuff = true;
+            if (isAttackCapable(protocol)) {
+                temCapaz = true;
             } else {
                 temOutro = true;
             }
         }
-        if (!temHotStuff) {
-            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+        if (!temCapaz) {
+            avisar(new StringBuilder("--attack=").append(attack).append(" ignorada (so HOTSTUFF, TENDERMINT e ARQ a leem no MVPComparison)"));
             return ByzantineConfig.AttackType.NONE;
         }
+        String capazes = attackCapableNames(protocols);
         String nome = attack.trim();
         if (nome.equalsIgnoreCase("none") || nome.equalsIgnoreCase("nenhum")) {
             return ByzantineConfig.AttackType.NONE;
@@ -509,17 +526,17 @@ public class MVPComparison {
         try {
             tipo = ByzantineConfig.AttackType.valueOf(nome.toUpperCase(java.util.Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("ataque desconhecido '" + attack + "' para HOTSTUFF. Validos: "
+            throw new IllegalArgumentException("ataque desconhecido '" + attack + "' para " + capazes + ". Validos: "
                     + ByzantineConfig.validAttackNames() + " (so EQUIVOCATION implementado; none/nenhum = sem ataque)", e);
         }
         if (tipo == ByzantineConfig.AttackType.NONE) {
             return tipo;
         }
         if (tipo != ByzantineConfig.AttackType.EQUIVOCATION) {
-            throw new IllegalArgumentException("ataque " + tipo + " nao implementado para HOTSTUFF (so EQUIVOCATION)");
+            throw new IllegalArgumentException("ataque " + tipo + " nao implementado para " + capazes + " (so EQUIVOCATION)");
         }
         if (temOutro) {
-            throw new IllegalArgumentException("--attack=" + tipo + " so e aceito com --protocols contendo apenas HOTSTUFF: "
+            throw new IllegalArgumentException("--attack=" + tipo + " so e aceito com --protocols contendo apenas HOTSTUFF, TENDERMINT e ARQ: "
                     + "os demais protocolos nao leem --attack no MVPComparison e rodariam sem ataque (use ByzantineSweep)");
         }
         return tipo;
@@ -544,13 +561,13 @@ public class MVPComparison {
         String beyondBruto = cli.get(ALLOW_BEYOND_BFT_THRESHOLD);
         boolean temHotStuffGeral = false;
         for (String protocol : protocols) {
-            temHotStuffGeral |= isHotStuff(protocol);
+            temHotStuffGeral |= isAttackCapable(protocol);
         }
         boolean allowBeyond = false;
         if (beyondBruto != null) {
             if (!temHotStuffGeral) {
                 avisar(new StringBuilder("--").append(ALLOW_BEYOND_BFT_THRESHOLD).append("=").append(beyondBruto)
-                        .append(" ignorada (so o HOTSTUFF a le no MVPComparison)"));
+                        .append(" ignorada (so HOTSTUFF, TENDERMINT e ARQ a leem no MVPComparison)"));
             } else {
                 allowBeyond = parseAllowBeyondBftThreshold(beyondBruto);
                 if (allowBeyond && noAttack(attack)) {
@@ -562,7 +579,7 @@ public class MVPComparison {
         if (noAttack(attack)) {
             boolean temHotStuff = false;
             for (String protocol : protocols) {
-                temHotStuff |= isHotStuff(protocol);
+                temHotStuff |= isAttackCapable(protocol);
             }
             // sem HOTSTUFF o MVPComparison nunca leu esta flag: ignorada como na baseline
             if (temHotStuff && bruto != null && !"0".equals(bruto.trim())) {
@@ -651,6 +668,36 @@ public class MVPComparison {
         return linhas == null ? java.util.Collections.emptyList() : linhas;
     }
 
+    /** Menor n com quorum 2f+1 e f >= 1 (n = 3f+1): abaixo disso o PBFT nao tolera falha e a "soma da rede" nao mede nada. */
+    static final int PBFT_PURO_N_MINIMO = 4;
+
+    /** PBFT puro com n < 4 falha alto ANTES de criar saida (como HotStuff/Tendermint em validateFor); nao vira linha de dados. */
+    static void exigirNMinimoDoPbftPuro(java.util.List<String> protocolos, java.util.List<Integer> validadores) {
+        boolean pbft = false;
+        for (String p : protocolos) {
+            pbft |= "PBFT".equals(normalizeProtocol(p));
+        }
+        if (!pbft) {
+            return;
+        }
+        for (int n : validadores) {
+            if (n < PBFT_PURO_N_MINIMO) {
+                throw new IllegalArgumentException("PBFT puro exige n >= " + PBFT_PURO_N_MINIMO + " validadores (quorum 2f+1 com f >= 1): n=" + n);
+            }
+        }
+    }
+
+    /** Linha '#' que declara Tt nao medido do PBFT puro; vazia (sem alocar) quando PBFT nao esta na lista. */
+    static java.util.List<String> pbftTtLines(java.util.List<String> protocols) {
+        for (String protocol : protocols) {
+            if ("PBFT".equals(normalizeProtocol(protocol))) {
+                return java.util.List.of("# PBFT: Tt_avg e Tt_std = -1 (NAO MEDIDO: o PBFT puro nao tem gerador de transacoes; nunca zero). "
+                        + "Tb e Cb sao medidos; a soma da rede por altura esta em mvp-results-cb.csv.");
+            }
+        }
+        return java.util.Collections.emptyList();
+    }
+
     /** Concatena linhas '#' sem alocar quando uma das listas e vazia (o caminho sem trava devolve a lista original). */
     static java.util.List<String> joinLines(java.util.List<String> a, java.util.List<String> b) {
         if (b.isEmpty()) {
@@ -715,11 +762,16 @@ public class MVPComparison {
 
     /** Linhas '#' do CSV agregado que declaram o ataque; vazio sem ataque (o CSV honesto fica byte a byte o de sempre). */
     static java.util.List<String> attackLines(ByzantineConfig.AttackType attack, int count) {
+        return attackLines(attack, count, "HOTSTUFF");
+    }
+
+    /** {@code protocolos}: nomes canonicos dos protocolos que leram o ataque ({@link #attackCapableNames}). */
+    static java.util.List<String> attackLines(ByzantineConfig.AttackType attack, int count, String protocolos) {
         if (noAttack(attack)) {
             return java.util.Collections.emptyList();
         }
         return java.util.List.of(new StringBuilder("# attack=").append(attack).append(" byzantine_count=").append(count)
-                .append(" (HOTSTUFF; sorteio RandomnessEngine dedicado (semente do trial ^ sal) em [0,n), nao o laco do ARQ; coluna n = validadores;")
+                .append(" (").append(protocolos).append("; sorteio RandomnessEngine dedicado (semente do trial ^ sal) em [0,n), nao o laco do ARQ; coluna n = validadores;")
                 .append(" particao, abrangencia e coordenacao PROVISORIAS: ADR-0015 Q28)").toString());
     }
 
@@ -740,6 +792,33 @@ public class MVPComparison {
     /** O nome (em qualquer caixa, com espacos ao redor) designa o HotStuff? */
     static boolean isHotStuff(String protocol) {
         return protocol != null && "HOTSTUFF".equals(normalizeProtocol(protocol));
+    }
+
+    /**
+     * Protocolos que LEEM {@code --attack}/{@code --byzantine-count} no MVPComparison (ataque uniforme, backlog de
+     * 17/11/2026): HOTSTUFF, TENDERMINT e ARQ (PBFT). So {@code EQUIVOCATION}; a flag e ignorada com aviso se nenhum
+     * protocolo capaz esta na lista, e recusada se um incapaz roda junto de ataque ativo.
+     */
+    static boolean isAttackCapable(String protocol) {
+        if (protocol == null) {
+            return false;
+        }
+        String n = normalizeProtocol(protocol);
+        return "HOTSTUFF".equals(n) || "TENDERMINT".equals(n) || "ARQ".equals(n);
+    }
+
+    /** Nomes canonicos dos protocolos capazes presentes, na ordem da linha de comando, separados por virgula. */
+    static String attackCapableNames(java.util.List<String> protocols) {
+        StringBuilder sb = new StringBuilder();
+        for (String protocol : protocols) {
+            if (isAttackCapable(protocol)) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append(normalizeProtocol(protocol));
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -826,6 +905,25 @@ public class MVPComparison {
                 + "nodes (sem maiusculas nem espacos). Ausente = legacy.");
     }
 
+    /**
+     * ADR-0015 Q32 A: a semantica de n e OBRIGATORIA (sem padrao silencioso) quando algum protocolo pedido tem
+     * decomposicao que difere entre {@code legacy} e {@code nodes} (MCO2, TREE, AMBIFY). Nos demais, n e o numero
+     * de nos nas duas semanticas e a flag segue opcional. {@code legacy} so e valido de forma explicita (nao regressao).
+     */
+    static void exigirSemanticaDeN(String valor, java.util.List<String> protocolos) {
+        if (valor != null) {
+            return;
+        }
+        for (String p : protocolos) {
+            String norm = normalizeProtocol(p);
+            if (norm.equals("MCO2") || norm.equals("TREE") || norm.equals("AMBIFY")) {
+                throw new IllegalArgumentException("--" + NetworkSizing.FLAG + " e obrigatoria para o protocolo " + norm
+                        + " (n significa coisas diferentes em legacy e nodes; ADR-0015 Q32 A). Use --"
+                        + NetworkSizing.FLAG + "=nodes (estudo) ou --" + NetworkSizing.FLAG + "=legacy (so nao regressao).");
+            }
+        }
+    }
+
     private static String rotulo(boolean nodesMode) {
         return nodesMode ? "nodes" : "legacy";
     }
@@ -882,6 +980,7 @@ public class MVPComparison {
             }
             case "HOTSTUFF":
             case "TENDERMINT":
+            case "PBFT":
                 return sb.append(" n_semantics=").append(rot).append(" n_requested=").append(n).append(" nodes=")
                         .append(n).append(" validators=").append(n).toString();
             default:
@@ -973,7 +1072,7 @@ public class MVPComparison {
      */
     static boolean hasSelfDeliveryColumn(String protocol) {
         String p = normalizeProtocol(protocol);
-        return "ARQ".equals(p) || "MCO2".equals(p) || "TREE".equals(p) || "AMBIFY".equals(p)
+        return "ARQ".equals(p) || "PBFT".equals(p) || "MCO2".equals(p) || "TREE".equals(p) || "AMBIFY".equals(p)
                 || "OFFSET".equals(p) || "EARTH".equals(p);
     }
 
@@ -1032,10 +1131,10 @@ public class MVPComparison {
         return v < 0 ? "-1" : String.format(java.util.Locale.ROOT, "%.3f", v);
     }
 
-    /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): so HOTSTUFF e TENDERMINT. Os demais: nao medido. */
+    /** Protocolos com SOMA DA REDE medida (HS-CB-fase2): HOTSTUFF, TENDERMINT e PBFT (puro). Os demais: nao medido. */
     static boolean hasCbRede(String protocol) {
         String p = normalizeProtocol(protocol);
-        return "HOTSTUFF".equals(p) || "TENDERMINT".equals(p);
+        return "HOTSTUFF".equals(p) || "TENDERMINT".equals(p) || "PBFT".equals(p);
     }
 
     private static void initializeCbCSV(String path, java.util.List<String> fixtureLines) throws IOException {
@@ -1112,11 +1211,13 @@ public class MVPComparison {
             case "OFFSET":
                 return runOffsetBitcoinScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "ARQ":
-                return runArqREDDScenario(validators, duration, seed, outputPath);
+                return runArqREDDScenario(validators, duration, seed, outputPath, hotStuffByzantine);
             case "DAGSPER":
                 return runDAGsperScenario(validators, seed, duration, outputPath, enableTx, txInterval);
             case "TENDERMINT":
-                return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig);
+                return runTendermintScenario(validators, seed, duration, outputPath, tendermintConfig, hotStuffByzantine);
+            case "PBFT":
+                return runPbftScenario(validators, seed, duration, outputPath);
             case "HOTSTUFF":
                 return runHotStuffScenario(validators, seed, duration, outputPath, hotStuffConfig, hotStuffByzantine);
             default:
@@ -1169,7 +1270,11 @@ public class MVPComparison {
 
         double getAvgTb() { return count > 0 ? sumTb / count : 0.0; }
         double getAvgCb() { return count > 0 ? sumCb / count : 0.0; }
-        double getAvgTt() { return count > 0 ? sumTt / count : 0.0; }
+        private boolean ttNotMeasured;
+
+        void markTtNotMeasured() { ttNotMeasured = true; }
+
+        double getAvgTt() { return ttNotMeasured ? -1.0 : (count > 0 ? sumTt / count : 0.0); }
 
         double getStdTb() {
             if (count <= 1) return 0.0;
@@ -1184,6 +1289,7 @@ public class MVPComparison {
         }
 
         double getStdTt() {
+            if (ttNotMeasured) return -1.0;
             if (count <= 1) return 0.0;
             double var = (sumTtSq - (sumTt * sumTt) / count) / (count - 1);
             return Math.sqrt(Math.max(0, var));
@@ -1191,7 +1297,7 @@ public class MVPComparison {
     }
 
     private static SimulationMetrics runArqREDDScenario(int totalValidators, double duration,
-            long seed, String outputPath) {
+            long seed, String outputPath, ByzantineConfig byzantine) {
         SimulationMetrics metrics = new SimulationMetrics();
         metrics.setTotalValidators(totalValidators);
         metrics.setByzantineValidators(0);
@@ -1205,7 +1311,8 @@ public class MVPComparison {
                     seed,
                     totalValidators,
                     duration,
-                    ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
+                    byzantine != null ? byzantine
+                            : ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
             scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
             scenario.addMetricsLogger(outputPath);
             attachLoadRecorder(scenario, "ARQ", seed, outputPath);
@@ -1213,8 +1320,16 @@ public class MVPComparison {
                     "Running Arq-REDD+ HYBRID (" + totalValidators + " honest nodes) ...");
             scenario.run();
             metrics = scenario.getMetrics();
+            if (byzantine != null && metrics.getBlockCount() == 0) {
+                throw new IllegalStateException("ARQ sob ataque finalizou 0 blocos em " + duration
+                        + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+            }
             printScenarioFinilizedMetrics(metrics);
         } catch (Exception e) {
+            if (byzantine != null) {
+                throw new IllegalStateException("trial ARQ sob ataque falhou (n=" + totalValidators + ", seed=" + seed
+                        + "): " + e.getMessage(), e);
+            }
             System.out.println("⚠️  Arq-REDD+ simulation failed: " + e.getMessage());
             e.printStackTrace();
         }
@@ -1259,19 +1374,50 @@ public class MVPComparison {
      * Tendermint honesto (ADR-0006): {@code numNodes} e o numero de validadores (n >= 4). A config vem das flags
      * {@code --tm-*}; sem configuracao o protocolo falha alto antes da simulacao deixar rastros.
      */
+    /**
+     * PBFT PURO (n validadores na LAN de malha completa, {@link PBFTLANScenario}), distinto do ARQ (topologia hibrida).
+     * Sem ataque. Mesmas metricas e CSV por bloco dos demais; a SOMA DA REDE por altura sai do {@code NetworkHeightLedger}.
+     * Nao ha gerador de transacoes no PBFT puro: Tt NAO e medido (marcado -1 no CSV agregado, nunca zero). Falha alto,
+     * sem inventar zero, se a corrida nao finalizou bloco.
+     */
+    private static SimulationMetrics runPbftScenario(int numNodes, long seed, double duration, String outputPath)
+            throws IOException {
+        PBFTLANScenario scenario = new PBFTLANScenario("PBFT - " + numNodes + " validators", seed, numNodes, duration);
+        scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
+        scenario.addMetricsLogger(outputPath);
+        attachLoadRecorder(scenario, "PBFT", seed, outputPath);
+        System.out.println("Running PBFT scenario (" + numNodes + " validators, seed=" + seed + ") ...");
+        scenario.run();
+        SimulationMetrics metrics = scenario.getMetrics();
+        metrics.setCbRede(CbRedeMedida.medir(scenario.getNetwork().getAllNodes(), metrics));
+        if (metrics.getBlockCount() == 0) {
+            throw new IllegalStateException("PBFT finalizou 0 blocos em " + duration
+                    + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+        }
+        printScenarioFinilizedMetrics(metrics);
+        return metrics;
+    }
+
     private static SimulationMetrics runTendermintScenario(int numNodes, long seed, double duration,
-            String outputPath, TendermintConsensusConfig config) throws IOException {
+            String outputPath, TendermintConsensusConfig config, ByzantineConfig byzantine) throws IOException {
         if (config == null) {
             throw new IllegalArgumentException("protocolo TENDERMINT exige flags --tm-* (timeouts, lote e tx)");
         }
-        TendermintLANScenario scenario = new TendermintLANScenario(
-                "Tendermint - " + numNodes + " validators", seed, numNodes, duration, config);
+        // Sem ataque: nome e construtor de sempre (saida identica). Com ataque: o nome declara ataque e contagem.
+        TendermintLANScenario scenario = byzantine == null
+                ? new TendermintLANScenario("Tendermint - " + numNodes + " validators", seed, numNodes, duration, config)
+                : new TendermintLANScenario("Tendermint - " + numNodes + " validators, " + byzantine.getAttackType()
+                        + " f=" + byzantine.getByzantineCount(), seed, numNodes, duration, config, byzantine);
         scenario.addMetricsLogger(outputPath);
         attachLoadRecorder(scenario, "TENDERMINT", seed, outputPath);
         System.out.println("Running Tendermint scenario (" + numNodes + " validators, seed=" + seed + ") ...");
         scenario.run();
         SimulationMetrics metrics = scenario.getMetrics();
         metrics.setCbRede(CbRedeMedida.medir(scenario.getNetwork().getAllNodes(), metrics)); // HS-CB-fase2
+        if (byzantine != null && metrics.getBlockCount() == 0) {
+            throw new IllegalStateException("TENDERMINT sob ataque finalizou 0 blocos em " + duration
+                    + " s: Tb e C_B nao medidos (nao serao registrados como zero)");
+        }
         printScenarioFinilizedMetrics(metrics);
         return metrics;
     }

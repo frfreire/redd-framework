@@ -163,14 +163,30 @@ class MVPComparisonNaoRegressaoTest {
         }
     }
 
+    /**
+     * T6 (PBFT-T6-primario-por-altura, ADR-0007 opcao 2; 21/11/2026): a DINAMICA do ARQ/PBFT mudou de proposito (primario unico
+     * por altura, sem a proposta periodica do genesis), entao a saida NAO e mais a da baseline 45eb3e7 (n=7, 60 s: 38 linhas por
+     * bloco antes; mais depois). O que continua valendo e o CONTRATO: nome e posicao das colunas, cabecalho do agregado, uma
+     * linha de dados, e determinismo (mesma semente, mesma saida).
+     */
     @Test
-    void arqMesmaSaidaQueABaseline45eb3e7(@TempDir Path tmp) throws Exception {
-        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
-                "--seed=1", "--output=" + tmp});
-        confereComAutoentrega(Files.readString(tmp.resolve("arq-7v-t0.csv")),
-                referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"), "ARQ n=7 seed=1 (arq-7v-t0.csv)");
-        confereAgregadoComAutoentrega(Files.readString(tmp.resolve("mvp-results.csv")),
-                referencia("ARQ-7v-60s/base-a/mvp-results.csv"), "ARQ n=7 seed=1 (mvp-results.csv)");
+    void arqT6MantemOContratoDeColunasEEhDeterministico(@TempDir Path tmp) throws Exception {
+        Path a = tmp.resolve("a");
+        Path b = tmp.resolve("b");
+        for (Path d : new Path[] {a, b}) {
+            MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1",
+                    "--duration=60", "--seed=1", "--output=" + d});
+        }
+        List<List<String>> ref = normaliza(referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"));
+        List<List<String>> ger = normaliza(Files.readString(a.resolve("arq-7v-t0.csv")));
+        // colunas da baseline: nome e posicao preservados; as da D2 vem a mais, ao fim
+        assertEquals(ref.get(0), ger.get(0).subList(0, ref.get(0).size()), "colunas existentes: nome e posicao");
+        assertTrue(ger.size() > ref.size(), "T6: uma decisao por altura finaliza mais alturas que a baseline (" + ger.size() + " vs " + ref.size() + " linhas)");
+        assertEquals(normaliza(referencia("ARQ-7v-60s/base-a/mvp-results.csv")).get(0),
+                normaliza(Files.readString(a.resolve("mvp-results.csv"))).get(0), "cabecalho do agregado");
+        assertEquals(normaliza(Files.readString(a.resolve("arq-7v-t0.csv"))), normaliza(Files.readString(b.resolve("arq-7v-t0.csv"))),
+                "mesma semente, mesma saida");
+        assertEquals(normaliza(Files.readString(a.resolve("mvp-results.csv"))), normaliza(Files.readString(b.resolve("mvp-results.csv"))));
     }
 
     @Test
@@ -188,10 +204,13 @@ class MVPComparisonNaoRegressaoTest {
     @Test
     void protocoloEmMinusculasEComEspacosEquivaleAoCanonico(@TempDir Path tmp) throws Exception {
         // A normalizacao compartilhada (trim + maiusculas) e o que o diff de 45eb3e7 tocou: "  arq " tem de rodar como ARQ.
+        // T6: a baseline 45eb3e7 do ARQ deixou de valer; a equivalencia agora e com a execucao de "ARQ" na mesma arvore.
         MVPComparison.main(new String[] {"--protocols=  arq ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
-                "--seed=1", "--output=" + tmp});
-        confereComAutoentrega(Files.readString(tmp.resolve("arq-7v-t0.csv")),
-                referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"), "ARQ via '  arq '");
+                "--seed=1", "--output=" + tmp.resolve("espacos")});
+        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
+                "--seed=1", "--output=" + tmp.resolve("canonico")});
+        assertEquals(normaliza(Files.readString(tmp.resolve("canonico").resolve("arq-7v-t0.csv"))),
+                normaliza(Files.readString(tmp.resolve("espacos").resolve("arq-7v-t0.csv"))), "ARQ via '  arq '");
     }
 
     @Test

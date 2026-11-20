@@ -171,6 +171,11 @@ public class ByzantineSweep {
         // Decomposicao POS/POSA calculada antes de simular (n invalido em 'nodes' falha antes de gravar qualquer coisa).
         // Outros tipos tem n = numero de nos nas duas semanticas.
         final boolean temDecomposicao = type.equals("POS") || type.equals("POSA");
+        if (temDecomposicao && cli.get(NetworkSizing.FLAG) == null) {
+            throw new IllegalArgumentException("--" + NetworkSizing.FLAG + " e obrigatoria para o tipo " + type
+                    + " (n significa coisas diferentes em legacy e nodes; ADR-0015 Q32 A). Use --" + NetworkSizing.FLAG
+                    + "=nodes (estudo) ou --" + NetworkSizing.FLAG + "=legacy (so nao regressao).");
+        }
         final int[] sizing = temDecomposicao ? sweepSizing(nodesMode, n) : null;
         final String sizingLine = describeSizing(type, nodesMode, n, sizing);
         System.out.println(new StringBuilder("Network sizing: ").append(sizingLine).toString());

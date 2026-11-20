@@ -224,7 +224,7 @@ class NetworkSizingTest {
     @Test
     void flagDesconhecidaNaoAbortaMasAvisaSoNoStderr() throws IOException {
         Path out = tmp.resolve("typo");
-        String[] args = {"--protocols=MCO2", "--validators=16", "--trials=0", "--n-semantic=nodes", "--output=" + out};
+        String[] args = {"--protocols=MCO2", "--validators=16", "--trials=0", "--n-semantic=nodes", "--n-semantics=legacy", "--output=" + out};
         java.io.PrintStream so = System.out;
         java.io.ByteArrayOutputStream bufOut = new java.io.ByteArrayOutputStream();
         String err;
@@ -304,6 +304,23 @@ class NetworkSizingTest {
      * Rodada 4: o modo legacy NAO escreve linhas '#' no mvp-results.csv (byte a byte como a baseline 325f4e3: o CSV
      * comeca no cabecalho de colunas). So o modo nodes escreve a decomposicao em linhas '#'.
      */
+    /** Q32 A: todo protocolo com decomposicao divergente exige a flag (inclusive TREE e variantes de caixa/espaco). */
+    @Test
+    void semanticaDeNObrigatoriaParaTodosOsProtocolosComDecomposicao() {
+        for (String p : new String[]{"MCO2", "TREE", "AMBIFY", "tree", " Ambify "}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                    () -> MVPComparison.exigirSemanticaDeN(null, List.of("ARQ", p)), p);
+            assertTrue(e.getMessage().contains("--n-semantics e obrigatoria"), e.getMessage());
+            MVPComparison.exigirSemanticaDeN("nodes", List.of("ARQ", p));
+        }
+        for (String tipo : new String[]{"POS", "POSA"}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                    new String[]{"--type=" + tipo.toLowerCase(), "--validators=10", "--max-byz=0", "--trials=0",
+                            "--duration=10", "--seed=1", "--attack=SILENT", "--out=" + tmp.resolve(tipo).resolve("s.csv")}), tipo);
+            assertTrue(e.getMessage().contains("--n-semantics e obrigatoria"), e.getMessage());
+        }
+    }
+
     @Test
     void legacyNaoEscreveComentariosNoCsvEnodesEscreve() throws IOException {
         final String cabecalho = "project;n;trials;Tb_avg;Tb_std;Cb_avg;Cb_std;Tt_avg;Tt_std";
@@ -313,11 +330,13 @@ class NetworkSizingTest {
         String bruto = Files.readString(outL.resolve("mvp-results.csv"));
         assertTrue(bruto.startsWith(cabecalho + "\n"), "legacy: o arquivo comeca no cabecalho de colunas: " + bruto);
         assertFalse(bruto.contains("#"), "legacy: nenhuma linha '#': " + bruto);
-        // padrao (sem a flag) = legacy: mesmo conteudo
+        // Q32 A: sem a flag, com MCO2/AMBIFY, falha alto (nao ha padrao silencioso); sem protocolo afetado segue opcional
         Path outP = tmp.resolve("mvp-padrao");
-        MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0",
-                "--duration=10", "--seed=1", "--output=" + outP});
-        assertEquals(bruto, Files.readString(outP.resolve("mvp-results.csv")), "sem a flag = legacy, byte a byte");
+        IllegalArgumentException semFlag = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0",
+                        "--duration=10", "--seed=1", "--output=" + outP}));
+        assertTrue(semFlag.getMessage().contains("--n-semantics e obrigatoria"), semFlag.getMessage());
+        MVPComparison.exigirSemanticaDeN(null, List.of("ARQ", "EARTH"));
 
         Path outN = tmp.resolve("mvp-nodes");
         MVPComparison.main(new String[]{"--protocols=ARQ,MCO2,AMBIFY", "--pbft-max-future-horizon=1000", "--validators=10", "--trials=0",
@@ -361,7 +380,10 @@ class NetworkSizingTest {
         assertTrue(legLinhas.get(0).startsWith("# D2 ") && legLinhas.get(1).startsWith("# Seed=1 "), legLinhas.toString());
         assertFalse(legacy.contains("n_semantics"), "legacy: nenhuma linha '#' de dimensionamento");
         assertEquals(cabecalho.trim() + colunasD2, legLinhas.get(2));
-        assertEquals(legacy, sweepSoCabecalho("padrao"), "sem a flag = legacy, byte a byte");
+        IllegalArgumentException semFlag = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                new String[]{"--type=POS", "--validators=10", "--max-byz=0", "--trials=0", "--duration=10", "--seed=1",
+                        "--attack=SILENT", "--out=" + tmp.resolve("padrao").resolve("sweep.csv")}));
+        assertTrue(semFlag.getMessage().contains("--n-semantics e obrigatoria"), semFlag.getMessage());
 
         String nodes = sweepSoCabecalho("nodes", "--n-semantics=nodes");
         List<String> linhas = nodes.lines().toList();

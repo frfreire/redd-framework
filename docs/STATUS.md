@@ -30,7 +30,7 @@ DAGsper e Tangle estão fora do escopo do estudo (ADR-0009).
 | Tarefa | Situação | Pré-condição |
 |---|---|---|
 | `V-ABC-tendermint` | pré-registro com 215 células, decisões do humano de 17/11 (MIN_EXEC=6, `--tm-*` CometBFT, V-C numérico inviável, P4b exige locking e votos nil) | pré-registro ainda não congelado (`COMMIT_PINADO` a definir); conferência do PBFT depois de D2 e paridade |
-| `PARIDADE-teto-retencao-pbft-tendermint` | teto de retenção equivalente a `maxFutureViewHorizon` (1000) para PBFT e Tendermint | depois de D2 |
+| `PARIDADE-teto-retencao-pbft-tendermint` | teto de retenção equivalente a `maxFutureViewHorizon` (1000) para PBFT e Tendermint | **fechada em 20/11/2026** (critic APROVADO na rodada 2; PR #2) |
 | `BYZ-gerador-unico-conjuntos` | partes 1-3 commitadas em BYZ-UNICA; restam as partes 4 (D2) e 5 (paridade) | D2 e paridade |
 | `AUTOENTREGA-uniforme` | = D2: autoentrega sai do Cb principal, coluna própria; ARQ honesto muda só em Cb; verificar Casper/Nakamoto/Parlia | tarefa pronta para começar |
 
@@ -40,8 +40,8 @@ Dívida aceita: `ByzantineSweep.java:111-126` monta `fValues` antes de limitar `
 
 1. **D2** autoentrega uniforme (inclui a dívida do laço de `maxByz`).
 2. **Paridade** do teto de retenção PBFT/Tendermint.
-3. **`--n-semantics=nodes` obrigatório.**
-4. **Ataque uniforme no MVPComparison** (inclui Tendermint e PBFT).
+3. ~~`--n-semantics=nodes` obrigatório.~~ **Fechada em 20/11/2026** (critic APROVADO na rodada 3; branch `n-semantics-obrigatoria`).
+4. ~~Ataque uniforme no MVPComparison (inclui Tendermint e PBFT).~~ **Fechada em 20/11/2026** (EQUIVOCATION em HOTSTUFF, TENDERMINT e ARQ; critic APROVADO na rodada 3; branch `ataque-uniforme-mvp`).
 
 Decisões já tomadas que condicionam as próximas: Q13.1-13.4 opção A (gerador MMPP-2 depois da Bateria 2; MMPP-2 começa em estado sorteado da distribuição estacionária); Q35 gás constante por tx com trava g·L ≤ limite, **valor de g a definir com o humano** e repetir por script o achado dos 22% antes de aceitar; Parlia/universo opção C (f como percentual do universo de validadores, rotulado, `#` fora_da_faixa; tabela de f efetivo por n e protocolo no pré-registro).
 

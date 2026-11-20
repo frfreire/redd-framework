@@ -29,6 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  *       voltarem a coincidir, o PREPARE deixou de equivocar).</li>
  * </ul>
  * Evidencia completa (CSV, comandos, sha) em {@code src/test/resources/nao-regressao/pbft-prepare-equivocation/}.
+ *
+ * <p><b>T6 (PBFT-T6-primario-por-altura, ADR-0007 opcao 2; 21/11/2026): a saida do PBFT MUDOU DE PROPOSITO em TODAS as celulas</b>
+ * (view por altura, primario unico por altura, sem a proposta periodica do genesis; antes ~5 a 10 blocos decididos por altura).
+ * Os valores de 423ffbe ficam em {@link #INALTERADOS} e {@link #EQUIVOCATION_ANTES} so como REFERENCIA do "antes" (nome historico:
+ * eles nao sao mais o esperado); o esperado agora e {@link #DEPOIS_T6} (40 celulas, medidas nesta arvore).
  */
 class PBFTPrepareEquivocationNaoRegressaoTest {
 
@@ -80,14 +85,48 @@ class PBFTPrepareEquivocationNaoRegressaoTest {
         {"EQUIVOCATION", "42", "13", "598", "-6076953029857019385"}
     };
 
-    /** Saida desta arvore sob EQUIVOCATION (DEPOIS; mudanca intencional). */
-    private static final String[][] EQUIVOCATION_DEPOIS = {
-        {"EQUIVOCATION", "1", "7", "259", "8384298765896546306"},
-        {"EQUIVOCATION", "1", "10", "370", "4152158395817039120"},
-        {"EQUIVOCATION", "1", "13", "598", "3168043087032873922"},
-        {"EQUIVOCATION", "42", "7", "259", "2259350936089256964"},
-        {"EQUIVOCATION", "42", "10", "370", "-149052095291256438"},
-        {"EQUIVOCATION", "42", "13", "598", "-4837668434661078998"}
+    /** Saida do T6 (view por altura, primario unico por altura), nesta arvore: as mesmas 40 celulas. */
+    private static final String[][] DEPOIS_T6 = {
+        {"none", "1", "4", "483", "-6979975084774882534"},
+        {"EQUIVOCATION", "1", "4", "0", "7"},
+        {"DOUBLE_SIGN", "1", "4", "516", "3862672239455229395"},
+        {"WITHHOLD", "1", "4", "0", "7"},
+        {"SILENT", "1", "4", "0", "7"},
+        {"none", "1", "7", "574", "4553853776974575833"},
+        {"DOUBLE_SIGN", "1", "7", "532", "356647852987865026"},
+        {"WITHHOLD", "1", "7", "7", "-4895855572928848985"},
+        {"SILENT", "1", "7", "7", "-4895855572928848985"},
+        {"none", "1", "10", "709", "1844323745250813051"},
+        {"DOUBLE_SIGN", "1", "10", "630", "-8652874994860755232"},
+        {"WITHHOLD", "1", "10", "10", "-8198908766144905032"},
+        {"SILENT", "1", "10", "10", "-8198908766144905032"},
+        {"none", "1", "13", "689", "7043832599338870787"},
+        {"DOUBLE_SIGN", "1", "13", "741", "8427538398947130453"},
+        {"WITHHOLD", "1", "13", "13", "-8101020521692806848"},
+        {"SILENT", "1", "13", "13", "-8101020521692806848"},
+        {"none", "42", "4", "472", "-9169811343307147889"},
+        {"EQUIVOCATION", "42", "4", "0", "7"},
+        {"DOUBLE_SIGN", "42", "4", "468", "-3023481831346855093"},
+        {"WITHHOLD", "42", "4", "0", "7"},
+        {"SILENT", "42", "4", "0", "7"},
+        {"none", "42", "7", "567", "-1988701359253455089"},
+        {"DOUBLE_SIGN", "42", "7", "602", "1235552252215960715"},
+        {"WITHHOLD", "42", "7", "7", "-672597471343754717"},
+        {"SILENT", "42", "7", "7", "-672597471343754717"},
+        {"none", "42", "10", "640", "-3260234439367956400"},
+        {"DOUBLE_SIGN", "42", "10", "628", "6267588922322708018"},
+        {"WITHHOLD", "42", "10", "10", "-6046626066238932973"},
+        {"SILENT", "42", "10", "10", "-6046626066238932973"},
+        {"none", "42", "13", "663", "-4070111622171187996"},
+        {"DOUBLE_SIGN", "42", "13", "687", "-4268102888640257175"},
+        {"WITHHOLD", "42", "13", "13", "-4315336517445603543"},
+        {"SILENT", "42", "13", "13", "-4315336517445603543"},
+        {"EQUIVOCATION", "1", "7", "7", "4073071908501444073"},
+        {"EQUIVOCATION", "1", "10", "10", "5974516971354047943"},
+        {"EQUIVOCATION", "1", "13", "13", "7586821690127881787"},
+        {"EQUIVOCATION", "42", "7", "7", "286023906771858791"},
+        {"EQUIVOCATION", "42", "10", "10", "8504822016748610695"},
+        {"EQUIVOCATION", "42", "13", "13", "-4688367413858436600"}
     };
 
     private static String rodar(String[] c) {
@@ -103,22 +142,24 @@ class PBFTPrepareEquivocationNaoRegressaoTest {
     }
 
     @Test
-    void semAtaqueEComOutrosAtaquesASaidaEIdenticaADe423ffbe() {
-        for (String[] c : INALTERADOS) {
-            assertEquals(esperado(c), rodar(c), "mudou: " + String.join(" ", c[0], "seed=" + c[1], "n=" + c[2]));
+    void t6SaidaEstavelEIgualAoPinado() {
+        for (String[] c : DEPOIS_T6) {
+            String rotulo = c[0] + " seed=" + c[1] + " n=" + c[2];
+            assertEquals(esperado(c), rodar(c), rotulo + ": T6");
+            assertEquals(rodar(c), rodar(c), rotulo + ": mesma semente, mesma saida");
         }
     }
 
+    /** Sem ataque, o T6 muda a saida de TODA celula em relacao a 423ffbe (se voltar a coincidir, o T6 foi desfeito). */
     @Test
-    void sobEquivocationASaidaMudouDePropositoEEstavel() {
-        for (String[] c : EQUIVOCATION_DEPOIS) {
-            String rotulo = "EQUIVOCATION seed=" + c[1] + " n=" + c[2];
-            assertEquals(esperado(c), rodar(c), rotulo + ": DEPOIS");
-            assertEquals(rodar(c), rodar(c), rotulo + ": mesma semente, mesma saida");
+    void semAtaqueOT6MudouASaidaEmRelacaoA423ffbe() {
+        int comparadas = 0;
+        for (String[] c : INALTERADOS) {
+            if (c[0].equals("none")) {
+                assertNotEquals(esperado(c), rodar(c), "none seed=" + c[1] + " n=" + c[2] + ": igual a 423ffbe, o T6 nao mudou nada");
+                comparadas++;
+            }
         }
-        for (String[] c : EQUIVOCATION_ANTES) {
-            assertNotEquals(esperado(c), rodar(c),
-                    "EQUIVOCATION seed=" + c[1] + " n=" + c[2] + ": igual a 423ffbe, o PREPARE nao equivoca");
-        }
+        assertEquals(8, comparadas);
     }
 }

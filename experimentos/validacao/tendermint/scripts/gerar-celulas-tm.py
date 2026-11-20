@@ -68,6 +68,7 @@ def cfg_de(b, f, c, commit, agora):
             "jvm_flags": f["jvm_flags"], "fatores_origem": str(CFG[b].relative_to(RAIZ)),
             "variante": {"L": f["L"], "s_tx": f["tm"]["s_tx"], "sig_voto_B": f["tm"]["assinatura_voto_B"],
                          "sig_proponente_B": f["tm"]["assinatura_proponente_B"], "overhead_msg_B": f["tm"]["overhead_msg_B"],
+                         "max_future_horizon": f["tm"]["max_future_horizon"],
                          "tm_propose": t["propose"], "tm_propose_delta": t["propose_delta"], "tm_prevote": t["prevote"],
                          "tm_prevote_delta": t["prevote_delta"], "tm_precommit": t["precommit"],
                          "tm_precommit_delta": t["precommit_delta"],

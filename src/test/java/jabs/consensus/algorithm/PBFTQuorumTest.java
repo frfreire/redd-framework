@@ -87,9 +87,9 @@ class PBFTQuorumTest {
         a.receptor().processIncomingPacket(new Packet(v, a.receptor(), new VoteMessage(new PBFTCommitVote<>(v, b))));
     }
 
-    /** O receptor recebe e aceita o PRE_PREPARE do bloco (enviado pelo no 1, o criador do bloco). */
+    /** O receptor recebe e aceita o PRE_PREPARE do bloco, enviado pelo PRIMARIO da altura (T6 / ADR-0007). */
     private static void prePrepare(Alvo a, PBFTBlock b) {
-        PBFTNode v = a.todos().get(1);
+        PBFTNode v = a.todos().get(a.pbft().primaryForHeight(b.getHeight()));
         a.receptor().processIncomingPacket(new Packet(v, a.receptor(), new VoteMessage(new PBFTPrePrepareVote<>(v, b))));
     }
 
@@ -256,7 +256,9 @@ class PBFTQuorumTest {
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
         net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
-        for (int c : crash) net.getAllNodes().get(c).crash();
+        // T6 / ADR-0007: o primario da altura 1 e o no 0 e, SEM view change, um primario em crash trava a cadeia. Os
+        // indices do parametro contam a partir do FIM da lista (0 = ultimo no), para o primeiro bloco poder ser proposto.
+        for (int c : crash) net.getAllNodes().get(n - 1 - c).crash();
         net.startConsensusRound(sim, stop);
 
         List<Integer> out = new ArrayList<>();
@@ -270,7 +272,7 @@ class PBFTQuorumTest {
         return out;
     }
 
-    // O primario inicial e o no min(10, n-1); os crashes abaixo usam indices menores.
+    // O primario da altura 1 e o no 0; os crashes abaixo contam a partir do fim da lista (ver finalizadores).
 
     @Test
     void n4_ateFCrashNaoImpede_FMaisUmImpede() {
@@ -293,7 +295,7 @@ class PBFTQuorumTest {
     @Test
     void crashNaoFazONoCrashadoFinalizar() {
         for (int id : finalizadores(1, 7, 30, 0, 1)) {
-            assertTrue(id != 0 && id != 1, "no em crash nao finaliza: " + id);
+            assertTrue(id != 6 && id != 5, "no em crash nao finaliza: " + id);
         }
     }
 

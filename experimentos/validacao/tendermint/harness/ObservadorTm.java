@@ -210,7 +210,7 @@ public class ObservadorTm {
         Files.createDirectories(outDir);
         Path csv = outDir.resolve(req(cli, "csv"));
 
-        // MESMA montagem de MVPComparison.parseTendermintConfigIfRequested (11 flags --tm-*, todas obrigatorias e sem padrao).
+        // MESMA montagem de MVPComparison.parseTendermintConfigIfRequested (12 flags --tm-*, todas obrigatorias e sem padrao).
         TendermintTimeouts timeouts = new TendermintTimeouts(
                 Double.parseDouble(req(cli, "tm-propose-timeout")), Double.parseDouble(req(cli, "tm-propose-delta")),
                 Double.parseDouble(req(cli, "tm-prevote-timeout")), Double.parseDouble(req(cli, "tm-prevote-delta")),
@@ -222,8 +222,7 @@ public class ObservadorTm {
                 .messageOverheadBytes(Integer.parseInt(req(cli, "tm-message-overhead")))
                 .signatureSizeBytes(Integer.parseInt(req(cli, "tm-signature-size")))
                 .proposerSignatureSizeBytes(Integer.parseInt(req(cli, "tm-proposer-signature-size")))
-                
-                .maxFutureHorizon(1000L).build();
+                .maxFutureHorizon(Long.parseLong(req(cli, "tm-max-future-horizon"))).build();
         config.validateFor(n);
 
         ByzantineConfig byz = null;
@@ -257,7 +256,7 @@ public class ObservadorTm {
         scenario.run();
         double parede = (System.nanoTime() - t0) / 1e9;
 
-        long stale = 0, discards = 0, invalid = 0, eq = 0, unattrB = 0, unattrP = 0;
+        long stale = 0, discards = 0, invalid = 0, beyond = 0, eq = 0, unattrB = 0, unattrP = 0;
         int peakFuture = 0, maxRoundFinal = 0;
         StringBuilder rounds = new StringBuilder("["), heights = new StringBuilder("[");
         int i = 0;
@@ -265,6 +264,7 @@ public class ObservadorTm {
             Tendermint t = alg(o);
             stale += t.getCore().discardCount(TendermintDiscardReason.STALE_TIMEOUT);
             invalid += t.getCore().discardCount(TendermintDiscardReason.INVALID_VALUE);
+            beyond += t.getCore().discardCount(TendermintDiscardReason.FUTURE_BEYOND_HORIZON);
             discards += t.getCore().totalDiscards();
             eq += t.getCore().equivocationsObserved();
             peakFuture = Math.max(peakFuture, t.getCore().peakFutureMessages());
@@ -312,6 +312,7 @@ public class ObservadorTm {
         j.append(" \"equivocacoes_observadas_total\": ").append(eq).append(",\n");
         j.append(" \"descartes_total\": ").append(discards).append(",\n");
         j.append(" \"descartes_INVALID_VALUE_total\": ").append(invalid).append(",\n");
+        j.append(" \"descartes_FUTURE_BEYOND_HORIZON_total\": ").append(beyond).append(",\n");
         j.append(" \"sem_altura_bytes_total\": ").append(unattrB).append(",\n");
         j.append(" \"sem_altura_pacotes_total\": ").append(unattrP).append(",\n");
         j.append(" \"tempo_parede_s\": ").append(parede).append("\n}\n");

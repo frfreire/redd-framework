@@ -4,6 +4,7 @@ import jabs.consensus.algorithm.PBFT;
 import jabs.consensus.config.ConsensusAlgorithmConfig;
 import jabs.consensus.config.PBFTConsensusConfig;
 import jabs.ledgerdata.BlockFactory;
+import jabs.ledgerdata.pbft.PBFTBlock;
 import jabs.ledgerdata.pbft.PBFTPrePrepareVote;
 import jabs.network.message.VoteMessage;
 import jabs.network.networks.Network;
@@ -89,26 +90,18 @@ public class PBFTLocalLANNetwork extends Network<PBFTNode, SingleNodeType> {
                     return; // Stop scheduling new proposals
                 }
                 
-                // Get primary node - find first NON-Byzantine node
-                // Byzantine nodes are typically at indices 0-6 (7 out of 20)
-                // Start from a higher index to avoid Byzantine nodes
+                // T6 / ADR-0007 (opcao 2): UM unico bloco inicial, proposto pelo primario da altura 1, pelo mesmo
+                // caminho de proposta do protocolo (honesto ou bizantino). As proximas alturas sao propostas pelo
+                // primario de cada altura depois de decidir a anterior (PBFT.checkVotes). SEM proposta periodica de
+                // filho do genesis (cada uma abria uma cadeia nova e concorrente: ~5 a 10 blocos decididos por altura).
                 if (!getAllNodes().isEmpty()) {
-                    // Use node at middle of list to avoid Byzantine concentration
-                    int primaryIndex = Math.min(10, getAllNodes().size() - 1);
-                    PBFTNode primaryNode = (PBFTNode) getAllNodes().get(primaryIndex);
-                    
-                    // Broadcast block proposal
-                    primaryNode.broadcastMessage(
-                        new VoteMessage(
-                            new PBFTPrePrepareVote<>(primaryNode,
-                                BlockFactory.samplePBFTBlockWithTx(simulator, getRandom(),
-                                    primaryNode, PBFT_GENESIS_BLOCK, -1)
-                            )
-                        )
-                    );
-                    
-                    // Schedule next proposal after 5 seconds
-                    scheduleBlockProposal(simulator, 5.0, stopTime);
+                    PBFTNode any = (PBFTNode) getAllNodes().get(0);
+                    @SuppressWarnings("unchecked")
+                    PBFT<PBFTBlock, ?> anyPbft = (PBFT<PBFTBlock, ?>) any.getConsensusAlgorithm();
+                    PBFTNode primaryNode = (PBFTNode) getAllNodes().get(anyPbft.primaryForHeight(1L));
+                    @SuppressWarnings("unchecked")
+                    PBFT<PBFTBlock, ?> primaryPbft = (PBFT<PBFTBlock, ?>) primaryNode.getConsensusAlgorithm();
+                    primaryPbft.proposeChildOf(PBFT_GENESIS_BLOCK);
                 }
             }
         }, delay);

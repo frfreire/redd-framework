@@ -40,6 +40,7 @@ HS_REF = ["--hs-view-timeout=60", "--hs-max-future-view-horizon=1000", "--hs-bat
           "--hs-message-overhead=10", "--hs-signature-mode=INDIVIDUAL", "--hs-leader-policy=ROTATING",
           "--hs-voter-encoding=BITMAP"]
 HS_PEQ = [f if not f.startswith("--hs-batch-size") else "--hs-batch-size=20" for f in HS_REF]
+SEM_N = ["--n-semantics=legacy"]  # Q32 A: obrigatoria onde n difere; a nao regressao fixa legacy
 TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
       "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
@@ -49,15 +50,15 @@ CASOS = [
     ("HS-ref", "HOTSTUFF", 4, 30, HS_REF),
     ("HS-n7", "HOTSTUFF", 7, 30, HS_PEQ),
     ("TM-n4", "TENDERMINT", 4, 30, TM),
-    ("ARQ-n7", "ARQ", 7, 60, []),
-    ("MCO2-n10", "MCO2", 10, 60, []),
-    ("AMBIFY-n10", "AMBIFY", 10, 60, []),
-    ("TREE-n10", "TREE", 10, 60, []),
+    ("ARQ-n7", "ARQ", 7, 60, ["--pbft-max-future-horizon=1000"]),
+    ("MCO2-n10", "MCO2", 10, 60, SEM_N),
+    ("AMBIFY-n10", "AMBIFY", 10, 60, SEM_N),
+    ("TREE-n10", "TREE", 10, 60, SEM_N),
     ("EARTH-n10", "EARTH", 10, 60, []),
     ("DAGSPER-n10", "DAGSPER", 10, 60, []),
     # dependentes da sequencia de identityHashCode (ADR-0012/0013): so valem como "identico" sob -XX:hashCode=2
-    ("AMBIFY-n25", "AMBIFY", 25, 300, []),
-    ("MCO2-n50", "MCO2", 50, 600, []),
+    ("AMBIFY-n25", "AMBIFY", 25, 300, SEM_N),
+    ("MCO2-n50", "MCO2", 50, 600, SEM_N),
     ("OFFSET-n40", "OFFSET", 40, 20000, []),
 ]
 
