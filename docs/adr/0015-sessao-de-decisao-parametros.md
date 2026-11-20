@@ -1203,3 +1203,16 @@ Duas observações que **corrigem ou refinam** o texto da Q35: (i) a "ordem de 4
 5. **Citações de linha:** conferi as de `ByzantineSweep.java`, `NetworkSizing.java`, `ByzantineConfig.java` e `MVPComparison.java` por leitura nesta sessão; as do ADR-0013 e do README da N1 vêm das leituras acima, sem reabrir cada trecho citado.
 
 **Decisões que o humano ainda deve tomar nesta fatia** (nenhuma foi tomada por mim): Q36.1 (forma da prova; recomendação A), Q36.2 (veredito da N1; recomendação A, a ser confirmada contra o código atual), Q36.3 (baseline; recomendação A), Q-PoS (variante; recomendação A = MCO2 15,0 s), n do E2 e o nível `nakamoto` (limitações L4 e L7), motor da Bateria 2 (L5), valor de g (Q35).
+
+## Registro 22/11/2026 — Seção A (Q1 a Q12): humano aceita todas as recomendações (humano)
+
+**Decisão do humano:** na sessão de decisão da Seção A, "Aceitar todas": Q1=C, Q2=C, Q3=A, Q4=C, Q5=A, Q6=A, Q7=A, Q8=B, Q9=B, Q10=B, Q11=A, Q12=A, como escritas na Seção A.6. Esta decisão fixa **convenções**, não valores numéricos.
+
+**Coerência com registros anteriores (conferida por leitura, sem contradição encontrada):** Q4-C, Q8-B, Q10-B e Q12-A já constavam como adotadas nos registros de 10/11 e 12/11; Q7 foi tratada em 12/11 e 16/11 (L = 100, varrer {10, 100, 500}). Este registro as ratifica junto com as demais.
+
+**O que continua aberto (não decidido aqui):**
+1. Os **valores numéricos** de assinatura, overhead e modo agregado (Q1, Q3, Q10), temporizadores base e deltas (Q5, Q12), e o valor final de `--hs-view-timeout`: seguem "a definir com o humano" ou dependentes do piloto, como no item (e) de 16/11.
+2. **Tarefas de código que a decisão implica e que NÃO foram abertas nem feitas:** pBFT com assinatura obrigatória e sem padrão (Q2-C); overhead obrigatório e único nos três protocolos (Q3-A); pBFT deixar a distribuição do Bitcoin para `s_tx` (Q4-C); `signatureMode` e `leaderPolicy` obrigatórios no HotStuff (Q8-B, Q10-B). Cada uma passa pelo loop 2 e pela nota de não regressão do pBFT.
+3. A **Seção B (Q13 em diante)** não foi tratada neste registro.
+
+**Efeito sobre a trava do ADR:** a Seção A fica decidida quanto às convenções; a trava ("parâmetros da Seção A decididos") só se cumpre quando os valores numéricos do item 1 forem fixados. O Estado deste ADR permanece `Proposto`.
