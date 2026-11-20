@@ -97,6 +97,22 @@ class PBFTTetoRetencaoTest {
     }
 
     @Test
+    void autoentregaAlemDoTetoNaoRetemEntradaEFechaNoLivro() {
+        Alvo a = novoNo();
+        PBFTBlock longe = bloco(a, (int) TETO + 1);
+        long antes = a.pbft().getAccountedSelfDeliveryBytes();
+        long antesCons = a.pbft().getAccountedSelfDeliveryConsensusBytes();
+        a.pbft().addSelfDeliveryBlockTraffic(longe, 77);
+        a.pbft().addSelfDeliveryConsensusTraffic(longe, 55);
+        assertEquals(antes + 77, a.pbft().getAccountedSelfDeliveryBytes(), "o byte fecha no livro de autoentrega");
+        assertEquals(antesCons + 55, a.pbft().getAccountedSelfDeliveryConsensusBytes());
+        assertEquals(0, a.pbft().getOpenSelfDeliveryEntryCount(), "nenhuma entrada por bloco aberta alem do teto");
+        PBFTBlock perto = bloco(a, 1);
+        a.pbft().addSelfDeliveryBlockTraffic(perto, 10);
+        assertEquals(1, a.pbft().getOpenSelfDeliveryEntryCount(), "dentro do teto a entrada e aberta como antes");
+    }
+
+    @Test
     void tetoInvalidoOuAusenteFalhaAlto() {
         assertThrows(IllegalArgumentException.class, () -> new PBFTConsensusConfig(0L));
         assertThrows(IllegalArgumentException.class, () -> new PBFTConsensusConfig(-1L));
