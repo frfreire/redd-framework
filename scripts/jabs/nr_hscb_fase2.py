@@ -32,7 +32,8 @@ def flags_tm(fx):
     return [("--tm-propose-timeout", "1.0"), ("--tm-propose-delta", "0.5"), ("--tm-prevote-timeout", "1.0"),
             ("--tm-prevote-delta", "0.5"), ("--tm-precommit-timeout", "1.0"), ("--tm-precommit-delta", "0.5"),
             ("--tm-batch-size", str(fx["batch-size"])), ("--tm-tx-size", str(fx["tx-size"])),
-            ("--tm-signature-size", "64"), ("--tm-proposer-signature-size", "80"), ("--tm-message-overhead", "10")]
+            ("--tm-signature-size", "64"), ("--tm-proposer-signature-size", "80"), ("--tm-message-overhead", "10"),
+            ("--tm-max-future-horizon", "1000")]
 
 
 def flags_hs(fx):

@@ -281,11 +281,17 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     private long selfAfterFinalizationConsensusBytes;
     private long selfConflictingTotalBytes;
     private long selfConflictingConsensusBytes;
+    private long selfBeyondHorizonTotalBytes;
+    private long selfBeyondHorizonConsensusBytes;
 
     /** Autoentrega, parte C_B_total (pacote inteiro). Mesma regra de destino de {@link #addBlockTraffic}, contadores proprios. */
     public void addSelfDeliveryBlockTraffic(B block, long bytes) {
         if (block instanceof PBFTConflictingBlock) {
             selfConflictingTotalBytes += bytes;
+            return;
+        }
+        if (beyondHorizon(block)) {
+            selfBeyondHorizonTotalBytes += bytes;
             return;
         }
         if (committedBlocks.contains(block)) {
@@ -302,6 +308,10 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
             selfConflictingConsensusBytes += bytes;
             return;
         }
+        if (beyondHorizon(block)) {
+            selfBeyondHorizonConsensusBytes += bytes;
+            return;
+        }
         if (committedBlocks.contains(block)) {
             selfAfterFinalizationConsensusBytes += bytes;
             return;
@@ -312,12 +322,14 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
 
     /** Fecha o livro da autoentrega (C_B_total): atribuido + posterior + conflitante. */
     public long getAccountedSelfDeliveryBytes() {
-        return selfAttributedTotalBytes + selfAfterFinalizationTotalBytes + selfConflictingTotalBytes;
+        return selfAttributedTotalBytes + selfAfterFinalizationTotalBytes + selfConflictingTotalBytes
+                + selfBeyondHorizonTotalBytes;
     }
 
     /** Fecha o livro da autoentrega (C_B_consenso). */
     public long getAccountedSelfDeliveryConsensusBytes() {
-        return selfAttributedConsensusBytes + selfAfterFinalizationConsensusBytes + selfConflictingConsensusBytes;
+        return selfAttributedConsensusBytes + selfAfterFinalizationConsensusBytes + selfConflictingConsensusBytes
+                + selfBeyondHorizonConsensusBytes;
     }
 
     /** Autoentrega acumulada (aberta) para o bloco, total; 0 se nada. */
