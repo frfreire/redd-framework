@@ -94,7 +94,7 @@ def main():
     saida.mkdir(parents=True, exist_ok=True)
     cp = "%s%s%s" % (copia / "target/classes", os.pathsep, (copia / "target/cp.txt").read_text(encoding="utf-8").strip())
     for proto, n, dur in CASOS:
-        extra = HS if proto == "HOTSTUFF" else TM if proto == "TENDERMINT" else ["--pbft-max-future-horizon=1000"] if proto == "ARQ" else []
+        extra = HS if proto == "HOTSTUFF" else TM if proto == "TENDERMINT" else ["--pbft-max-future-horizon=1000"] if proto == "ARQ" else ["--n-semantics=legacy"] if proto in ("MCO2", "AMBIFY") else []
         out = saida / ("%s-%d" % (proto, n))
         r = subprocess.run(["java", "-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2", "-cp", cp,
                             "jabs.example.MVPComparison", "--protocols=" + proto, "--validators=%d" % n, "--trials=1",

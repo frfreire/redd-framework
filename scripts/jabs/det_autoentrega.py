@@ -19,8 +19,9 @@ HS = ["--hs-view-timeout=10.0", "--hs-max-future-view-horizon=1000", "--hs-batch
 TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeout=1.0", "--tm-prevote-delta=0.5",
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
       "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
-CASOS = [("ARQ", 7, 60, []), ("ARQ", 13, 60, []), ("MCO2", 20, 1200, []), ("TREE", 10, 3000, []),
-         ("AMBIFY", 10, 600, []), ("AMBIFY", 20, 600, []), ("OFFSET", 40, 20000, []), ("EARTH", 40, 20000, []),
+SEM_N = ["--n-semantics=legacy"]  # Q32 A: obrigatoria onde n difere; a nao regressao fixa legacy
+CASOS = [("ARQ", 7, 60, []), ("ARQ", 13, 60, []), ("MCO2", 20, 1200, SEM_N), ("TREE", 10, 3000, SEM_N),
+         ("AMBIFY", 10, 600, SEM_N), ("AMBIFY", 20, 600, SEM_N), ("OFFSET", 40, 20000, []), ("EARTH", 40, 20000, []),
          ("DAGSPER", 10, 600, []), ("HOTSTUFF", 4, 30, HS), ("TENDERMINT", 4, 30, TM)]
 
 

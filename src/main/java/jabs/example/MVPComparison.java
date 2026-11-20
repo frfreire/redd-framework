@@ -58,6 +58,7 @@ public class MVPComparison {
         configureLoadRecord(cli.get("load-record"), cli.get("load-record-t0"));
         java.util.List<Integer> validatorsList = parseIntList(cli.getOrDefault("validators", "200"));
         java.util.List<String> protocolList = parseStringList(cli.getOrDefault("protocols", "EARTH"));
+        exigirSemanticaDeN(cli.get(NetworkSizing.FLAG), protocolList);
         pbftMaxFutureHorizon = parsePbftMaxFutureHorizonIfRequested(protocolList, cli);
         TendermintConsensusConfig tendermintConfig = parseTendermintConfigIfRequested(protocolList, cli);
         if (tendermintConfig != null) {
@@ -824,6 +825,25 @@ public class MVPComparison {
         }
         throw new IllegalArgumentException("--" + NetworkSizing.FLAG + "='" + valor + "' invalido. Validos: legacy, "
                 + "nodes (sem maiusculas nem espacos). Ausente = legacy.");
+    }
+
+    /**
+     * ADR-0015 Q32 A: a semantica de n e OBRIGATORIA (sem padrao silencioso) quando algum protocolo pedido tem
+     * decomposicao que difere entre {@code legacy} e {@code nodes} (MCO2, TREE, AMBIFY). Nos demais, n e o numero
+     * de nos nas duas semanticas e a flag segue opcional. {@code legacy} so e valido de forma explicita (nao regressao).
+     */
+    static void exigirSemanticaDeN(String valor, java.util.List<String> protocolos) {
+        if (valor != null) {
+            return;
+        }
+        for (String p : protocolos) {
+            String norm = normalizeProtocol(p);
+            if (norm.equals("MCO2") || norm.equals("TREE") || norm.equals("AMBIFY")) {
+                throw new IllegalArgumentException("--" + NetworkSizing.FLAG + " e obrigatoria para o protocolo " + norm
+                        + " (n significa coisas diferentes em legacy e nodes; ADR-0015 Q32 A). Use --"
+                        + NetworkSizing.FLAG + "=nodes (estudo) ou --" + NetworkSizing.FLAG + "=legacy (so nao regressao).");
+            }
+        }
     }
 
     private static String rotulo(boolean nodesMode) {

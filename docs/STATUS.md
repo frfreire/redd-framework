@@ -30,7 +30,7 @@ DAGsper e Tangle estão fora do escopo do estudo (ADR-0009).
 | Tarefa | Situação | Pré-condição |
 |---|---|---|
 | `V-ABC-tendermint` | pré-registro com 215 células, decisões do humano de 17/11 (MIN_EXEC=6, `--tm-*` CometBFT, V-C numérico inviável, P4b exige locking e votos nil) | pré-registro ainda não congelado (`COMMIT_PINADO` a definir); conferência do PBFT depois de D2 e paridade |
-| `PARIDADE-teto-retencao-pbft-tendermint` | teto de retenção equivalente a `maxFutureViewHorizon` (1000) para PBFT e Tendermint | depois de D2 |
+| `PARIDADE-teto-retencao-pbft-tendermint` | teto de retenção equivalente a `maxFutureViewHorizon` (1000) para PBFT e Tendermint | **fechada em 20/11/2026** (critic APROVADO na rodada 2; PR #2) |
 | `BYZ-gerador-unico-conjuntos` | partes 1-3 commitadas em BYZ-UNICA; restam as partes 4 (D2) e 5 (paridade) | D2 e paridade |
 | `AUTOENTREGA-uniforme` | = D2: autoentrega sai do Cb principal, coluna própria; ARQ honesto muda só em Cb; verificar Casper/Nakamoto/Parlia | tarefa pronta para começar |
 

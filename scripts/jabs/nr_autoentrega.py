@@ -49,7 +49,9 @@ TM = ["--tm-propose-timeout=1.0", "--tm-propose-delta=0.5", "--tm-prevote-timeou
       "--tm-precommit-timeout=1.0", "--tm-precommit-delta=0.5", "--tm-batch-size=20", "--tm-tx-size=512",
       "--tm-signature-size=64", "--tm-proposer-signature-size=80", "--tm-message-overhead=10", "--tm-max-future-horizon=1000"]
 PBFT = ["--pbft-max-future-horizon=1000"]  # teto de retencao do PBFT: obrigatorio, sem padrao (a base antiga ignora o flag)
-EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM, "ARQ": PBFT}
+# Q32 A: --n-semantics e obrigatoria onde n difere (MCO2/TREE/AMBIFY, POS/POSA); a nao regressao fixa legacy
+SEM_N = ["--n-semantics=legacy"]
+EXTRAS = {"HOTSTUFF": HS, "TENDERMINT": TM, "ARQ": PBFT, "MCO2": SEM_N, "TREE": SEM_N, "AMBIFY": SEM_N}
 COLUNA_NOVA = "Cb_autoentrega_B"
 COLUNA_CONSENSO = "Cb_autoentrega_consenso_B"
 COL_TRAFEGO = {"TrafficUntilFinalization", "Cb_AvgTraffic_MB", "TrafficConsensusUntilFinalization"}
@@ -286,7 +288,8 @@ def sweep(raiz, saida: Path, tipo, n, maxbyz, ataque, semente, dur, extras=()):
     saida.mkdir(parents=True, exist_ok=True)
     return java(raiz, ["jabs.example.ByzantineSweep", f"--type={tipo}", f"--validators={n}", f"--max-byz={maxbyz}",
                        "--trials=1", f"--duration={dur}", f"--attack={ataque}", f"--seed={semente}",
-                       f"--out={saida / 's.csv'}", *(["--pbft-max-future-horizon=1000"] if tipo == "VOTING" else []), *extras], timeout=3600)
+                       f"--out={saida / 's.csv'}", *(["--pbft-max-future-horizon=1000"] if tipo == "VOTING" else []),
+                       *(SEM_N if tipo in ("POS", "POSA") else []), *extras], timeout=3600)
 
 
 def caso_c(base, atual, saida, semente):

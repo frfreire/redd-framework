@@ -40,7 +40,7 @@ class ByzantineSweepAutoentregaCsvTest {
     private String soCabecalho(String tipo, String... extra) throws IOException {
         Path csv = tmp.resolve("so-" + tipo + extra.length).resolve("s.csv");
         List<String> a = new ArrayList<>(List.of("--type=" + tipo, "--validators=10", "--max-byz=0", "--trials=0",
-                "--duration=10", "--attack=WITHHOLD", "--out=" + csv));
+                "--duration=10", "--attack=WITHHOLD", "--n-semantics=legacy", "--out=" + csv));
         a.addAll(List.of(extra));
         assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(a.toArray(new String[0])), tipo);
         return Files.readString(csv);
