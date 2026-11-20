@@ -59,6 +59,7 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     // (PBFTConflictingBlock com equals/hashCode por valor), entao recria-lo a cada PREPARE equivocado da o mesmo
     // objeto logico sem estado: retencao A -> B = 0, sem teto e sem politica de descarte para declarar.
     private int currentViewNumber = 0;
+    private long rejectedPrePrepareNotPrimary;
     // ADR-0006 (tarefa 2). Quorum teorico de Castro & Liskov: com n >= 3f+1, f = floor((n-1)/3) e quorum = 2f+1.
     // Antes: (n/3)*2+1 com comparacao estrita '>', que exigia 2f+2 votos quando n = 3f+1 (n=4 exigia 4; n=7 exigia 6).
     private final int maxFaulty;
@@ -425,6 +426,11 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
             }
             switch (blockVote.getVoteType()) {
                 case PRE_PREPARE :
+                    // T6 / ADR-0007: so o primario da altura do bloco pode propor. O resto e descartado e contado.
+                    if (blockVote.getVoter().nodeID != primaryForHeight(block.getHeight())) {
+                        rejectedPrePrepareNotPrimary++;
+                        break;
+                    }
                     if (!this.localBlockTree.contains(block)) {
                         this.localBlockTree.add(block);
                     }
@@ -534,7 +540,9 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                 this.pbftPhase = nextStep;
                 switch (nextStep) {
                     case PRE_PREPARING:
-                        this.currentViewNumber += 1;
+                        // T6 / ADR-0007 (opcao 2): a view e a ALTURA decidida, igual em todos os nos corretos (nao mais um
+                        // contador local de commits, que divergia entre nos e deixava varios nos se julgarem primario).
+                        this.currentViewNumber = Math.max(this.currentViewNumber, block.getHeight());
                         this.currentMainChainHead = block;
                         heightLedger.markFinalized(block.getHeight()); // so rotula (i); o corte nao muda
                         updateChain();
@@ -571,32 +579,8 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
                             );
                         }
                         
-                        if (this.peerBlockchainNode.nodeID == this.getCurrentPrimaryNumber()){
-                            // Check Byzantine behavior
-                            boolean isByz = isByzantineValidator(this.peerBlockchainNode.nodeID);
-                            String attack = (byzantineConfig == null) ? null : byzantineConfig.getAttackType();
-                            if (isByz && attack != null) attack = attack.toUpperCase();
-
-                            if (isByz && "SILENT".equals(attack)) {
-                                // Do not broadcast anything
-                            } else if (isByz && "WITHHOLD".equals(attack)) {
-                                // Withhold pre-prepare: do nothing
-                            } else if (isByz && "EQUIVOCATION".equals(attack)) {
-                                // Send conflicting pre-prepare messages to different halves of neighbors.
-                                // Sem catch: falha de envio ou rede sem destinatarios honestos disjuntos propaga (criterio 4).
-                                broadcastEquivocation(block, true);
-                            } else {
-                                // Normal broadcast
-                                this.peerBlockchainNode.broadcastMessage(
-                                        new VoteMessage(
-                                                new PBFTPrePrepareVote<>(this.peerBlockchainNode,
-                                                        BlockFactory.samplePBFTBlockWithTx(peerBlockchainNode.getSimulator(),
-                                                                peerBlockchainNode.getNetwork().getRandom(),
-                                                                (PBFTNode) this.peerBlockchainNode, (PBFTBlock) block, 50)
-                                                )
-                                        )
-                                );
-                            }
+                        if (this.peerBlockchainNode.nodeID == this.getCurrentPrimaryNumber()) {
+                            proposeChildOf(block);
                         }
                         break;
                     case COMMITTING:
@@ -776,8 +760,54 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
         return this.currentViewNumber;
     }
 
+    /**
+     * Primario que propoe o bloco de ALTURA {@code height} (T6 / ADR-0007, opcao 2): {@code (altura decidida + trocas) % n}
+     * com {@code trocas = 0} (sem view change). Funcao so da altura e de n: igual em todos os nos corretos.
+     */
+    public int primaryForHeight(long height) {
+        return (int) Math.floorMod(height - 1L, (long) this.numAllParticipants);
+    }
+
+    /** Primario do PROXIMO bloco (altura da cabeca decidida + 1). View = altura decidida, entao {@code view % n}. */
     public int getCurrentPrimaryNumber() {
         return (this.currentViewNumber % this.numAllParticipants);
+    }
+
+    /** PRE_PREPAREs rejeitados por nao virem do primario da altura do bloco (T6). Honesto sem ataque: 0. */
+    public long getRejectedPrePrepareNotPrimary() {
+        return rejectedPrePrepareNotPrimary;
+    }
+
+    /**
+     * Propoe o filho de {@code parent}, com o comportamento (honesto ou bizantino) do no. Caminho UNICO de proposta:
+     * chamado pelo primario da altura apos decidir {@code parent} e pelo agendador da rede para o primeiro bloco.
+     */
+    @SuppressWarnings("unchecked")
+    public void proposeChildOf(B parent) {
+        boolean isByz = isByzantineValidator(this.peerBlockchainNode.nodeID);
+        String attack = (byzantineConfig == null) ? null : byzantineConfig.getAttackType();
+        if (isByz && attack != null) attack = attack.toUpperCase();
+
+        if (isByz && "SILENT".equals(attack)) {
+            // Do not broadcast anything
+        } else if (isByz && "WITHHOLD".equals(attack)) {
+            // Withhold pre-prepare: do nothing
+        } else if (isByz && "EQUIVOCATION".equals(attack)) {
+            // Send conflicting pre-prepare messages to different halves of neighbors.
+            // Sem catch: falha de envio ou rede sem destinatarios honestos disjuntos propaga (criterio 4).
+            broadcastEquivocation(parent, true);
+        } else {
+            // Normal broadcast
+            this.peerBlockchainNode.broadcastMessage(
+                    new VoteMessage(
+                            new PBFTPrePrepareVote<>(this.peerBlockchainNode,
+                                    BlockFactory.samplePBFTBlockWithTx(peerBlockchainNode.getSimulator(),
+                                            peerBlockchainNode.getNetwork().getRandom(),
+                                            (PBFTNode) this.peerBlockchainNode, (PBFTBlock) parent, 50)
+                            )
+                    )
+            );
+        }
     }
 
     public int getNumAllParticipants() {

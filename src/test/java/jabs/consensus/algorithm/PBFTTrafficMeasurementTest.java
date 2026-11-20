@@ -170,11 +170,12 @@ class PBFTTrafficMeasurementTest {
 
     @Test
     void noSilenciosoNaoRecebeNemFinaliza() {
-        // no 0 fora do ar desde o inicio (proposta parte do no min(10, n-1) = 6)
-        List<Fin> fins = simular(3, 7, 30, 0);
+        // no 6 fora do ar desde o inicio. T6 / ADR-0007: o primario da altura 1 e o no 0 e, sem view change, um primario
+        // em crash trava a cadeia; o no 6 so e primario na altura 7, entao as 6 primeiras alturas ainda finalizam.
+        List<Fin> fins = simular(3, 7, 30, 6);
         assertFalse(fins.isEmpty(), "os demais ainda finalizam");
         for (Fin f : fins) {
-            assertNotEquals(0, f.nodeId(), "no silencioso nao recebe pacote, logo nao finaliza nem acumula bytes");
+            assertNotEquals(6, f.nodeId(), "no silencioso nao recebe pacote, logo nao finaliza nem acumula bytes");
         }
     }
 

@@ -563,7 +563,10 @@ class PBFTPrepareEquivocationTest {
             sim.executeNextEvent();
             if (ev instanceof BlockFinalizationEvent) finalizacoes++;
         }
-        assertTrue(finalizacoes > 100, "rodou muitas alturas: " + finalizacoes);
+        // T6 / ADR-0007: o primario rotaciona por altura e, SEM view change, o primeiro primario bizantino que equivoca
+        // (no 1, altura 2) trava a cadeia; antes, a proposta periodica do genesis mantinha a corrida viva. O que o teste
+        // guarda (nenhum conflitante retido) vale para as alturas que rodaram.
+        assertTrue(finalizacoes >= 1, "rodou ao menos uma altura: " + finalizacoes);
         for (PBFTNode no : net.getAllNodes()) {
             // sem a correcao: um B retido por equivocacao (24 por no em 60 s, n=7, sementes 1); com ela, nenhum
             assertEquals(0, pbftDe(no).getPendingConflictingPrepareBlockCount(),
