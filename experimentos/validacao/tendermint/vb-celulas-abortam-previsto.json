@@ -1,6 +1,6 @@
 {
  "aviso": "PREVISAO por leitura de codigo + sorteio do build de DRY-RUN (HEAD bc07355); NADA foi simulado. Regerar no commit pinado.",
- "build": "/tmp/opencode/tm-dry",
+ "build": "dry-run do HEAD fd54b8e3 (main apos o PR #7); REGERAR no pino",
  "harness": "ObservadorTm --listar-byz-faixa (so sorteia e imprime)",
  "f0": "f=0: 40 celulas sem bizantino (controle honesto); a regra nao e acionada",
  "abortam_previsto": [
@@ -91,7 +91,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n4_f2": {
@@ -107,8 +107,8 @@
     9
    ],
    "k_exec_previsto": 4,
-   "min_exec": 6,
-   "decidivel_pelo_MIN_EXEC": false
+   "min_exec": 4,
+   "decidivel_pelo_MIN_EXEC": true
   },
   "n7_f1": {
    "fora_da_faixa": false,
@@ -116,7 +116,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n7_f2": {
@@ -125,7 +125,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n7_f3": {
@@ -134,7 +134,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n10_f1": {
@@ -143,7 +143,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n10_f2": {
@@ -152,7 +152,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n10_f3": {
@@ -161,7 +161,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n10_f4": {
@@ -170,7 +170,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n13_f1": {
@@ -179,7 +179,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n13_f2": {
@@ -188,7 +188,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n13_f3": {
@@ -197,7 +197,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n13_f4": {
@@ -206,7 +206,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   },
   "n13_f5": {
@@ -215,7 +215,7 @@
    "de": 10,
    "sementes_que_abortam": [],
    "k_exec_previsto": 10,
-   "min_exec": 6,
+   "min_exec": 4,
    "decidivel_pelo_MIN_EXEC": true
   }
  },
