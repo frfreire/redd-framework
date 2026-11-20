@@ -15,6 +15,7 @@
   "assinatura_voto_B": 64,
   "assinatura_proponente_B": 64,
   "overhead_msg_B": 10,
+  "max_future_horizon": 1000,
   "timeouts_s": {"propose": 3.0, "propose_delta": 0.5, "prevote": 1.0, "prevote_delta": 0.5, "precommit": 1.0, "precommit_delta": 0.5}
  },
  "tm_a_definir": "idem fatores-va.json (todos os parametros --tm-* sao a definir com o humano; valores provisorios identicos aos de V-A)"

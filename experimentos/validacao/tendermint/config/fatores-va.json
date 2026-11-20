@@ -15,6 +15,7 @@
   "assinatura_voto_B": 64,
   "assinatura_proponente_B": 64,
   "overhead_msg_B": 10,
+  "max_future_horizon": 1000,
   "timeouts_s": {"propose": 3.0, "propose_delta": 0.5, "prevote": 1.0, "prevote_delta": 0.5, "precommit": 1.0, "precommit_delta": 0.5}
  },
  "tm_a_definir": {
@@ -22,6 +23,7 @@
   "assinatura_voto_B": "64 B = fixture SEM FONTE (ADR-0015 Q1/A-01; mesmo valor do HotStuff, decisao de 10/11 'mesmo valor do Tendermint'); valor numerico segue a definir com o humano",
   "assinatura_proponente_B": "64 B = IGUAL ao voto por escolha PROVISORIA (A-02 pede decidir explicitamente; nao decidido); a definir com o humano",
   "overhead_msg_B": "10 B = fixture sem fonte (A-03/Q3; mesmo valor de pBFT e HotStuff); a definir com o humano",
+  "max_future_horizon": "1000 = DECIDIDO (ADR-0015: teto de retencao equivalente ao maxFutureViewHorizon do HotStuff; tarefa PARIDADE-teto-retencao-pbft-tendermint, fechada em 20/11/2026). Sem padrao no codigo: --tm-max-future-horizon e obrigatoria",
   "timeout_commit": "AUSENTE no modelo (Q6 sem decisao; A-22): a vazao do Tendermint simulado e LIMITE SUPERIOR",
   "POL_na_proposta": "NAO modelada (Q9/A-27 sem decisao): subdimensiona propostas com validRound>=0; irrelevante sem falha (round 0)"
  },
