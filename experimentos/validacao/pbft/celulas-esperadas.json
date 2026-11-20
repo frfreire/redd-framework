@@ -1,0 +1,236 @@
+{
+ "n_por_bloco": {
+  "va": 25
+ },
+ "n_total": 25,
+ "observacao": "RASCUNHO; NAO executar antes do pino, do commit e do hash do pre-registro",
+ "celulas": {
+  "va": [
+   {
+    "id": "pva_n4_s01",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 1124346,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n4_s02",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 1124347,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n4_s03",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 1124348,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n4_s04",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 1124349,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n4_s05",
+    "bloco": "va",
+    "n": 4,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 1124350,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n7_s01",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 1127346,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n7_s02",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 1127347,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n7_s03",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 1127348,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n7_s04",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 1127349,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n7_s05",
+    "bloco": "va",
+    "n": 7,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 1127350,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n10_s01",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 1130346,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n10_s02",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 1130347,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n10_s03",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 1130348,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n10_s04",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 1130349,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n10_s05",
+    "bloco": "va",
+    "n": 10,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 1130350,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n16_s01",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 1136346,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n16_s02",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 1136347,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n16_s03",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 1136348,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n16_s04",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 1136349,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n16_s05",
+    "bloco": "va",
+    "n": 16,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 1136350,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n31_s01",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 1,
+    "semente": 1151346,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n31_s02",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 2,
+    "semente": 1151347,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n31_s03",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 3,
+    "semente": 1151348,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n31_s04",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 4,
+    "semente": 1151349,
+    "duracao_s": 300
+   },
+   {
+    "id": "pva_n31_s05",
+    "bloco": "va",
+    "n": 31,
+    "f": 0,
+    "replicacao": 5,
+    "semente": 1151350,
+    "duracao_s": 300
+   }
+  ]
+ }
+}
