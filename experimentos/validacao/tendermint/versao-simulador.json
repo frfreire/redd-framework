@@ -1,0 +1,23 @@
+{
+ "modo": "PINADO",
+ "commit_construido": "2980d2695436ff4efea0138275aaf04a796ff6ff",
+ "head_no_momento": "a08aad9d7728374d391be5a36c081deab4b0d21a",
+ "tree_src": "326bf654091f16afa49323d2e88956fa4c12bf15",
+ "blob_pom": "32f934e332097d6bfed46830ff03132c36763670",
+ "sha256_ObservadorTm_compilado": "8299e17c913d17696162074a479d5100e6ab557bcc61fbf5039461d4da214810",
+ "origem": "git archive (arvore de trabalho NAO usada)",
+ "mudancas_nao_commitadas_em_src_pom_na_arvore_de_trabalho_(excluidas_do_build)": [],
+ "copia_de_build": "\\tmp\\opencode\\val-tm",
+ "classes": "\\tmp\\opencode\\val-tm\\target\\classes",
+ "classpath_arquivo": "\\tmp\\opencode\\val-tm\\cp.txt",
+ "observador_classes": "\\tmp\\opencode\\val-tm\\harness-classes",
+ "java_version": [
+  "java version \"21.0.8\" 2025-07-15 LTS",
+  "Java(TM) SE Runtime Environment (build 21.0.8+12-LTS-250)",
+  "Java HotSpot(TM) 64-Bit Server VM (build 21.0.8+12-LTS-250, mixed mode, sharing)"
+ ],
+ "mvn_v": [
+  "Apache Maven 3.9.11 (3e54c93a704957b63ee3494413a2b544fd3d825b)",
+  "Maven home: C:\\maven\\mvn"
+ ]
+}

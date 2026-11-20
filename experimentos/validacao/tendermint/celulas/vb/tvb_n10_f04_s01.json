@@ -1,0 +1,40 @@
+{
+ "id": "tvb_n10_f04_s01",
+ "protocolo": "TENDERMINT",
+ "n": 10,
+ "carga": "estacionaria",
+ "byzantinos": 4,
+ "semente": 830346,
+ "replicacao": 1,
+ "duracao_s": 300,
+ "simulador_commit": "2980d2695436ff4efea0138275aaf04a796ff6ff",
+ "gerado_em": "2026-11-20T21:32:02+00:00",
+ "bloco": "vb",
+ "grupo": "tvb_n10_f04",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "fatores_origem": "experimentos\\validacao\\tendermint\\config\\fatores-vb.json",
+ "variante": {
+  "L": 100,
+  "s_tx": 512,
+  "sig_voto_B": 64,
+  "sig_proponente_B": 64,
+  "overhead_msg_B": 10,
+  "max_future_horizon": 1000,
+  "tm_propose": 3.0,
+  "tm_propose_delta": 0.5,
+  "tm_prevote": 1.0,
+  "tm_prevote_delta": 0.5,
+  "tm_precommit": 1.0,
+  "tm_precommit_delta": 0.5,
+  "attack": "EQUIVOCATION"
+ },
+ "t0_transiente_s": null,
+ "fora_da_faixa": true,
+ "flags_extras": [
+  "--allow-beyond-bft-threshold=true"
+ ]
+}
