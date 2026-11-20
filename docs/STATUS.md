@@ -41,7 +41,7 @@ Dívida aceita: `ByzantineSweep.java:111-126` monta `fValues` antes de limitar `
 1. **D2** autoentrega uniforme (inclui a dívida do laço de `maxByz`).
 2. **Paridade** do teto de retenção PBFT/Tendermint.
 3. ~~`--n-semantics=nodes` obrigatório.~~ **Fechada em 20/11/2026** (critic APROVADO na rodada 3; branch `n-semantics-obrigatoria`).
-4. **Ataque uniforme no MVPComparison** (inclui Tendermint e PBFT).
+4. ~~Ataque uniforme no MVPComparison (inclui Tendermint e PBFT).~~ **Fechada em 20/11/2026** (EQUIVOCATION em HOTSTUFF, TENDERMINT e ARQ; critic APROVADO na rodada 3; branch `ataque-uniforme-mvp`).
 
 Decisões já tomadas que condicionam as próximas: Q13.1-13.4 opção A (gerador MMPP-2 depois da Bateria 2; MMPP-2 começa em estado sorteado da distribuição estacionária); Q35 gás constante por tx com trava g·L ≤ limite, **valor de g a definir com o humano** e repetir por script o achado dos 22% antes de aceitar; Parlia/universo opção C (f como percentual do universo de validadores, rotulado, `#` fora_da_faixa; tabela de f efetivo por n e protocolo no pré-registro).
 
