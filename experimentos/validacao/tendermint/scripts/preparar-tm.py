@@ -27,10 +27,10 @@ VAL = Path(__file__).resolve().parent.parent
 MVN = shutil.which("mvn.cmd") or shutil.which("mvn") or "mvn"  # Windows: mvn.cmd (subprocess sem shell nao resolve "mvn")
 RAIZ = VAL.parents[2]
 # ---- A PREENCHER NO PINO (nao antes): ----
-COMMIT_PINADO = None      # a definir (apos BYZ-UNICA, D2 e PARIDADE commitadas); hash completo de 40 hex
-TREE_SRC = None           # git rev-parse <COMMIT_PINADO>:src
-BLOB_POM = None           # git rev-parse <COMMIT_PINADO>:pom.xml
-SHA_OBS_TM = None         # sha256 de harness/ObservadorTm.java NO PINO (o observador pode precisar de ajuste por causa da PARIDADE)
+COMMIT_PINADO = "2980d2695436ff4efea0138275aaf04a796ff6ff"  # pino de 22/11/2026: main apos os PRs #7, #10 e #11 (e o merge #1 do dependabot em chaincode/, fora de src/)
+TREE_SRC = "326bf654091f16afa49323d2e88956fa4c12bf15"  # git rev-parse 2980d269:src
+BLOB_POM = "32f934e332097d6bfed46830ff03132c36763670"  # git rev-parse 2980d269:pom.xml
+SHA_OBS_TM = "2d2d7024291fafa7b14149cfe04cd181c46cb861e2ac844b225be347cfb8396b"  # sha256 de ObservadorTm.java com fim de linha LF (= o blob do git)
 OBS_TM = VAL / "harness" / "ObservadorTm.java"
 
 
@@ -53,7 +53,7 @@ def construir(commit, dest, dry):
         for nome, got, esp in (("src/", tree, TREE_SRC), ("pom.xml", pom, BLOB_POM)):
             if got != esp:
                 sys.exit(f"ERRO: {nome} de {commit[:7]} = {got} != pre-registrado {esp}. Rodada NAO autorizada com outro codigo.")
-        if hashlib.sha256(OBS_TM.read_bytes()).hexdigest() != SHA_OBS_TM:
+        if hashlib.sha256(OBS_TM.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != SHA_OBS_TM:  # LF: independe de core.autocrlf
             sys.exit(f"ERRO: ObservadorTm.java diverge do pre-registrado ({SHA_OBS_TM})")
     tar = run(["git", "archive", commit, "--", "src", "pom.xml"], RAIZ, binario=True)
     tarfile.open(fileobj=io.BytesIO(tar)).extractall(dest, filter="data")

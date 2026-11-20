@@ -3,9 +3,7 @@
 Data do rascunho: 2026-11-16. Tarefa: `V-ABC-tendermint`. Autor: `jabs-experimento` (proponente do loop 3; **não aprova o próprio resultado**).
 Impacto: **ALTO** (portão de validação): o loop 3 vai ao humano, sem arbiter.
 
-**ESTADO: RASCUNHO. NÃO é o pré-registro congelado.** Faltam o pino do simulador (seção 2) e o commit do arquivo. Enquanto
-`COMMIT_PINADO = a definir (após BYZ-UNICA, D2 e PARIDADE estarem commitadas)`, este arquivo **não tem hash** (`hash-preregistro-tm.py gravar`
-recusa) e **nenhuma célula de portão pode rodar**. O hash final só vale depois do pino.
+**ESTADO: PINO DEFINIDO em 22/11/2026; o hash do pre-registro AINDA NAO foi gravado** (`hash-preregistro-tm.py gravar` e a ultima etapa e so roda com a autorizacao do humano, depois de ele ler este arquivo e commita-lo). Nenhuma celula de portao foi rodada. O que foi executado e NAO gera dado: leitura de codigo, formula analitica, build do pino, dry-run dos comandos, autotestes sobre dado sintetico, a listagem de V-B sem simular e a reproducao de UMA celula do HotStuff (seção 2).
 
 **Nada foi simulado nesta etapa.** O que foi executado e **não gera dado**: leitura de código; cálculo da fórmula (`formula-analitica-tm.py`);
 um build de **dry-run** do HEAD `bc07355` em `/tmp/opencode/tm-dry` (só `mvn compile`, `javac` do observador e `--listar-byz-faixa`, que sorteia ids
@@ -44,23 +42,21 @@ Pré-condição **P4b** (ADR-0009, D3b; `PROTOCOLO-EXPERIMENTAL.md`): "passa no 
 
 ## 2. Instrumento: commit, build, JVM
 
-- **`COMMIT_PINADO = a definir (após BYZ-UNICA, D2 e PARIDADE estarem commitadas)`.** Hoje o HEAD é `bc073557870aaac0e9b5f3fc62bdf240a4303260` (`src/` tree
-  `a1b464ee983b78a2a6b6de7166a6e6460839b8af`, `pom.xml` blob `32f934e332097d6bfed46830ff03132c36763670`), **mas há mudanças não commitadas de outro agente em `src/`** (BYZ-UNICA: contagem
-  inteira e gerador único de conjuntos; depois autoentrega D2 e paridade de teto PBFT/Tendermint), listadas pelo `git status` (`ByzantineConfig`, `ByzantineSweep`, `MVPComparison` e cenários
-  de ARQ, Bitcoin, Casper, DAGsper, Hybrid). **O build do dry-run exclui essas mudanças** (`git archive` do HEAD) e `preparar-tm.py` **recusa** rodar sem o pino.
+- **PINO (22/11/2026):** `COMMIT_PINADO = 2980d2695436ff4efea0138275aaf04a796ff6ff` (`main` depois dos PRs #7 politica de lideranca do PBFT, #10 portabilidade dos scripts e #11 testes de *locking*; o merge #1 do dependabot so toca `chaincode/`). `src/` tree `326bf654091f16afa49323d2e88956fa4c12bf15`, `pom.xml` blob `32f934e332097d6bfed46830ff03132c36763670` (conferidos por `git rev-parse` e por `preparar-tm.py`, que recusa outro codigo). SHA-256 de `harness/ObservadorTm.java` (LF, = blob do git): `2d2d7024291fafa7b14149cfe04cd181c46cb861e2ac844b225be347cfb8396b`. O historico abaixo (rascunho de 16/11, HEAD `bc07355`) fica como registro do que mudou.
 - **O que muda no pino e invalida números deste rascunho (ver seção 8):** (a) a **PARIDADE de teto de retenção** dá ao Tendermint um teto para `futureMessages`/alturas e rounds futuros; **pode mudar a saída do Tendermint**
   (a especificação diz que sem ataque e sem atraso deve ficar idêntica; **eu não verifiquei**); (b) a **autoentrega (D2)** muda a contagem de tráfego dos protocolos que a contam (PBFT e outros); no Tendermint o código lido **já não
   autoentrega** (`TendermintP2P` não liga o nó a si mesmo; `isLocalSelfDelivery`), mas o tratamento pode mudar; (c) o **gerador único de conjuntos** (BYZ-UNICA) **pode mudar o sorteio dos ids bizantinos** de `withExactCount`
   e, portanto, **a lista de células que abortam** (seção 5); e (d) `ByzantineConfig.beyondBftThreshold/bftLimit` **só existem na árvore suja**: o `ObservadorTm` replica a regra com aritmética inteira local por isso.
-- **Quando o pino existir:** preencher em `preparar-tm.py` (`COMMIT_PINADO`, `TREE_SRC`, `BLOB_POM`, `SHA_OBS_TM`), regerar `vb-celulas-abortam-previsto.json` e `custo-estimado-tm.json`, **reconferir o observador contra a API pinada**
+- **Checagem da PARIDADE (feita em 20/11/2026, sem ataque e sem atraso):** HEAD `45425dab` contra a arvore com a paridade, n = 4, 7, 10, 16 e 31, 120 s, seed 1, `-XX:hashCode=2`: saida do `MVPComparison` **identica byte a byte**. Nao cobre V-B, outras sementes nem o observador. O sorteio de V-B regerado no pino deu as MESMAS 6 celulas a abortar (seção 5).
+- **Quando o pino existir (FEITO em 22/11/2026, exceto `gravar`):** preencher em `preparar-tm.py` (`COMMIT_PINADO`, `TREE_SRC`, `BLOB_POM`, `SHA_OBS_TM`), regerar `vb-celulas-abortam-previsto.json` e `custo-estimado-tm.json`, **reconferir o observador contra a API pinada**
   (re-hashear se mudar), rodar `hash-preregistro-tm.py gravar`, e só então commitar. **O hash final do pré-registro só vale depois disso.** Se a PARIDADE alterar a saída do Tendermint, **este V-ABC repete** (decisão do humano, 13/11, item 5, aplicada por analogia).
-- **Build a partir do git** (`git archive`) em `/tmp/opencode/val-tm`; a árvore de trabalho **não é usada**. Java 25 (alvo do pom: 17), Maven 3.8.7; serão gravados em `versao-simulador.json`.
+- **Build a partir do git** (`git archive` do pino); a árvore de trabalho **não é usada**. **AMBIENTE DE EXECUCAO (declarado, difere do V-ABC do HotStuff):** Windows 11, Java **21.0.8** (Oracle HotSpot), Maven **3.9.11**; o V-ABC do HotStuff rodou em Linux, OpenJDK 25.0.5, Maven 3.8.7. O alvo do pom e Java 17. Os valores reais ficam em `versao-simulador.json` (gravado na etapa 2). **Evidencia de equivalencia, de UMA celula e de HotStuff (22/11/2026):** a celula `va_aggregated_n7_s01` (simulador `76932b9`, 120 s), arquivada no Linux, foi reconstruida e rodada nesta maquina com o comando arquivado: `mvp-results.csv` e `mvp-results-cb.csv` **identicos byte a byte**. **Isto NAO prova a equivalencia para o Tendermint nem para o observador**; a etapa 2 repete 4 celulas em duas execucoes (seção 6) e o MD5 do CSV por bloco entre as duas JVMs (V-A e V-C). Diferenca de plataforma que persiste: `max_rss_mb` = -1 (nao medido no Windows).
 - **`-XX:hashCode=2` OBRIGATÓRIO** em toda célula, nas **duas** JVMs (`rodar_celula.py` aborta sem ele). Custo com a flag em `Tendermint` **não foi medido** (seção 7).
 - **Observador: `harness/ObservadorTm.java` (declarado e hasheado).** Adaptação de `ObservadorVal.java` do HotStuff (SHA-256 `21aa3f9e7669765ba32ff91f4cadd8e7b28c364d8989a27d6a850c7e9d61e089`, **não alterado**). **Muda:**
   (i) conta `TendermintTimeoutEvent` e subtrai os `STALE_TIMEOUT` do núcleo (`TendermintCore.discardCount`) para obter timeouts **disparados** (o Tendermint não expõe contador como o `getTimeoutAdvances` do HotStuff);
   (ii) grava `pacotes-por-altura.csv.gz` **e** `por-no-por-altura.csv.gz` (proponente do round 0 = (altura−1) mod n, de `TendermintCore.roundRobin`); (iii) grava round final, descartes `INVALID_VALUE`,
-  equivocações, voto nil sem altura, pico de mensagens de altura futura e `max_lead` (maior diferença de altura entre nós); (iv) **em V-B é o único instrumento** (ver seção 3.3). Compila **contra o HEAD `bc07355`**
-  (verificado: `javac` rc = 0, SHA-256 `74cf13e40a99c978ab4017986505756c692872351176e417d205886fa41b5717` na versão deste rascunho). **O SHA do pino será outro se ele for editado.**
+  equivocações, voto nil sem altura, pico de mensagens de altura futura e `max_lead` (maior diferença de altura entre nós); (iv) **em V-B é o único instrumento** (ver seção 3.3). Compila **contra o pino `2980d269`**
+  (verificado em 22/11/2026: `javac` rc = 0 em `preparar-tm.py`; SHA-256 do pino `2d2d7024291fafa7b14149cfe04cd181c46cb861e2ac844b225be347cfb8396b`, calculado com fim de linha LF para independer de `core.autocrlf`). Mudancas desde o rascunho: `--tm-max-future-horizon` lido da CLI e contador `descartes_FUTURE_BEYOND_HORIZON_total`.
   Que o observador **não perturba** a simulação é verificado na etapa 2 pela igualdade do MD5 do CSV por bloco entre as duas JVMs (**só em V-A e V-C**).
 
 ## 3. Critérios (todos congelados antes de qualquer dado, **após o pino**)
@@ -244,6 +240,32 @@ qualquer conclusão sobre n = 64 ou 128, **qualquer comparação Tendermint × H
 
 ### Artefatos (SHA-256)
 
-**PENDENTE: a tabela de artefatos é gravada pelo comando `hash-preregistro-tm.py listar <caminho>...` no pino e só então entra aqui.** Enquanto `COMMIT_PINADO = a definir`, este arquivo **não tem hash**.
-Artefatos previstos (sem hash agora): `config/fatores-{va,vc,vb}.json`, `celulas-esperadas.json`, `checagem-sementes-*.json`, `FONTES-V-C.md`, `harness/ObservadorTm.java`, `vb-celulas-abortam-previsto.json`, `custo-estimado-tm.json`, `scripts/*.py`
-e os `scripts/jabs/gerar-grid.py` e `scripts/jabs/validar-complexidade.py` (usado pela regra S).
+Calculados em 22/11/2026 no pino `2980d269` com `hash-preregistro-tm.py listar` (SHA-256 do conteudo com fim de linha LF, independente de `core.autocrlf`). Conferir com `hash-preregistro-tm.py conferir --artefatos`. `versao-simulador.json` NAO esta aqui: e gravado na etapa 2, com o caminho real do build.
+
+| arquivo | sha256 |
+|---|---|
+| `experimentos/validacao/tendermint/config/fatores-va.json` | `019f1f08bd5fa9fd3136cfa723323bf2c9604e03f6afe6aeb5b370a110c560b1` |
+| `experimentos/validacao/tendermint/config/fatores-vb.json` | `9687093ad79c9ae98c501d98bf4c85d9ac5f65e500f715bd6b220857abfdd684` |
+| `experimentos/validacao/tendermint/config/fatores-vc.json` | `272069c6531b8e090c33ad52fce3dcbd612de69f62690e24f3499071b10516b5` |
+| `experimentos/validacao/tendermint/celulas-esperadas.json` | `3714c3f923df73032cc9a0b769f8da6c0ecc091f14180aabf20d8f7714dcbf30` |
+| `experimentos/validacao/tendermint/checagem-sementes-rascunho.json` | `4cd8ce7ba84ac83fc3da7ad82cfc1d96545bd0c3fe82d7eac32cef9546aac010` |
+| `experimentos/validacao/tendermint/FONTES-V-C.md` | `960bda04cc9ab4ae1936f7578b40847f6153a1bdf3bf1baf2cfdc2dcf4529dad` |
+| `experimentos/validacao/tendermint/harness/ObservadorTm.java` | `2d2d7024291fafa7b14149cfe04cd181c46cb861e2ac844b225be347cfb8396b` |
+| `experimentos/validacao/tendermint/vb-celulas-abortam-previsto.json` | `160634e57516e0724c6123973a80b01164718a28bd2b54400afea1e158c7e9b2` |
+| `experimentos/validacao/tendermint/custo-estimado-tm.json` | `6ff06884c6064c7ad348eac6deddc6d9a176a9ee8d1b6f1084ef23dbc75757ff` |
+| `experimentos/validacao/tendermint/scripts/analisar-va-tm.py` | `c528e0a53472a778a3f0cef5fba3c515e869060e6d566ba1e44c5be45b030c7f` |
+| `experimentos/validacao/tendermint/scripts/analisar-vb-tm.py` | `c726029d86a1a9df6b1ac132c738be80591662c3e9d570869c5af011badae74f` |
+| `experimentos/validacao/tendermint/scripts/aux-ler-pdf.py` | `20a5536952bc8fce314d95cc905a25e34f2c488e69076a0d4dbac2338fe9072a` |
+| `experimentos/validacao/tendermint/scripts/checar-sementes-tm.py` | `029a359ac88f9ee2ec7b142eccd7463cd885f01109d637a1f011d5c0f84fded5` |
+| `experimentos/validacao/tendermint/scripts/comparar-determinismo-tm.py` | `8888f36407b1931dbf28ee0782b3a9366b9ddb7005121075bb3820e72e8a291c` |
+| `experimentos/validacao/tendermint/scripts/custo-estimado-tm.py` | `e578749b72d8bdb05e323395f0a4c6d5735ff746f9ea5a641740428e93627e43` |
+| `experimentos/validacao/tendermint/scripts/dry-run-comandos-tm.py` | `6457277ef45371d32fd90ee966140a8836900899bc5e1aa83b679ce1c729c621` |
+| `experimentos/validacao/tendermint/scripts/executar-lote-tm.py` | `836e08488a1f464a6fdb77a6df753781d842bc10280fe62dcf5ed9a9b005fe53` |
+| `experimentos/validacao/tendermint/scripts/formula-analitica-tm.py` | `06f33b4e8ce8fd2de419376107ec7922776a550bd008557ffe1cf1d824056f9b` |
+| `experimentos/validacao/tendermint/scripts/gerar-celulas-tm.py` | `9c9a02cc32533fe0a9dda8c9d4a6bf8abe4e16a0c1c931007554cb3cd523de43` |
+| `experimentos/validacao/tendermint/scripts/hash-preregistro-tm.py` | `a7f782ec85b6384bbeb2068691f750e2eb6b1fbcb383c176f934c4b194a1eb67` |
+| `experimentos/validacao/tendermint/scripts/listar-vb-tm.py` | `83ec25ab3d90fb39f3b6df5f5027f33f2d7b4fcdec42d3de0ba613e40b1bd469` |
+| `experimentos/validacao/tendermint/scripts/preparar-tm.py` | `8e8d61fa8ed34433520db676c7d7194504b42efa3aa02f6aea11a84436b0d4fc` |
+| `experimentos/validacao/tendermint/scripts/rodar_celula.py` | `6343c4b60423b25fc44760810a8ab8ec8b6c7ba6e56bd443d0bf0372acbdbc79` |
+| `scripts/jabs/gerar-grid.py` | `7fb2a83eefb5f642f1934281238579c0e762cad5302620512237e646616241fd` |
+| `scripts/jabs/validar-complexidade.py` | `e229f38d1ea25d614ca976da0f6f6620c6914be0c485bb4646d436b4f8f684a8` |
