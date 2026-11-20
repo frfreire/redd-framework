@@ -16,12 +16,15 @@ import argparse
 import hashlib
 import io
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tarfile
 from pathlib import Path
 
 VAL = Path(__file__).resolve().parent.parent
+MVN = shutil.which("mvn.cmd") or shutil.which("mvn") or "mvn"  # Windows: mvn.cmd (subprocess sem shell nao resolve "mvn")
 RAIZ = VAL.parents[2]
 # ---- A PREENCHER NO PINO (nao antes): ----
 COMMIT_PINADO = None      # a definir (apos BYZ-UNICA, D2 e PARIDADE commitadas); hash completo de 40 hex
@@ -54,17 +57,17 @@ def construir(commit, dest, dry):
             sys.exit(f"ERRO: ObservadorTm.java diverge do pre-registrado ({SHA_OBS_TM})")
     tar = run(["git", "archive", commit, "--", "src", "pom.xml"], RAIZ, binario=True)
     tarfile.open(fileobj=io.BytesIO(tar)).extractall(dest, filter="data")
-    run(["mvn", "-q", "-DskipTests", "compile"], dest)
+    run([MVN, "-q", "-DskipTests", "compile"], dest)
     cp_file = dest / "cp.txt"
-    run(["mvn", "-q", "dependency:build-classpath", f"-Dmdep.outputFile={cp_file}"], dest)
+    run([MVN, "-q", "dependency:build-classpath", f"-Dmdep.outputFile={cp_file}"], dest)
     hdir = dest / "harness-classes"
     hdir.mkdir(exist_ok=True)
     fonte = dest / "ObservadorTm.java"
     fonte.write_bytes(OBS_TM.read_bytes())
-    cp = f"{dest}/target/classes:" + cp_file.read_text().strip()
+    cp = f"{dest}/target/classes{os.pathsep}" + cp_file.read_text().strip()
     run(["javac", "-nowarn", "-cp", cp, "-d", str(hdir), str(fonte)], dest)
     jv = subprocess.run(["java", "-version"], capture_output=True, text=True)
-    mv = run(["mvn", "-v"], RAIZ)
+    mv = run([MVN, "-v"], RAIZ)
     info = {"modo": "DRY-RUN (nao e dado; nao e o commit pinado)" if dry else "PINADO",
             "commit_construido": run(["git", "rev-parse", commit], RAIZ).strip(),
             "head_no_momento": run(["git", "rev-parse", "HEAD"], RAIZ).strip(), "tree_src": tree, "blob_pom": pom,

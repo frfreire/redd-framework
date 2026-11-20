@@ -16,6 +16,7 @@ la (este script e o mesmo). A enumeracao EXAUSTIVA nao depende de semente nem do
 Uso: listar-vb-tm.py [--build /tmp/opencode/tm-dry]     grava vb-celulas-abortam-previsto.json
 """
 import json
+import os
 import subprocess
 import sys
 from itertools import combinations
@@ -45,7 +46,7 @@ def viola(n, byz):
 
 
 def sortear(n, f):
-    cp = f"{BUILD}/harness-classes:{BUILD}/target/classes:" + (BUILD / "cp.txt").read_text().strip()
+    cp = os.pathsep.join([f"{BUILD}/harness-classes", f"{BUILD}/target/classes", (BUILD / "cp.txt").read_text().strip()])
     r = subprocess.run(["java", "-cp", cp, "ObservadorTm", f"--listar-byz-faixa=1:{SEMENTES}", f"--run-seed-base={BASE + n * 1000}",
                         f"--validators={n}", f"--byzantine-count={f}"], capture_output=True, text=True)
     if r.returncode != 0:
