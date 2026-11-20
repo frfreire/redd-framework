@@ -50,7 +50,7 @@ CASOS = [
     ("HS-ref", "HOTSTUFF", 4, 30, HS_REF),
     ("HS-n7", "HOTSTUFF", 7, 30, HS_PEQ),
     ("TM-n4", "TENDERMINT", 4, 30, TM),
-    ("ARQ-n7", "ARQ", 7, 60, []),
+    ("ARQ-n7", "ARQ", 7, 60, ["--pbft-max-future-horizon=1000"]),
     ("MCO2-n10", "MCO2", 10, 60, SEM_N),
     ("AMBIFY-n10", "AMBIFY", 10, 60, SEM_N),
     ("TREE-n10", "TREE", 10, 60, SEM_N),
