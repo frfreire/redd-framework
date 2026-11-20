@@ -94,7 +94,7 @@ TM_FLAGS_OBRIGATORIAS = (
     "--tm-prevote-timeout", "--tm-prevote-delta",
     "--tm-precommit-timeout", "--tm-precommit-delta",
     "--tm-batch-size", "--tm-tx-size", "--tm-signature-size", "--tm-proposer-signature-size",
-    "--tm-message-overhead",
+    "--tm-message-overhead", "--tm-max-future-horizon",
 )
 
 # Flags obrigatorias do HOTSTUFF (MVPComparison.parseHotStuffConfigIfRequested). Mesma regra: nenhum valor aqui.
@@ -116,7 +116,7 @@ def flags_tm_do_java(jabs: Path):
     if ini < 0:
         raise ValueError(f"parseTendermintConfigIfRequested nao encontrado em {jabs / MVP_COMPARISON}")
     corpo = src[ini:src.find("private static String requiredCliValue", ini)]
-    return ["--" + m for m in re.findall(r'required(?:Double|Int)\(cli,\s*"(tm-[a-z-]+)"\)', corpo)]
+    return ["--" + m for m in re.findall(r'required(?:Double|Int|Long)\(cli,\s*"(tm-[a-z-]+)"', corpo)]
 
 
 def flags_hs_do_java(jabs: Path):
@@ -256,9 +256,9 @@ def selftest():
     assert tm_faltantes("TENDERMINT", exemplo[:-1] + [TM_FLAGS_OBRIGATORIAS[-1] + "="]) == [TM_FLAGS_OBRIGATORIAS[-1]]
     assert tm_faltantes("TENDERMINT", exemplo) == []
     # 4) extras entram ao fim do comando, na ordem dada
-    assert montar_cmd("CP", "TENDERMINT", 4, 5, 7, 1, Path("/o"), exemplo)[-11:] == exemplo
-    # 4b) contagem e fonte da verdade: 11 flags, batendo EXATAMENTE com o Java
-    assert len(TM_FLAGS_OBRIGATORIAS) == 11 and "--tm-proposer-signature-size" in TM_FLAGS_OBRIGATORIAS
+    assert montar_cmd("CP", "TENDERMINT", 4, 5, 7, 1, Path("/o"), exemplo)[-12:] == exemplo
+    # 4b) contagem e fonte da verdade: 12 flags, batendo EXATAMENTE com o Java
+    assert len(TM_FLAGS_OBRIGATORIAS) == 12 and "--tm-proposer-signature-size" in TM_FLAGS_OBRIGATORIAS
     raiz = Path(__file__).resolve().parents[2]
     conferir_com_java(raiz)
     assert sorted(flags_tm_do_java(raiz)) == sorted(TM_FLAGS_OBRIGATORIAS)
