@@ -31,7 +31,7 @@ class PBFTHeightLedgerTest {
     @Test
     void ledgerFechaComOsLivrosDoPbftNumaCorridaHonesta() throws Exception {
         PBFTLANScenario sc = new PBFTLANScenario("ledger", 1L, 4, 30.0);
-        sc.setMaxFutureHorizon(TETO);
+        sc.setMaxFutureHorizon(TETO); sc.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         sc.run();
         long total = 0, consenso = 0, ledgerTotal = 0, ledgerConsenso = 0, semAltura = 0;
         int finalizadas = 0;
@@ -61,7 +61,7 @@ class PBFTHeightLedgerTest {
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
         long teto = 10L;
-        net.populateNetwork(sim, 4, new PBFTConsensusConfig(teto));
+        net.populateNetwork(sim, 4, new PBFTConsensusConfig(teto, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         PBFTNode no = net.getAllNodes().get(0);
         PBFT<PBFTBlock, ?> p = pbft(no);
         PBFTBlock longe = new PBFTBlock(100, (int) teto + 1, 0.0, net.getAllNodes().get(1), PBFT_GENESIS_BLOCK);

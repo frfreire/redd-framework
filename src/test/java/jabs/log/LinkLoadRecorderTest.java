@@ -514,7 +514,7 @@ class LinkLoadRecorderTest {
         // medido, nao calculado); o que se confere: faixa de U, nenhum descarte (sem crash) e a identidade de
         // bytes (que o registrador tambem exige internamente, falhando alto se violada).
         ArqReddVotingScenario cenario = new ArqReddVotingScenario("ARQ-teste", 1L, 7, 20.0);
-        cenario.setMaxFutureHorizon(1000L);
+        cenario.setMaxFutureHorizon(1000L); cenario.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         LinkLoadRecorder rec = new LinkLoadRecorder(tmp.resolve("arq").toString(), "ARQ", 1L, 5.0);
         cenario.AddNewLogger(rec);
         cenario.run();

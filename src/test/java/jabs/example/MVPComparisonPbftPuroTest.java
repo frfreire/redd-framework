@@ -23,7 +23,7 @@ class MVPComparisonPbftPuroTest {
     @Test
     void rodaPbftPuroComSomaDaRedeETtNaoMedido(@TempDir Path tmp) throws Exception {
         Path out = tmp.resolve("pbft");
-        MVPComparison.main(args(out, "--pbft-max-future-horizon=1000"));
+        MVPComparison.main(args(out, "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING"));
         List<String> agregado = Files.readAllLines(out.resolve("mvp-results.csv"));
         assertTrue(agregado.stream().anyMatch(l -> l.startsWith("# PBFT: Tt_avg e Tt_std = -1")), agregado.toString());
         String row = agregado.stream().filter(l -> l.startsWith("PBFT;")).findFirst().orElseThrow();
@@ -53,7 +53,7 @@ class MVPComparisonPbftPuroTest {
     void trialFalhoDoPbftPuroFalhaAltoSemLinhaDeZeros(@TempDir Path tmp) throws Exception {
         Path out = tmp.resolve("zero");
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> MVPComparison.main(
-                args(out, "--pbft-max-future-horizon=1000", "--duration=0.5", "--trials=2")));
+                args(out, "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--duration=0.5", "--trials=2")));
         assertTrue(e.getMessage().contains("trial PBFT falhou") && e.getMessage().contains("0 blocos"), e.getMessage());
         if (Files.exists(out.resolve("mvp-results.csv"))) {
             assertTrue(Files.readAllLines(out.resolve("mvp-results.csv")).stream().noneMatch(l -> l.startsWith("PBFT;")),
@@ -67,11 +67,31 @@ class MVPComparisonPbftPuroTest {
         for (String n : new String[]{"1", "3", "4,3"}) {
             Path out = tmp.resolve("n" + n.replace(',', '_'));
             IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
-                    args(out, "--pbft-max-future-horizon=1000", "--validators=" + n)), n);
+                    args(out, "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=" + n)), n);
             assertTrue(e.getMessage().contains("PBFT puro exige n >= 4"), e.getMessage());
             assertTrue(Files.notExists(out), "falha antes de criar saida: n=" + n);
         }
         MVPComparison.exigirNMinimoDoPbftPuro(List.of("ARQ"), List.of(1)); // so o PBFT puro e restrito
+    }
+
+    /** PI-14: a politica de lideranca e obrigatoria e sem padrao; valor invalido tambem falha alto, antes de criar saida. */
+    @Test
+    void politicaDeLiderancaObrigatoriaEValidada(@TempDir Path tmp) throws Exception {
+        java.util.List<String> sem = new java.util.ArrayList<>(List.of("--protocols=PBFT", "--validators=4", "--trials=1",
+                "--duration=10", "--seed=1", "--pbft-max-future-horizon=1000"));
+        Path o1 = tmp.resolve("sem");
+        sem.add("--output=" + o1);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(sem.toArray(new String[0])));
+        assertTrue(e.getMessage().contains("pbft-leader-policy"), e.getMessage());
+        assertTrue(Files.notExists(o1), "falha antes de criar saida");
+        Path o2 = tmp.resolve("invalida");
+        IllegalArgumentException e2 = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                args(o2, "--pbft-max-future-horizon=1000", "--pbft-leader-policy=stable")));
+        assertTrue(e2.getMessage().contains("STABLE, ROTATING"), e2.getMessage());
+        // com STABLE roda e o CSV por bloco existe
+        Path o3 = tmp.resolve("stable");
+        MVPComparison.main(args(o3, "--pbft-max-future-horizon=1000", "--pbft-leader-policy=STABLE"));
+        assertTrue(Files.exists(o3.resolve("pbft-4v-t0.csv")));
     }
 
     @Test
@@ -79,7 +99,7 @@ class MVPComparisonPbftPuroTest {
         Path out = tmp.resolve("ataque");
         // PBFT puro nao le --attack: junto de um protocolo capaz (ARQ) com ataque ativo, rodaria honesto sob rotulo de ataque
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(args(out, "--protocols=ARQ,PBFT",
-                "--pbft-max-future-horizon=1000", "--attack=EQUIVOCATION", "--byzantine-count=1")));
+                "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--attack=EQUIVOCATION", "--byzantine-count=1")));
         assertTrue(Files.notExists(out), "falha antes de criar saida");
     }
 }

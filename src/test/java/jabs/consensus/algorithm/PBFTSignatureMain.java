@@ -30,7 +30,7 @@ public class PBFTSignatureMain {
         RandomnessEngine rng = new RandomnessEngine(seed);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         if (attack != null) {
             ByzantineConfig cfg = new ByzantineConfig(n, byz, attack, seed);
             for (int id : byz) {

@@ -61,6 +61,7 @@ public class MVPComparison {
         exigirSemanticaDeN(cli.get(NetworkSizing.FLAG), protocolList);
         exigirNMinimoDoPbftPuro(protocolList, validatorsList);
         pbftMaxFutureHorizon = parsePbftMaxFutureHorizonIfRequested(protocolList, cli);
+        pbftLeaderPolicy = parsePbftLeaderPolicyIfRequested(protocolList, cli);
         TendermintConsensusConfig tendermintConfig = parseTendermintConfigIfRequested(protocolList, cli);
         if (tendermintConfig != null) {
             for (int validators : validatorsList) {
@@ -246,7 +247,7 @@ public class MVPComparison {
             "output", "csv-out", "enable-tx", "tx-interval", NetworkSizing.FLAG, "load-record", "load-record-t0",
             "tm-propose-timeout", "tm-propose-delta", "tm-prevote-timeout", "tm-prevote-delta",
             "tm-precommit-timeout", "tm-precommit-delta", "tm-batch-size", "tm-tx-size", "tm-message-overhead",
-            "tm-signature-size", "tm-proposer-signature-size", "tm-max-future-horizon", "pbft-max-future-horizon",
+            "tm-signature-size", "tm-proposer-signature-size", "tm-max-future-horizon", "pbft-max-future-horizon", "pbft-leader-policy",
             "hs-view-timeout", "hs-max-future-view-horizon", "hs-batch-size", "hs-tx-size",
             "hs-individual-signature-size", "hs-aggregated-signature-size", "hs-aggregated-share-size",
             "hs-message-overhead", "hs-signature-mode", "hs-leader-policy", "hs-voter-encoding",
@@ -347,6 +348,34 @@ public class MVPComparison {
             return null;
         }
         return requiredLong(cli, "pbft-max-future-horizon", "ARQ/PBFT");
+    }
+
+    /** Politica de lideranca do PBFT (ARQ/PBFT; PI-14): lida uma vez, antes de qualquer simulacao; {@code null} se nao pedido. */
+    private static jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy pbftLeaderPolicy;
+
+    static jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy parsePbftLeaderPolicyIfRequested(
+            java.util.List<String> protocolList, java.util.Map<String, String> cli) {
+        boolean requested = false;
+        for (String p : protocolList) {
+            String pn = p.trim().toUpperCase(java.util.Locale.ROOT);
+            requested |= "ARQ".equals(pn) || "PBFT".equals(pn);
+        }
+        if (!requested) {
+            return null;
+        }
+        String v = cli.get("pbft-leader-policy");
+        if (v == null || v.isBlank()) {
+            throw new IllegalArgumentException("protocolo ARQ/PBFT exige --pbft-leader-policy=STABLE|ROTATING (politica de lideranca; "
+                    + "obrigatoria, sem padrao; STABLE = modo do estudo, PI-14)");
+        }
+        return jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.fromFlag(v);
+    }
+
+    private static jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy requirePbftLeaderPolicy() {
+        if (pbftLeaderPolicy == null) {
+            throw new IllegalStateException("pbft-leader-policy nao foi lida: protocolo ARQ/PBFT exige --pbft-leader-policy");
+        }
+        return pbftLeaderPolicy;
     }
 
     private static long requirePbftMaxFutureHorizon() {
@@ -1314,6 +1343,7 @@ public class MVPComparison {
                     byzantine != null ? byzantine
                             : ByzantineConfig.withExactCount(totalValidators, 0, ByzantineConfig.AttackType.NONE.name(), seed));
             scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
+            scenario.setLeaderPolicy(requirePbftLeaderPolicy());
             scenario.addMetricsLogger(outputPath);
             attachLoadRecorder(scenario, "ARQ", seed, outputPath);
             System.out.println(
@@ -1384,6 +1414,7 @@ public class MVPComparison {
             throws IOException {
         PBFTLANScenario scenario = new PBFTLANScenario("PBFT - " + numNodes + " validators", seed, numNodes, duration);
         scenario.setMaxFutureHorizon(requirePbftMaxFutureHorizon());
+            scenario.setLeaderPolicy(requirePbftLeaderPolicy());
         scenario.addMetricsLogger(outputPath);
         attachLoadRecorder(scenario, "PBFT", seed, outputPath);
         System.out.println("Running PBFT scenario (" + numNodes + " validators, seed=" + seed + ") ...");

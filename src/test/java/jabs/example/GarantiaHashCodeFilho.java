@@ -14,7 +14,7 @@ public final class GarantiaHashCodeFilho {
 
     public static void main(String[] a) throws Exception {
         ArqReddVotingScenario s = new ArqReddVotingScenario("ARQ-garantia", 1L, 7, 20.0);
-        s.setMaxFutureHorizon(1000L);
+        s.setMaxFutureHorizon(1000L); s.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         s.AddNewLogger(new LinkLoadRecorder(a[0], "ARQ", 1L, 5.0));
         s.run();
         System.out.println("FILHO-CONCLUIDO");

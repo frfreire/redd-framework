@@ -150,6 +150,8 @@ def mvp(raiz, saida: Path, proto, n, dur, semente, extras=()):
     extras = com_semantica_n(extras)
     if proto == "ARQ" and not any(e.startswith("--pbft-max-future-horizon=") for e in extras):
         extras = [*extras, "--pbft-max-future-horizon=1000"]  # PARIDADE: teto obrigatorio, sem padrao
+    if proto == "ARQ" and not any(e.startswith("--pbft-leader-policy=") for e in extras):
+        extras = [*extras, "--pbft-leader-policy=ROTATING"]  # PI-14: politica obrigatoria; ROTATING = T6
     return java(raiz, ["jabs.example.MVPComparison", f"--protocols={proto}", f"--validators={n}", "--trials=1",
                        f"--duration={dur}", f"--seed={semente}", f"--output={saida}", *extras])
 
@@ -159,6 +161,8 @@ def sweep(raiz, saida: Path, tipo, n, maxbyz, ataque, semente, trials=1, dur=30,
     extras = com_semantica_n(extras)
     if tipo == "VOTING" and not any(e.startswith("--pbft-max-future-horizon=") for e in extras):
         extras = [*extras, "--pbft-max-future-horizon=1000"]  # PARIDADE: teto obrigatorio, sem padrao
+    if tipo == "VOTING" and not any(e.startswith("--pbft-leader-policy=") for e in extras):
+        extras = [*extras, "--pbft-leader-policy=ROTATING"]  # PI-14: politica obrigatoria; ROTATING = T6
     return java(raiz, ["jabs.example.ByzantineSweep", f"--type={tipo}", f"--validators={n}", f"--max-byz={maxbyz}",
                        f"--trials={trials}", f"--duration={dur}", f"--attack={ataque}", f"--seed={semente}",
                        f"--out={saida / 's.csv'}", *extras])

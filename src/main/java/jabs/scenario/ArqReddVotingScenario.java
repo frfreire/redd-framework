@@ -104,6 +104,15 @@ public class ArqReddVotingScenario extends AbstractScenario {
     }
 
     private Long maxFutureHorizon;
+    private PBFTConsensusConfig.LeaderPolicy leaderPolicy;
+
+    /** Politica de lideranca do PBFT (PI-14): obrigatoria, sem padrao; chame antes de {@code run()}. */
+    public void setLeaderPolicy(PBFTConsensusConfig.LeaderPolicy leaderPolicy) {
+        if (leaderPolicy == null) {
+            throw new IllegalArgumentException("leaderPolicy e obrigatorio e nao tem padrao (STABLE ou ROTATING)");
+        }
+        this.leaderPolicy = leaderPolicy;
+    }
 
     /**
      * Teto de retencao do PBFT (paridade com o {@code maxFutureViewHorizon} do HotStuff). OBRIGATORIO e sem padrao:
@@ -124,7 +133,10 @@ public class ArqReddVotingScenario extends AbstractScenario {
         }
         // Create pBFT-based network (voting consensus substrate)
         network = new PBFTLocalLANNetwork(randomnessEngine);
-        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig(maxFutureHorizon));
+        if (leaderPolicy == null) {
+            throw new IllegalStateException("leaderPolicy e obrigatorio e nao tem padrao: chame setLeaderPolicy(...)");
+        }
+        network.populateNetwork(this.simulator, this.numNodes, new PBFTConsensusConfig(maxFutureHorizon, leaderPolicy));
 
         // If Byzantine config exists, mark nodes as Byzantine
         if (byzantineConfig != null) {

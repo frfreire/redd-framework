@@ -114,8 +114,13 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
      *                         cadeia deste no tem o voto descartado sem guardar e seus bytes vao a um contador agregado
      *                         (paridade com o {@code maxFutureViewHorizon} do HotStuff). {@code > 0}, sem padrao.
      */
-    public PBFT(LocalBlockTree<B> localBlockTree, int numAllParticipants, long maxFutureHorizon) {
+    public PBFT(LocalBlockTree<B> localBlockTree, int numAllParticipants, long maxFutureHorizon,
+                jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy leaderPolicy) {
         super(localBlockTree);
+        if (leaderPolicy == null) {
+            throw new IllegalArgumentException("leaderPolicy e obrigatorio e nao tem padrao");
+        }
+        this.leaderPolicy = leaderPolicy;
         if (maxFutureHorizon <= 0L) {
             throw new IllegalArgumentException("maxFutureHorizon deve ser > 0: " + maxFutureHorizon);
         }
@@ -206,6 +211,7 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
     private long conflictingTotalBytes;
     // PARIDADE-teto-retencao-pbft-tendermint: votos de blocos alem do teto de alturas a frente sao descartados e contados
     private final long maxFutureHorizon;
+    private final jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy leaderPolicy;
     private long beyondHorizonTotalBytes;
     private long beyondHorizonConsensusBytes;
     private long discardedBeyondHorizon;
@@ -765,12 +771,19 @@ public class PBFT<B extends SingleParentBlock<B>, T extends Tx<T>> extends Abstr
      * com {@code trocas = 0} (sem view change). Funcao so da altura e de n: igual em todos os nos corretos.
      */
     public int primaryForHeight(long height) {
+        if (leaderPolicy == jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.STABLE) {
+            return jabs.consensus.config.PBFTConsensusConfig.STABLE_LEADER_ID; // lider estavel (PI-14): sempre o mesmo no
+        }
         return (int) Math.floorMod(height - 1L, (long) this.numAllParticipants);
+    }
+
+    public jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy getLeaderPolicy() {
+        return leaderPolicy;
     }
 
     /** Primario do PROXIMO bloco (altura da cabeca decidida + 1). View = altura decidida, entao {@code view % n}. */
     public int getCurrentPrimaryNumber() {
-        return (this.currentViewNumber % this.numAllParticipants);
+        return primaryForHeight((long) this.currentViewNumber + 1L);
     }
 
     /** PRE_PREPAREs rejeitados por nao virem do primario da altura do bloco (T6). Honesto sem ataque: 0. */

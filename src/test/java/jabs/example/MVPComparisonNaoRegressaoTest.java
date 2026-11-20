@@ -174,7 +174,7 @@ class MVPComparisonNaoRegressaoTest {
         Path a = tmp.resolve("a");
         Path b = tmp.resolve("b");
         for (Path d : new Path[] {a, b}) {
-            MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1",
+            MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=7", "--trials=1",
                     "--duration=60", "--seed=1", "--output=" + d});
         }
         List<List<String>> ref = normaliza(referencia("ARQ-7v-60s/base-a/arq-7v-t0.csv"));
@@ -205,9 +205,9 @@ class MVPComparisonNaoRegressaoTest {
     void protocoloEmMinusculasEComEspacosEquivaleAoCanonico(@TempDir Path tmp) throws Exception {
         // A normalizacao compartilhada (trim + maiusculas) e o que o diff de 45eb3e7 tocou: "  arq " tem de rodar como ARQ.
         // T6: a baseline 45eb3e7 do ARQ deixou de valer; a equivalencia agora e com a execucao de "ARQ" na mesma arvore.
-        MVPComparison.main(new String[] {"--protocols=  arq ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
+        MVPComparison.main(new String[] {"--protocols=  arq ", "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=7", "--trials=1", "--duration=60",
                 "--seed=1", "--output=" + tmp.resolve("espacos")});
-        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--validators=7", "--trials=1", "--duration=60",
+        MVPComparison.main(new String[] {"--protocols=ARQ", "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=7", "--trials=1", "--duration=60",
                 "--seed=1", "--output=" + tmp.resolve("canonico")});
         assertEquals(normaliza(Files.readString(tmp.resolve("canonico").resolve("arq-7v-t0.csv"))),
                 normaliza(Files.readString(tmp.resolve("espacos").resolve("arq-7v-t0.csv"))), "ARQ via '  arq '");

@@ -30,6 +30,8 @@ public class HybridArchitectureValidation {
 
     /** Teto de retencao do PBFT usado por este exemplo: valor do estudo (ADR-0015), explicito porque o parametro nao tem padrao. */
     private static final long STUDY_MAX_FUTURE_HORIZON = 1000L;
+    /** Modo do estudo (ADR-0010 PI-14): lider estavel. */
+    private static final jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy STUDY_LEADER_POLICY = jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.STABLE;
     
     public static void main(String[] args) throws IOException {
         System.out.println("╔════════════════════════════════════════════════════════╗");
@@ -63,6 +65,8 @@ public class HybridArchitectureValidation {
             );
             
             baselineScenario.setMaxFutureHorizon(STUDY_MAX_FUTURE_HORIZON);
+            
+            baselineScenario.setLeaderPolicy(STUDY_LEADER_POLICY);
             baselineScenario.addMetricsLogger("output/hybrid-validation/baseline-metrics.csv");
             
             System.out.println("Running baseline simulation (100% public transactions)...");
@@ -105,6 +109,8 @@ public class HybridArchitectureValidation {
             );
             
             hybridScenario.setMaxFutureHorizon(STUDY_MAX_FUTURE_HORIZON);
+            
+            hybridScenario.setLeaderPolicy(STUDY_LEADER_POLICY);
             hybridScenario.addMetricsLogger("output/hybrid-validation/hybrid-metrics.csv");
             
             System.out.println("Running hybrid simulation...");
@@ -158,6 +164,8 @@ public class HybridArchitectureValidation {
             );
             
             byzantineHybrid.setMaxFutureHorizon(STUDY_MAX_FUTURE_HORIZON);
+            
+            byzantineHybrid.setLeaderPolicy(STUDY_LEADER_POLICY);
             byzantineHybrid.addMetricsLogger("output/hybrid-validation/hybrid-byzantine-metrics.csv");
             
             System.out.println("Running hybrid simulation with Byzantine validators...");

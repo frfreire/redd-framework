@@ -53,7 +53,7 @@ class PBFTEquivocationTest {
         RandomnessEngine rng = new RandomnessEngine(5);
         Simulator sim = new Simulator();
         PBFTLocalLANNetwork net = new PBFTLocalLANNetwork(rng);
-        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L));
+        net.populateNetwork(sim, n, new jabs.consensus.config.PBFTConsensusConfig(1000L, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING));
         List<PBFTNode> todos = new ArrayList<>(net.getAllNodes());
         PBFTNode r = todos.get(Math.min(R, n - 1));
         ByzantineConfig cfg = new ByzantineConfig(n, bizantinos, ataque, 5);

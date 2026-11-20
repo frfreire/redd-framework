@@ -15,10 +15,10 @@ public class PBFTNode extends PeerBlockchainNode<PBFTBlock, PBFTTx> {
             new PBFTBlock(0, 0, 0, null, null);
 
     public PBFTNode(Simulator simulator, Network network, int nodeID, long downloadBandwidth, long uploadBandwidth, int numAllParticipants,
-                    long maxFutureHorizon) {
+                    long maxFutureHorizon, jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy leaderPolicy) {
         super(simulator, network, nodeID, downloadBandwidth, uploadBandwidth,
                 new PBFTP2P(),
-                new PBFT<>(new LocalBlockTree<>(PBFT_GENESIS_BLOCK), numAllParticipants, maxFutureHorizon)
+                new PBFT<>(new LocalBlockTree<>(PBFT_GENESIS_BLOCK), numAllParticipants, maxFutureHorizon, leaderPolicy)
         );
         this.consensusAlgorithm.setNode(this);
     }

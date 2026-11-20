@@ -26,7 +26,7 @@ class MVPComparisonAtaqueUniformeTest {
     private static String[] args(Path out, String protocolo, String... extra) {
         List<String> a = new ArrayList<>(List.of("--protocols=" + protocolo, "--validators=4", "--trials=1",
                 "--duration=30", "--seed=7", "--output=" + out, "--csv-out=" + out.resolve("mvp-results.csv"),
-                "--pbft-max-future-horizon=1000"));
+                "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING"));
         if (protocolo.contains("TENDERMINT")) {
             a.addAll(TM);
         }

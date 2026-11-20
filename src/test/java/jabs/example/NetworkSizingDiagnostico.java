@@ -39,7 +39,7 @@ public final class NetworkSizingDiagnostico {
     /** PBFT/ARQ: n e o numero de nos e todos validam (MVPComparison "ARQ" e ByzantineSweep "VOTING"). */
     private static void arq(int n) {
         jabs.scenario.HybridNetworkScenario sc = new jabs.scenario.HybridNetworkScenario("diag", 1L, n, 60.0);
-        sc.setMaxFutureHorizon(1000L);
+        sc.setMaxFutureHorizon(1000L); sc.setLeaderPolicy(jabs.consensus.config.PBFTConsensusConfig.LeaderPolicy.ROTATING);
         sc.createNetwork();
         int nos = sc.getNetwork().getAllNodes().size();
         System.out.printf("MVPComparison+ByzantineSweep ARQ/VOTING (igual nas duas semanticas) n=%d | nos=%d "
