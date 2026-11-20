@@ -1,0 +1,30 @@
+{
+  "tarefa": "V-ABC-pbft",
+  "data": "2026-11-22",
+  "afirmacao": "V-A do PBFT puro executado no pino 2980d2695436ff4efea0138275aaf04a796ff6ff sob o pre-registro de hash 35137e820d48699e969e909d541d0307f507652aae7c5bd6593f9a3861a8ea6d (25 celulas: n = 4, 7, 10, 16, 31; 5 sementes; 300 s; politica de lideranca STABLE; teto 1000; sem ataque). Integridade: 25 de 25 celulas esperadas e obtidas, nenhuma nao integra, MD5 do CSV por bloco igual entre as duas JVMs em 25 de 25, uma decisao por altura em todas, zero PRE_PREPARE fora do turno, zero votos descartados alem do teto, zero trafego sem altura, Tt = -1 (nao medido) em todas, e 2 celulas de determinismo (pva_n7_s01 e pva_n16_s01) repetidas com a mesma semente e identicas byte a byte. Fidelidade a formula do codigo: pacotes por altura = (n-1)(2n+1) e bytes de consenso por altura = (n-1)*10 + 2n(n-1)*42 com erro relativo MAXIMO 0 (igualdade exata, media = minimo = maximo) em todos os 5 niveis de n, contra a tolerancia pre-registrada de 1 %. Classe medida: rede_msgs b = 2,0715 e rede_consenso b = 2,1079, ambos O(n^2), identicos aos b previstos pela formula (2,0715 e 2,1079). rede_total (so rotulo, bloco amostrado de BITCOIN_BLOCK_SIZE_2020): b = 1,113, O(n). Veredito mecanico de V-A (analisar-va-pbft.py; A1 e A2 exigem classe E fidelidade): CONSISTENTE. V-B e V-C: fora, como pre-registrado.",
+  "impacto": "ALTO",
+  "requisito": "Conferencia do PBFT pedida na secao 10 do pre-registro do V-ABC-tendermint (O(n^2) agregado; por no O(n)). NAO existe pre-condicao P4 do PBFT em PROTOCOLO-EXPERIMENTAL.md (P4a = HotStuff, P4b = Tendermint). Esta entrega NAO decide nada alem do V-A do PBFT puro: o veredito vai ao loop 3 (humano).",
+  "n_celulas_esperadas": 25,
+  "n_celulas_obtidas": 25,
+  "fontesPrimarias": [
+    "experimentos/validacao/pbft/PREREGISTRO.md",
+    "experimentos/validacao/pbft/PREREGISTRO.sha256",
+    "experimentos/validacao/pbft/versao-simulador.json",
+    "experimentos/validacao/pbft/analise-va.json",
+    "experimentos/validacao/pbft/dados-brutos/va",
+    "experimentos/validacao/pbft/dados-brutos/determinismo-rep"
+  ],
+  "ambiente": "Windows 11, Java 21.0.8 (Oracle HotSpot), Maven 3.9.11, -XX:hashCode=2 nas duas JVMs. Difere do V-ABC do HotStuff (Linux, OpenJDK 25, Maven 3.8.7). Para o PBFT nao ha comparacao com outra plataforma: so a igualdade entre as duas JVMs e o determinismo interno nesta maquina.",
+  "observacoes_pos_hoc_fora_do_veredito": [
+    "ROTULO POS-HOC, nao entra no veredito. A igualdade EXATA com a formula em todas as celulas (inclusive n = 16 e n = 31) contrasta com o V-A do Tendermint, onde 4 de 5 niveis ficaram abaixo da formula em multiplos de (n-1) pacotes por altura. Nao verifiquei por que o PBFT nao tem esse efeito.",
+    "ROTULO POS-HOC: a diferenca de -0,5 % em n = 16 que eu tinha visto numa sonda antes do portao NAO se reproduziu aqui (erro 0). A sonda usava a janela de alturas 3..max-3 sobre o ledger de um no, e nao a janela de regime oficial (CbRedeMedida, 2..hmax-2 sobre alturas finalizadas por TODOS os nos); acho que e artefato dessa janela, mas nao testei.",
+    "Por no (rotulo, nao decide): media de pacotes recebidos por altura 25,2 no lider e 26,2 nos validadores, e bytes de consenso 1 058 e 1 068, agregados sobre os 5 niveis de n."
+  ],
+  "limites": [
+    "Nenhuma celula foi excluida, substituida ou reexecutada (so as 2 de determinismo, fora das estatisticas).",
+    "O parecer nao inclui o porque de o resultado estar certo; decisao do loop 3 (humano), sem arbiter.",
+    "max_rss_mb = -1 em todas as celulas (nao medido no Windows).",
+    "Distancias do PBFT real: sem view change, sem checkpoint, sem assinaturas individuais modeladas (42 B por voto), LAN simulada, bloco amostrado de uma distribuicao Bitcoin, lider estavel fixo no no 0.",
+    "A tolerancia de fidelidade (1 %) foi fixada depois de ver o desvio do Tendermint e, por isso, o pre-registro nao e cego; o resultado nao depende dela, porque o erro medido e 0."
+  ]
+}

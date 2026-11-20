@@ -1,0 +1,27 @@
+{
+ "id": "pva_n16_s05",
+ "protocolo": "PBFT",
+ "n": 16,
+ "carga": "sem_gerador_de_transacoes",
+ "byzantinos": 0,
+ "semente": 1136350,
+ "replicacao": 5,
+ "duracao_s": 300,
+ "simulador_commit": "2980d2695436ff4efea0138275aaf04a796ff6ff",
+ "gerado_em": "2026-11-20T22:01:46+00:00",
+ "bloco": "va",
+ "grupo": "pva_n16",
+ "jvm_flags": [
+  "-Xmx2g",
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:hashCode=2"
+ ],
+ "fatores_origem": "experimentos/validacao/pbft/config/fatores-va.json",
+ "variante": {
+  "max_future_horizon": 1000,
+  "leader_policy": "STABLE",
+  "attack": null
+ },
+ "min_alturas_regime": 50,
+ "flags_extras": []
+}

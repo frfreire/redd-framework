@@ -1,0 +1,138 @@
+{
+ "execucoes": [
+  {
+   "manifesto": "E:\\Projetos\\redd-framework\\experimentos\\validacao\\pbft\\celulas\\va",
+   "n_esperadas": 25,
+   "executadas_agora": [
+    {
+     "id": "pva_n4_s01",
+     "rc": 0,
+     "tempo_parede_s": 5.7
+    },
+    {
+     "id": "pva_n4_s02",
+     "rc": 0,
+     "tempo_parede_s": 5.7
+    },
+    {
+     "id": "pva_n4_s03",
+     "rc": 0,
+     "tempo_parede_s": 5.7
+    },
+    {
+     "id": "pva_n4_s04",
+     "rc": 0,
+     "tempo_parede_s": 5.7
+    },
+    {
+     "id": "pva_n4_s05",
+     "rc": 0,
+     "tempo_parede_s": 5.6
+    },
+    {
+     "id": "pva_n7_s01",
+     "rc": 0,
+     "tempo_parede_s": 8.8
+    },
+    {
+     "id": "pva_n7_s02",
+     "rc": 0,
+     "tempo_parede_s": 8.8
+    },
+    {
+     "id": "pva_n7_s03",
+     "rc": 0,
+     "tempo_parede_s": 8.8
+    },
+    {
+     "id": "pva_n7_s04",
+     "rc": 0,
+     "tempo_parede_s": 7.5
+    },
+    {
+     "id": "pva_n7_s05",
+     "rc": 0,
+     "tempo_parede_s": 7.8
+    },
+    {
+     "id": "pva_n10_s01",
+     "rc": 0,
+     "tempo_parede_s": 15.5
+    },
+    {
+     "id": "pva_n10_s02",
+     "rc": 0,
+     "tempo_parede_s": 14.1
+    },
+    {
+     "id": "pva_n10_s03",
+     "rc": 0,
+     "tempo_parede_s": 14.1
+    },
+    {
+     "id": "pva_n10_s04",
+     "rc": 0,
+     "tempo_parede_s": 14.9
+    },
+    {
+     "id": "pva_n10_s05",
+     "rc": 0,
+     "tempo_parede_s": 16.0
+    },
+    {
+     "id": "pva_n16_s01",
+     "rc": 0,
+     "tempo_parede_s": 26.5
+    },
+    {
+     "id": "pva_n16_s02",
+     "rc": 0,
+     "tempo_parede_s": 21.0
+    },
+    {
+     "id": "pva_n16_s03",
+     "rc": 0,
+     "tempo_parede_s": 22.6
+    },
+    {
+     "id": "pva_n16_s04",
+     "rc": 0,
+     "tempo_parede_s": 20.9
+    },
+    {
+     "id": "pva_n16_s05",
+     "rc": 0,
+     "tempo_parede_s": 22.9
+    },
+    {
+     "id": "pva_n31_s01",
+     "rc": 0,
+     "tempo_parede_s": 53.4
+    },
+    {
+     "id": "pva_n31_s02",
+     "rc": 0,
+     "tempo_parede_s": 38.2
+    },
+    {
+     "id": "pva_n31_s03",
+     "rc": 0,
+     "tempo_parede_s": 50.7
+    },
+    {
+     "id": "pva_n31_s04",
+     "rc": 0,
+     "tempo_parede_s": 41.3
+    },
+    {
+     "id": "pva_n31_s05",
+     "rc": 0,
+     "tempo_parede_s": 37.7
+    }
+   ],
+   "faltando_ou_vazias": [],
+   "rc_nao_zero": [],
+   "parede_total_s": 75.6
+  }
+ ]
+}

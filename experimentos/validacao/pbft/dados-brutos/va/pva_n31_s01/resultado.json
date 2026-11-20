@@ -1,0 +1,15 @@
+{
+ "id": "pva_n31_s01",
+ "rc_mvp": 0,
+ "rc_observador": 0,
+ "tempo_parede_mvp_s": 30.77,
+ "tempo_parede_observador_s": 22.5,
+ "max_rss_mb": -1.0,
+ "so_observador": false,
+ "csv_mvp": "pbft-31v-t0.csv.gz",
+ "md5_sem_hashcode_mvp": "dd90e4573ba4bc259dede87c737bf8fe",
+ "blocos_mvp": 114,
+ "csv_obs": "pbft-obs.csv.gz",
+ "md5_sem_hashcode_obs": "dd90e4573ba4bc259dede87c737bf8fe",
+ "blocos_obs": 114
+}
