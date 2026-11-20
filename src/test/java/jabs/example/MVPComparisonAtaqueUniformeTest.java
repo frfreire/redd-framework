@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,6 +46,39 @@ class MVPComparisonAtaqueUniformeTest {
             String row = linhas.stream().filter(l -> l.startsWith(proto + ";")).findFirst()
                     .orElseThrow(() -> new AssertionError(proto + ": linha ausente: " + linhas));
             assertEquals(9, row.split(";").length, row);
+        }
+    }
+
+    /** O ataque CHEGA ao cenario: o resultado difere do honesto (rotulo sozinho nao prova nada). */
+    @Test
+    void ataqueMudaOResultadoEmTendermintEArq(@TempDir Path tmp) throws Exception {
+        for (String proto : new String[]{"TENDERMINT", "ARQ"}) {
+            Path honesto = tmp.resolve(proto + "-h");
+            Path ataque = tmp.resolve(proto + "-a");
+            MVPComparison.main(args(honesto, proto));
+            MVPComparison.main(args(ataque, proto, "--attack=EQUIVOCATION", "--byzantine-count=1"));
+            String linhaH = Files.readAllLines(honesto.resolve("mvp-results.csv")).stream()
+                    .filter(l -> l.startsWith(proto + ";")).findFirst().orElseThrow();
+            String linhaA = Files.readAllLines(ataque.resolve("mvp-results.csv")).stream()
+                    .filter(l -> l.startsWith(proto + ";")).findFirst().orElseThrow();
+            assertNotEquals(linhaH, linhaA, proto + ": o ataque nao mudou o resultado (nao chegou ao cenario?)");
+        }
+    }
+
+    /** Sob ataque, trial que falha NAO vira linha de zeros: ARQ n=4 f=2 (fora da faixa, liberado) aborta. */
+    @Test
+    void trialFalhoSobAtaqueNaoViraLinhaDeZeros(@TempDir Path tmp) {
+        Path out = tmp.resolve("arq-f2");
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> MVPComparison.main(
+                args(out, "ARQ", "--attack=EQUIVOCATION", "--byzantine-count=2", "--allow-beyond-bft-threshold=true")));
+        assertTrue(e.getMessage().contains("sob ataque falhou"), e.getMessage());
+        if (Files.exists(out.resolve("mvp-results.csv"))) {
+            try {
+                assertTrue(Files.readAllLines(out.resolve("mvp-results.csv")).stream().noneMatch(l -> l.startsWith("ARQ;")),
+                        "nenhuma linha de dados de ARQ");
+            } catch (java.io.IOException ex) {
+                throw new java.io.UncheckedIOException(ex);
+            }
         }
     }
 
