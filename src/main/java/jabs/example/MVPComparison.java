@@ -59,6 +59,7 @@ public class MVPComparison {
         java.util.List<Integer> validatorsList = parseIntList(cli.getOrDefault("validators", "200"));
         java.util.List<String> protocolList = parseStringList(cli.getOrDefault("protocols", "EARTH"));
         exigirSemanticaDeN(cli.get(NetworkSizing.FLAG), protocolList);
+        exigirNMinimoDoPbftPuro(protocolList, validatorsList);
         pbftMaxFutureHorizon = parsePbftMaxFutureHorizonIfRequested(protocolList, cli);
         TendermintConsensusConfig tendermintConfig = parseTendermintConfigIfRequested(protocolList, cli);
         if (tendermintConfig != null) {
@@ -665,6 +666,25 @@ public class MVPComparison {
             }
         }
         return linhas == null ? java.util.Collections.emptyList() : linhas;
+    }
+
+    /** Menor n com quorum 2f+1 e f >= 1 (n = 3f+1): abaixo disso o PBFT nao tolera falha e a "soma da rede" nao mede nada. */
+    static final int PBFT_PURO_N_MINIMO = 4;
+
+    /** PBFT puro com n < 4 falha alto ANTES de criar saida (como HotStuff/Tendermint em validateFor); nao vira linha de dados. */
+    static void exigirNMinimoDoPbftPuro(java.util.List<String> protocolos, java.util.List<Integer> validadores) {
+        boolean pbft = false;
+        for (String p : protocolos) {
+            pbft |= "PBFT".equals(normalizeProtocol(p));
+        }
+        if (!pbft) {
+            return;
+        }
+        for (int n : validadores) {
+            if (n < PBFT_PURO_N_MINIMO) {
+                throw new IllegalArgumentException("PBFT puro exige n >= " + PBFT_PURO_N_MINIMO + " validadores (quorum 2f+1 com f >= 1): n=" + n);
+            }
+        }
     }
 
     /** Linha '#' que declara Tt nao medido do PBFT puro; vazia (sem alocar) quando PBFT nao esta na lista. */

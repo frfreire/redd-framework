@@ -61,6 +61,19 @@ class MVPComparisonPbftPuroTest {
         }
     }
 
+    /** n < 4 nao tem tolerancia bizantina (f = 0) nem quorum util: falha alto antes de criar saida, como HotStuff/Tendermint. */
+    @Test
+    void pbftPuroComNPequenoFalhaAltoAntesDeCriarSaida(@TempDir Path tmp) {
+        for (String n : new String[]{"1", "3", "4,3"}) {
+            Path out = tmp.resolve("n" + n.replace(',', '_'));
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                    args(out, "--pbft-max-future-horizon=1000", "--validators=" + n)), n);
+            assertTrue(e.getMessage().contains("PBFT puro exige n >= 4"), e.getMessage());
+            assertTrue(Files.notExists(out), "falha antes de criar saida: n=" + n);
+        }
+        MVPComparison.exigirNMinimoDoPbftPuro(List.of("ARQ"), List.of(1)); // so o PBFT puro e restrito
+    }
+
     @Test
     void ataqueComPbftPuroFalhaAlto(@TempDir Path tmp) {
         Path out = tmp.resolve("ataque");
