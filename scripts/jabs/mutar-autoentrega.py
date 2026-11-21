@@ -128,7 +128,7 @@ MUTACOES = [
     ("M31 sweep: autoentrega medida igual a zero deixa de contar (>= 0 vira > 0)",
      SWEEP, "return comAutoentrega && selfBytes >= 0;", "return comAutoentrega && selfBytes > 0;"),
     ("M32 sweep: linha '#' declara a semente errada",
-     SWEEP, "selfDeliveryComments(cli.getOrDefault(\"seed\", \"12345\"))", "selfDeliveryComments(\"0\")"),
+     SWEEP, "selfDeliveryComments(seedRaw)", "selfDeliveryComments(\"0\")"),
     ("M33 sweep: linha '#' perde a SimulatorVersion",
      SWEEP, ".append(jabs.log.LinkLoadRecorder.SIMULATOR_VERSION)", ".append(\"\")"),
     # ---- sobreviventes apontados pela revisao anterior ----

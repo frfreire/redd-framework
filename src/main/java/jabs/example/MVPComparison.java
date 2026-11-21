@@ -92,9 +92,9 @@ public class MVPComparison {
         // Vazio (e nada novo alocado) quando so um dos dois protocolos roda ou quando os valores coincidem.
         java.util.List<String> fixtureLines = fixtureGuard(hotStuffConfig, tendermintConfig,
                 cli.get(ALLOW_FIXTURE_MISMATCH));
-        int trials = Integer.parseInt(cli.getOrDefault("trials", "5"));
+        int trials = Integer.parseInt(requiredRunFlag(cli, "trials"));
         double defaultDuration = Double.parseDouble(cli.getOrDefault("duration", "600"));
-        long baseSeed = Long.parseLong(cli.getOrDefault("seed", "12345"));
+        long baseSeed = Long.parseLong(requiredRunFlag(cli, "seed"));
         String outputRoot = cli.getOrDefault("output", "output/mvp-validation");
         String csvOut = cli.getOrDefault("csv-out", outputRoot + "/mvp-results.csv");
         boolean enableTransactions = Boolean.parseBoolean(cli.getOrDefault("enable-tx", "true"));
@@ -383,6 +383,19 @@ public class MVPComparison {
             throw new IllegalStateException("pbft-max-future-horizon nao foi lido: protocolo ARQ exige --pbft-max-future-horizon=valor");
         }
         return pbftMaxFutureHorizon;
+    }
+
+    /**
+     * {@code --trials} e {@code --seed} sao OBRIGATORIOS, sem padrao (ADR-0015 Q26-A, tarefa trials-seed-obrigatorios):
+     * os antigos padroes (5 e 12345 aqui; 30 e 12345 no ByzantineSweep) eram distintos entre os dois {@code main} e
+     * entravam no resultado sem decisao. O numero de sementes e a precisao-alvo continuam a definir com o humano.
+     */
+    private static String requiredRunFlag(java.util.Map<String, String> cli, String flag) {
+        String value = cli.get(flag);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("--" + flag + " e obrigatorio e nao tem valor padrao (ADR-0015 Q26-A)");
+        }
+        return value;
     }
 
     private static String requiredCliValue(java.util.Map<String, String> cli, String flag) {
