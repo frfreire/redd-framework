@@ -456,9 +456,9 @@ public class MVPComparison {
 
     /**
      * Config do HotStuff so e exigida quando {@code HOTSTUFF} aparece em {@code --protocols}. TODAS as 11 flags
-     * {@code --hs-*} sao obrigatorias e sem padrao, inclusive as tres que o {@link HotStuffConsensusConfig} ainda
-     * preenche em silencio (politica de lider, modo de assinatura e overhead de mensagem: ADR-0015 A-08, A-09, A-10):
-     * aqui o padrao do config NUNCA decide, porque o builder recebe sempre o valor da linha de comando. O horizonte de
+     * {@code --hs-*} sao obrigatorias e sem padrao, inclusive as tres (politica de lider, modo de assinatura e overhead
+     * de mensagem: ADR-0015 A-08, A-09, A-10) que o {@link HotStuffConsensusConfig} tambem passou a exigir sem padrao
+     * (tarefa HS-campos-obrigatorios): o builder recebe sempre o valor da linha de comando. O horizonte de
      * visoes futuras, o timeout de visao, o lote, os tamanhos e a codificacao dos votantes: a definir com o humano
      * (ADR-0015 A-24, A-25 etc.).
      */

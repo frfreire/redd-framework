@@ -30,15 +30,16 @@ package jabs.consensus.config;
  *       (codificacao dos votantes): so {@link VoterEncoding#BITMAP} esta implementado (decisao humana desta
  *       rodada: {@code ceil(n/8)} bytes em INDIVIDUAL e em AGGREGATED, de modo que a vantagem do agregado fique
  *       somente na assinatura). O enum existe para admitir lista de ids depois sem refatorar.</li>
+ *   <li>{@code leaderPolicy}: sem padrao (ADR-0015 Q8-B, A-09). {@code ROTATING} e o HotStuff do artigo (Yin et al.,
+ *       PODC 2019: troca o lider a cada visao); {@code STABLE} e o caso base do estudo e {@code ROTATING} a ablacao.</li>
+ *   <li>{@code signatureMode}: sem padrao (ADR-0015 Q10-B, A-08). {@code INDIVIDUAL} e o caso base
+ *       ({@code esquema_assinatura: individual} das baterias); {@code AGGREGATED} e sensibilidade.</li>
+ *   <li>{@code messageOverheadBytes}: sem padrao (ADR-0015 Q3-A, A-10): um valor unico declarado, igual nos tres
+ *       protocolos. O valor numerico continua a definir com o humano.</li>
  * </ul>
  *
- * <p>Padroes que TEM base e continuam:
- * <ul>
- *   <li>{@code leaderPolicy = ROTATING}: HotStuff do artigo (Yin et al., PODC 2019) troca o lider a cada visao.
- *       {@code STABLE} e a ablacao do protocolo experimental (.experimento/0003).</li>
- *   <li>{@code signatureMode = INDIVIDUAL}: coerente com {@code esquema_assinatura: individual} das baterias.</li>
- *   <li>{@code messageOverheadBytes = 10}: mesmo overhead de cabecalho do voto PBFT ({@code PBFT_VOTE_SIZE_OVERHEAD}).</li>
- * </ul>
+ * <p>Um {@code null} escrito em {@code leaderPolicy} ou {@code signatureMode} equivale a nao informado: o
+ * {@code build()} falha com {@link IllegalStateException}, nunca cai em valor padrao.
  */
 public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
 
