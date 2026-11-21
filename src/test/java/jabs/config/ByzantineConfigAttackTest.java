@@ -24,6 +24,7 @@ import java.util.Set;
 import static jabs.network.node.nodes.pbft.PBFTNode.PBFT_GENESIS_BLOCK;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -113,9 +114,12 @@ class ByzantineConfigAttackTest {
     @Test
     void sweepRecusaNomeDesconhecidoAntesDeRodarQualquerCelula() {
         for (String ruim : new String[] {"equivocacao", "xyz", ""}) {
-            assertThrows(IllegalArgumentException.class,
-                    () -> ByzantineSweep.main(new String[] {"--attack=" + ruim, "--out=/tmp/opencode/sweep-recusado.csv"}),
+            // --trials e --seed escritos (sem padrao, ADR-0015 Q26-A): senao a falha viria deles e nao do ataque
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                    () -> ByzantineSweep.main(new String[] {"--trials=1", "--seed=1", "--attack=" + ruim,
+                            "--out=/tmp/opencode/sweep-recusado.csv"}),
                     "--attack=" + ruim);
+            assertFalse(e.getMessage().contains("obrigatorio e nao tem valor padrao"), "falhou por trials/seed, nao pelo ataque: " + e.getMessage());
         }
         assertThrows(IllegalArgumentException.class, () -> AttackType.valueOf("equivocacao"));
         assertThrows(IllegalArgumentException.class, () -> AttackType.valueOf("equivocation"));

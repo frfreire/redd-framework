@@ -206,11 +206,11 @@ class NetworkSizingTest {
                 "--protocols=AMBIFY", "--validators=4", "--n-semantics=nodes ", "--output=" + tmp.resolve("a3")}));
         // n invalido em nodes continua falhando alto
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(new String[]{
-                "--protocols=AMBIFY", "--validators=1", "--n-semantics=nodes", "--output=" + tmp.resolve("c")}));
+                "--protocols=AMBIFY", "--validators=1", "--trials=1", "--seed=1", "--n-semantics=nodes", "--output=" + tmp.resolve("c")}));
         assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(new String[]{
                 "--type=POS", "--validators=10", "--n-semantics=x", "--out=" + tmp.resolve("d.csv")}));
         assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(new String[]{
-                "--type=POSA", "--validators=1", "--n-semantics=nodes", "--out=" + tmp.resolve("e.csv")}));
+                "--type=POSA", "--validators=1", "--trials=1", "--seed=1", "--n-semantics=nodes", "--out=" + tmp.resolve("e.csv")}));
         assertFalse(Files.exists(tmp.resolve("a")) || Files.exists(tmp.resolve("a2")) || Files.exists(tmp.resolve("a3"))
                 || Files.exists(tmp.resolve("b")) || Files.exists(tmp.resolve("c"))
                 || Files.exists(tmp.resolve("d.csv")) || Files.exists(tmp.resolve("e.csv")),
@@ -226,6 +226,21 @@ class NetworkSizingTest {
         e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
                 new String[] {"--protocols=MCO2", "--validators=16", "--trials=0", "--n-semantics=legacy", "--output=" + tmp.resolve("t2")}));
         assertTrue(e.getMessage().contains("--seed"), e.getMessage());
+        // valor em branco equivale a ausente (nos dois); nao numerico segue erro de parse, nunca padrao
+        for (String ruim : new String[] {"--seed=", "--seed=   "}) {
+            e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                    new String[] {"--protocols=MCO2", "--validators=16", "--trials=0", ruim, "--n-semantics=legacy", "--output=" + tmp.resolve("t3")}),
+                    ruim);
+            assertTrue(e.getMessage().contains("obrigatorio"), ruim + ": " + e.getMessage());
+        }
+        e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                new String[] {"--protocols=MCO2", "--validators=16", "--trials=   ", "--seed=1", "--n-semantics=legacy", "--output=" + tmp.resolve("t4")}));
+        assertTrue(e.getMessage().contains("--trials") && e.getMessage().contains("obrigatorio"), e.getMessage());
+        assertThrows(NumberFormatException.class, () -> MVPComparison.main(
+                new String[] {"--protocols=MCO2", "--validators=16", "--trials=0", "--seed=abc", "--n-semantics=legacy", "--output=" + tmp.resolve("t5")}));
+        // falha antes de gravar qualquer coisa
+        assertFalse(Files.exists(tmp.resolve("t1")) || Files.exists(tmp.resolve("t2")) || Files.exists(tmp.resolve("t3"))
+                || Files.exists(tmp.resolve("t4")) || Files.exists(tmp.resolve("t5")), "nada deve ser gravado sem trials/seed validos");
     }
 
     /**

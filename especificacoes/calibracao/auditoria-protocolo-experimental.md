@@ -74,9 +74,9 @@ Ambos usam `parseArgs` próprio: só `--chave=valor` (`MVPComparison.java:548-55
 |---|---|---|
 | `validators` | sim, **lista** CSV (`:43`) | sim, **um** n (`:29`) |
 | `protocols` | sim, lista (`:44`): EARTH, MCO2, TREE, AMBIFY, OFFSET, ARQ, DAGSPER (`:184-200`) | não; usa `--type` (`:33`): VOTING, POS, POW, POSA, DAGSPER (`:81-195`) |
-| `trials` | sim, padrão 5 (`:45`) | sim, padrão 30 (`:31`) |
+| `trials` | sim, padrão 5 (`:45`) **[superado em 22/11/2026: obrigatório, sem padrão; ADR-0015 Q26-A]** | sim, padrão 30 (`:31`) **[superado: obrigatório, sem padrão]** |
 | `duration` / `durations` | sim; global e por protocolo (`:46,54`) | só `duration`, padrão 600 (`:32`) |
-| `seed` | sim, padrão 12345 (`:47`); semente da execução = `seed + validators*1000 + trial` (`:84`) | sim, padrão 12345 (`:74`); `seed + n*1000 + t` (**mesma semente para todos os f**, só varia com `t`) |
+| `seed` | sim, padrão 12345 (`:47`) **[superado em 22/11/2026: obrigatório, sem padrão]**; semente da execução = `seed + validators*1000 + trial` (`:84`) | sim, padrão 12345 (`:74`); `seed + n*1000 + t` (**mesma semente para todos os f**, só varia com `t`) |
 | `output` / `csv-out` / `out` | sim | `--out` |
 | `enable-tx`, `tx-interval` | sim; padrão `true`, 5,0 (`:50-51`); só EARTH, OFFSET, DAGSPER usam (`:186,194,198`) | sim; só POW e DAGSPER usam (`:130-131,185-186`) |
 | `attack` | **não** (todos honestos: `AttackType.NONE`, `:262,298`) | sim, enum (`:34-35`) |

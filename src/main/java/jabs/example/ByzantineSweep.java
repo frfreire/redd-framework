@@ -137,7 +137,9 @@ public class ByzantineSweep {
     /**
      * D2 (decisao do humano, 17/11/2026): linhas '#' que declaram a semantica, a semente, a versao do simulador e a
      * granularidade. So para os tipos que separam a autoentrega ({@link #hasSelfDeliveryColumn}); {@code seedRaw} e o valor
-     * de {@code --seed} como escrito (obrigatorio, sem padrao), sem parse (nao muda quando uma semente invalida falha).
+     * de {@code --seed} como escrito (obrigatorio, sem padrao), sem parse aqui. {@code run} converte a semente para long logo ao ler
+     * as flags, ANTES de qualquer saida: semente invalida passou a falhar antes de gravar o CSV, e tambem com {@code --trials=0}
+     * (antes so falhava dentro do laco de trials, depois de gravar o cabecalho).
      * StringBuilder, nao '+': roda antes da simulacao (indy novo consome hash de identidade, ADR-0012);
      * {@code SIMULATOR_VERSION} e constante de compilacao (inlinada).
      */
