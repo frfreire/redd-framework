@@ -116,10 +116,11 @@ class ByzantineConfigAttackTest {
         for (String ruim : new String[] {"equivocacao", "xyz", ""}) {
             // --trials e --seed escritos (sem padrao, ADR-0015 Q26-A): senao a falha viria deles e nao do ataque
             IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                    () -> ByzantineSweep.main(new String[] {"--trials=1", "--seed=1", "--attack=" + ruim,
-                            "--out=/tmp/opencode/sweep-recusado.csv"}),
+                    () -> ByzantineSweep.main(new String[] {"--trials=1", "--seed=1", "--validators=4", "--max-byz=0",
+                            "--attack=" + ruim, "--out=/tmp/opencode/sweep-recusado.csv"}),
                     "--attack=" + ruim);
-            assertFalse(e.getMessage().contains("obrigatorio e nao tem valor padrao"), "falhou por trials/seed, nao pelo ataque: " + e.getMessage());
+            // n=4 e max-byz=0 passam a faixa BFT: a falha so pode vir do nome do ataque
+            assertTrue(e.getMessage().contains("Ataque desconhecido"), "falhou por outro motivo que o ataque: " + e.getMessage());
         }
         assertThrows(IllegalArgumentException.class, () -> AttackType.valueOf("equivocacao"));
         assertThrows(IllegalArgumentException.class, () -> AttackType.valueOf("equivocation"));

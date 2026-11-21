@@ -201,12 +201,13 @@ class MVPComparisonTendermintTest {
     @Test
     void nMenorQue4FalhaAntesDeCriarSaida(@TempDir Path tmp) {
         Path out = tmp.resolve("n3");
-        String[] args = new String[TM_FLAGS.length + 4];
+        String[] args = new String[TM_FLAGS.length + 5];
         args[0] = "--protocols=TENDERMINT";
         args[1] = "--validators=3";
         args[2] = "--trials=1";
-        args[3] = "--output=" + out;
-        System.arraycopy(TM_FLAGS, 0, args, 4, TM_FLAGS.length);
+        args[3] = "--seed=1"; // sem padrao (ADR-0015 Q26-A): a falha testada e a de n < 4, nao a de seed ausente
+        args[4] = "--output=" + out;
+        System.arraycopy(TM_FLAGS, 0, args, 5, TM_FLAGS.length);
 
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(args));
         assertTrue(Files.notExists(out), "n invalido nao deve criar diretorio de saida");

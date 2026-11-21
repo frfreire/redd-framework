@@ -177,7 +177,7 @@ class MVPComparisonHotStuffTest {
     @Test
     void nMenorQue4FalhaAntesDeCriarSaida(@TempDir Path tmp) {
         Path out = tmp.resolve("n3");
-        String[] a = args(fixture(), "--protocols=HOTSTUFF", "--validators=4,3", "--trials=1", "--output=" + out);
+        String[] a = args(fixture(), "--protocols=HOTSTUFF", "--validators=4,3", "--trials=1", "--seed=1", "--output=" + out);
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(a));
         assertTrue(Files.notExists(out), "n invalido nao deve criar diretorio de saida");
     }
@@ -450,7 +450,7 @@ class MVPComparisonHotStuffTest {
             assertEquals(ByzantineConfig.AttackType.NONE,
                     MVPComparison.resolveHotStuffAttack(List.of(v), Map.of("attack", "none")));
             Path out = tmp.resolve("ataque-" + v.trim());
-            String[] a = args(fixture(), "--protocols=" + v, "--validators=4", "--trials=1", "--attack=SILENT",
+            String[] a = args(fixture(), "--protocols=" + v, "--validators=4", "--trials=1", "--seed=1", "--attack=SILENT",
                     "--byzantine-count=1", "--output=" + out);
             assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(a), "[" + v + "]");
             assertTrue(Files.notExists(out), "falha antes de criar saida: [" + v + "]");

@@ -199,16 +199,16 @@ class NetworkSizingTest {
         assertTrue(semIgual.contains("argumento '--n-semantics' ignorado"), semIgual);
         // --n-semantics com valor invalido continua falhando alto, antes de qualquer simulacao ou arquivo
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(new String[]{
-                "--protocols=AMBIFY", "--validators=4", "--n-semantics=NODES", "--output=" + tmp.resolve("a")}));
+                "--protocols=AMBIFY", "--validators=4", "--trials=1", "--seed=1" /* FIXTURE: sem padrao (ADR-0015 Q26-A); a falha testada e outra */, "--n-semantics=NODES", "--output=" + tmp.resolve("a")}));
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(new String[]{
-                "--protocols=AMBIFY", "--validators=4", "--n-semantics=", "--output=" + tmp.resolve("a2")}));
+                "--protocols=AMBIFY", "--validators=4", "--trials=1", "--seed=1", "--n-semantics=", "--output=" + tmp.resolve("a2")}));
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(new String[]{
-                "--protocols=AMBIFY", "--validators=4", "--n-semantics=nodes ", "--output=" + tmp.resolve("a3")}));
+                "--protocols=AMBIFY", "--validators=4", "--trials=1", "--seed=1", "--n-semantics=nodes ", "--output=" + tmp.resolve("a3")}));
         // n invalido em nodes continua falhando alto
         assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(new String[]{
                 "--protocols=AMBIFY", "--validators=1", "--trials=1", "--seed=1", "--n-semantics=nodes", "--output=" + tmp.resolve("c")}));
         assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(new String[]{
-                "--type=POS", "--validators=10", "--n-semantics=x", "--out=" + tmp.resolve("d.csv")}));
+                "--type=POS", "--validators=10", "--trials=1", "--seed=1", "--n-semantics=x", "--out=" + tmp.resolve("d.csv")}));
         assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(new String[]{
                 "--type=POSA", "--validators=1", "--trials=1", "--seed=1", "--n-semantics=nodes", "--out=" + tmp.resolve("e.csv")}));
         assertFalse(Files.exists(tmp.resolve("a")) || Files.exists(tmp.resolve("a2")) || Files.exists(tmp.resolve("a3"))

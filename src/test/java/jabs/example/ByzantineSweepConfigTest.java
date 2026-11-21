@@ -56,6 +56,19 @@ class ByzantineSweepConfigTest {
                 "nada deve ser gravado quando falta trials ou seed");
     }
 
+    /** Seed em branco equivale a ausente; nao numerica segue erro de parse e nunca vira padrao; nada e gravado. */
+    @Test
+    void seedEmBrancoOuNaoNumericaFalhaAntesDeGravar() {
+        for (String ruim : new String[] {"--seed=", "--seed=   "}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                    new String[] {"--type=VOTING", "--validators=10", "--trials=1", ruim, "--out=" + tmp.resolve("d.csv")}), ruim);
+            assertTrue(e.getMessage().contains("--seed") && e.getMessage().contains("obrigatorio"), ruim + ": " + e.getMessage());
+        }
+        assertThrows(NumberFormatException.class, () -> ByzantineSweep.run(
+                new String[] {"--type=VOTING", "--validators=10", "--trials=0", "--seed=abc", "--out=" + tmp.resolve("d.csv")}));
+        assertFalse(Files.exists(tmp.resolve("d.csv")), "semente invalida nao deve gravar nada");
+    }
+
     @Test
     void dagsperComEquivocationAborta() {
         UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
