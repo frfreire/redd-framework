@@ -16,6 +16,8 @@ class ViewLeadersTest {
 
     private static HotStuffConsensusConfig cfg(LeaderPolicy p) {
         return HotStuffConsensusConfig.builder().leaderPolicy(p)
+                /* FIXTURE de teste: antigo padrao do builder, escrito porque nao ha mais padrao (ADR-0015 Q3-A, Q8-B, Q10-B) */ 
+                .signatureMode(HotStuffConsensusConfig.SignatureMode.INDIVIDUAL).messageOverheadBytes(10)
                 .voterEncoding(HotStuffConsensusConfig.VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512)
                 .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96)

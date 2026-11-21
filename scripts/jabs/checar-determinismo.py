@@ -27,8 +27,8 @@ Exemplo de uso (valores SOMENTE DE EXEMPLO, NAO sao valor de pesquisa):
       --extra-flag=--tm-signature-size=64 --extra-flag=--tm-proposer-signature-size=80 \
       --extra-flag=--tm-message-overhead=10
 HOTSTUFF (D3a-2a-2c-4) exige 11 flags --hs-* sem valor padrao, TODAS, inclusive politica de lider, modo de
-assinatura e overhead de mensagem (que o HotStuffConsensusConfig ainda preenche em silencio: ADR-0015 A-08, A-09,
-A-10; o MVPComparison exige a flag para que o padrao nao decida). Mesmo contrato do TENDERMINT: nenhum valor mora
+assinatura e overhead de mensagem (ADR-0015 A-08, A-09, A-10; o HotStuffConsensusConfig tambem os exige sem padrao
+desde a tarefa HS-campos-obrigatorios). Mesmo contrato do TENDERMINT: nenhum valor mora
 neste script, a JVM nao inicia se faltar flag. Exemplo (valores SOMENTE DE EXEMPLO / fixture, NAO sao valor de pesquisa):
   checar-determinismo.py --jabs . --protocolo HOTSTUFF --validadores 4 --duracao 10 --semente 7 \
       --extra-flag=--hs-view-timeout=10.0 --extra-flag=--hs-max-future-view-horizon=1000 \

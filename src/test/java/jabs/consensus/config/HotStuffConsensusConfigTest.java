@@ -72,6 +72,8 @@ class HotStuffConsensusConfigTest {
     /** Builder com todos os valores sem base escritos explicitamente (valores de teste, nao de pesquisa). */
     private static HotStuffConsensusConfig.Builder completo() {
         return HotStuffConsensusConfig.builder()
+                // FIXTURES de teste (os antigos padroes do builder), escritos porque o builder nao tem mais padrao (ADR-0015 Q3-A, Q8-B, Q10-B)
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10)
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */
                 .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
@@ -106,6 +108,7 @@ class HotStuffConsensusConfigTest {
     @Test
     void builderSemTimeoutFalha() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .voterEncoding(VoterEncoding.BITMAP)
                 .batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
@@ -116,6 +119,7 @@ class HotStuffConsensusConfigTest {
     @Test
     void builderSemHorizonteDeVisoesFuturasFalhaSemPadrao() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
@@ -130,6 +134,7 @@ class HotStuffConsensusConfigTest {
     @Test
     void builderSemLoteFalha() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
@@ -140,6 +145,7 @@ class HotStuffConsensusConfigTest {
     @Test
     void builderSemTamanhoDeTransacaoFalhaSemPadrao() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
@@ -154,6 +160,7 @@ class HotStuffConsensusConfigTest {
     @Test
     void builderSemCodificacaoDeVotantesFalhaSemPadraoSilencioso() {
         HotStuffConsensusConfig.Builder b = HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
         IllegalStateException e = assertThrows(IllegalStateException.class, b::build);
@@ -181,8 +188,10 @@ class HotStuffConsensusConfigTest {
         assertThrows(IllegalStateException.class,
                 () -> HotStuffConsensusConfig.builder().viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.build());
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .voterEncoding(VoterEncoding.BITMAP).viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512).build());
         assertThrows(IllegalStateException.class, () -> HotStuffConsensusConfig.builder()
+                .leaderPolicy(LeaderPolicy.ROTATING).signatureMode(SignatureMode.INDIVIDUAL).messageOverheadBytes(10) /* FIXTURE: so o campo testado fica faltando */
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(2048).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).build());
@@ -216,9 +225,34 @@ class HotStuffConsensusConfigTest {
         assertThrows(IllegalArgumentException.class, () -> completo().batchSize(0).build());
         assertThrows(IllegalArgumentException.class,
                 () -> completo().individualSignatureSizeBytes(0).build());
-        assertThrows(IllegalArgumentException.class, () -> completo().leaderPolicy(null).build());
-        assertThrows(IllegalArgumentException.class, () -> completo().signatureMode(null).build());
         assertThrows(IllegalArgumentException.class, () -> completo().messageOverheadBytes(-1).build());
+    }
+
+    /** ADR-0015 Q3-A, Q8-B, Q10-B: politica de lider, modo de assinatura e overhead nao tem mais padrao silencioso. */
+    @Test
+    void politicaModoEOverheadSaoObrigatoriosSemPadrao() {
+        HotStuffConsensusConfig.Builder semNada = HotStuffConsensusConfig.builder()
+                .voterEncoding(VoterEncoding.BITMAP)
+                .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */
+                .batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
+                .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96);
+        IllegalStateException e = assertThrows(IllegalStateException.class, semNada::build);
+        assertTrue(e.getMessage().contains("leaderPolicy"), e.getMessage());
+        semNada.leaderPolicy(LeaderPolicy.STABLE);
+        e = assertThrows(IllegalStateException.class, semNada::build);
+        assertTrue(e.getMessage().contains("signatureMode"), e.getMessage());
+        semNada.signatureMode(SignatureMode.INDIVIDUAL);
+        e = assertThrows(IllegalStateException.class, semNada::build);
+        assertTrue(e.getMessage().contains("messageOverheadBytes"), e.getMessage());
+        semNada.messageOverheadBytes(10);
+        assertEquals(LeaderPolicy.STABLE, semNada.build().getLeaderPolicy());
+    }
+
+    /** null escrito equivale a nao informado: falha alta, nao cai em padrao. */
+    @Test
+    void politicaEModoNulosFalhamAlto() {
+        assertThrows(IllegalStateException.class, () -> completo().leaderPolicy(null).build());
+        assertThrows(IllegalStateException.class, () -> completo().signatureMode(null).build());
     }
 
     @Test
