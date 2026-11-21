@@ -24,7 +24,8 @@ class ByzantineSweepConfigTest {
     Path tmp;
 
     private String[] args(String... extra) {
-        String[] base = {"--out=" + tmp.resolve("sweep.csv")};
+        // --seed e FIXTURE de teste (antigo padrao): --trials e --seed nao tem mais padrao (ADR-0015 Q26-A)
+        String[] base = {"--out=" + tmp.resolve("sweep.csv"), "--seed=12345"};
         String[] all = new String[base.length + extra.length];
         System.arraycopy(base, 0, all, 0, base.length);
         System.arraycopy(extra, 0, all, base.length, extra.length);
@@ -34,9 +35,25 @@ class ByzantineSweepConfigTest {
     @Test
     void ataqueInvalidoAbortaOSweep() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> ByzantineSweep.run(args("--type=VOTING", "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=10", "--attack=NAO_EXISTE")));
+                () -> ByzantineSweep.run(args("--type=VOTING", "--pbft-max-future-horizon=1000", "--pbft-leader-policy=ROTATING", "--validators=10", "--trials=30", "--attack=NAO_EXISTE")));
         assertTrue(e.getMessage().contains("NAO_EXISTE"), e.getMessage());
         assertFalse(Files.exists(tmp.resolve("sweep.csv")), "nada deve ser gravado quando a configuracao e invalida");
+    }
+
+    /** ADR-0015 Q26-A: --trials e --seed sao obrigatorios, sem padrao; falha antes de gravar qualquer coisa. */
+    @Test
+    void trialsESeedSaoObrigatoriosSemPadrao() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                new String[] {"--type=VOTING", "--validators=10", "--seed=1", "--out=" + tmp.resolve("a.csv")}));
+        assertTrue(e.getMessage().contains("--trials"), e.getMessage());
+        e = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                new String[] {"--type=VOTING", "--validators=10", "--trials=1", "--out=" + tmp.resolve("b.csv")}));
+        assertTrue(e.getMessage().contains("--seed"), e.getMessage());
+        e = assertThrows(IllegalArgumentException.class, () -> ByzantineSweep.run(
+                new String[] {"--type=VOTING", "--validators=10", "--trials=", "--seed=1", "--out=" + tmp.resolve("c.csv")}));
+        assertTrue(e.getMessage().contains("--trials"), e.getMessage());
+        assertFalse(Files.exists(tmp.resolve("a.csv")) || Files.exists(tmp.resolve("b.csv")) || Files.exists(tmp.resolve("c.csv")),
+                "nada deve ser gravado quando falta trials ou seed");
     }
 
     @Test

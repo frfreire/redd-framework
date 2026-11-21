@@ -39,7 +39,7 @@ class ByzantineSweepAutoentregaCsvTest {
     /** Roda o sweep com 0 trials (so grava o cabecalho e falha alto em NAO_MEDIDO) e devolve o CSV bruto. */
     private String soCabecalho(String tipo, String... extra) throws IOException {
         Path csv = tmp.resolve("so-" + tipo + extra.length).resolve("s.csv");
-        List<String> a = new ArrayList<>(List.of("--type=" + tipo, "--validators=10", "--max-byz=0", "--trials=0",
+        List<String> a = new ArrayList<>(List.of("--type=" + tipo, "--seed=12345" /* FIXTURE: sem padrao (ADR-0015 Q26-A) */, "--validators=10", "--max-byz=0", "--trials=0",
                 "--duration=10", "--attack=WITHHOLD", "--n-semantics=legacy", "--out=" + csv));
         a.addAll(List.of(extra));
         assertThrows(IllegalStateException.class, () -> ByzantineSweep.run(a.toArray(new String[0])), tipo);
@@ -79,7 +79,7 @@ class ByzantineSweepAutoentregaCsvTest {
             assertEquals(CABECALHO_BASELINE + COLUNAS_NOVAS, linhas.get(2), tipo);
             assertTrue(linhas.get(2).endsWith(COLUNAS_NOVAS), "as colunas novas sao as ULTIMAS: " + tipo);
         }
-        // sem --seed: o default 12345 do sweep fica declarado
+        // sem override, a semente escrita pelo helper (12345, fixture; o sweep nao tem mais padrao) e a declarada
         assertTrue(soCabecalho("VOTING").contains("# Seed=12345 "));
     }
 

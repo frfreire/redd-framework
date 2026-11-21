@@ -217,6 +217,17 @@ class NetworkSizingTest {
                 "nada deve ser gravado quando a configuracao e invalida");
     }
 
+    /** ADR-0015 Q26-A: o MVPComparison tambem exige --trials e --seed, sem padrao. */
+    @Test
+    void mvpComparisonExigeTrialsESeedSemPadrao() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                new String[] {"--protocols=MCO2", "--validators=16", "--seed=1", "--n-semantics=legacy", "--output=" + tmp.resolve("t1")}));
+        assertTrue(e.getMessage().contains("--trials"), e.getMessage());
+        e = assertThrows(IllegalArgumentException.class, () -> MVPComparison.main(
+                new String[] {"--protocols=MCO2", "--validators=16", "--trials=0", "--n-semantics=legacy", "--output=" + tmp.resolve("t2")}));
+        assertTrue(e.getMessage().contains("--seed"), e.getMessage());
+    }
+
     /**
      * Rodada 3: o erro de digitacao '--n-semantic=nodes' deixa de abortar (a baseline o ignorava) e roda no modo
      * legacy, com o aviso so no stderr; o stdout e o CSV nao mencionam a flag desconhecida.
@@ -224,7 +235,7 @@ class NetworkSizingTest {
     @Test
     void flagDesconhecidaNaoAbortaMasAvisaSoNoStderr() throws IOException {
         Path out = tmp.resolve("typo");
-        String[] args = {"--protocols=MCO2", "--validators=16", "--trials=0", "--n-semantic=nodes", "--n-semantics=legacy", "--output=" + out};
+        String[] args = {"--protocols=MCO2", "--validators=16", "--trials=0", "--seed=12345" /* FIXTURE: sem padrao (ADR-0015 Q26-A) */, "--n-semantic=nodes", "--n-semantics=legacy", "--output=" + out};
         java.io.PrintStream so = System.out;
         java.io.ByteArrayOutputStream bufOut = new java.io.ByteArrayOutputStream();
         String err;

@@ -25,6 +25,18 @@ import java.util.Locale;
  */
 public class ByzantineSweep {
 
+    /**
+     * {@code --trials} e {@code --seed} sao OBRIGATORIOS, sem padrao (ADR-0015 Q26-A, tarefa trials-seed-obrigatorios):
+     * os antigos padroes (30 e 12345 aqui; 5 e 12345 no MVPComparison) eram distintos entre os dois {@code main}.
+     */
+    private static String requiredRunFlag(java.util.Map<String, String> cli, String flag) {
+        String value = cli.get(flag);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("--" + flag + " e obrigatorio e nao tem valor padrao (ADR-0015 Q26-A)");
+        }
+        return value;
+    }
+
     public static void main(String[] args) throws IOException {
         run(args);
     }
@@ -125,7 +137,7 @@ public class ByzantineSweep {
     /**
      * D2 (decisao do humano, 17/11/2026): linhas '#' que declaram a semantica, a semente, a versao do simulador e a
      * granularidade. So para os tipos que separam a autoentrega ({@link #hasSelfDeliveryColumn}); {@code seedRaw} e o valor
-     * de {@code --seed} como escrito (default 12345), sem parse (nao muda quando uma semente invalida falha).
+     * de {@code --seed} como escrito (obrigatorio, sem padrao), sem parse (nao muda quando uma semente invalida falha).
      * StringBuilder, nao '+': roda antes da simulacao (indy novo consome hash de identidade, ADR-0012);
      * {@code SIMULATOR_VERSION} e constante de compilacao (inlinada).
      */
@@ -169,7 +181,9 @@ public class ByzantineSweep {
         final boolean nodesMode = isNodesMode(cli.get(NetworkSizing.FLAG));
         int n = Integer.parseInt(cli.getOrDefault("validators", "100"));
         int maxByz = Integer.parseInt(cli.getOrDefault("max-byz", String.valueOf(n / 2)));
-        int trials = Integer.parseInt(cli.getOrDefault("trials", "30"));
+        int trials = Integer.parseInt(requiredRunFlag(cli, "trials"));
+        final String seedRaw = requiredRunFlag(cli, "seed");
+        final long baseSeed = Long.parseLong(seedRaw);
         double duration = Double.parseDouble(cli.getOrDefault("duration", "600"));
         String type = cli.getOrDefault("type", "VOTING").toUpperCase(Locale.ROOT);
         ByzantineConfig.AttackType attack = resolveAttack(type, cli.get("attack"));
@@ -267,7 +281,7 @@ public class ByzantineSweep {
             // granularidade e as 2 colunas aditivas no fim; DAGSPER segue byte a byte o da baseline.
             final boolean comAutoentrega = hasSelfDeliveryColumn(type);
             if (comAutoentrega) {
-                for (String c : selfDeliveryComments(cli.getOrDefault("seed", "12345"))) {
+                for (String c : selfDeliveryComments(seedRaw)) {
                     bw.write(c);
                     bw.write('\n');
                 }
@@ -297,7 +311,7 @@ public class ByzantineSweep {
                 int secureCount = 0;
 
                 for (int t = 0; t < trials; t++) {
-                    long seed = Long.parseLong(cli.getOrDefault("seed", "12345")) + n * 1000L + t;
+                    long seed = baseSeed + n * 1000L + t;
 
                     SimulationMetrics metrics = new SimulationMetrics();
                     metrics.setTotalValidators(n);
