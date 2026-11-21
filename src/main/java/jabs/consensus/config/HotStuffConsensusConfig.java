@@ -58,10 +58,6 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         BITMAP
     }
 
-    public static final LeaderPolicy DEFAULT_LEADER_POLICY = LeaderPolicy.ROTATING;
-    public static final SignatureMode DEFAULT_SIGNATURE_MODE = SignatureMode.INDIVIDUAL;
-    public static final int DEFAULT_MESSAGE_OVERHEAD_BYTES = 10;
-
     private final LeaderPolicy leaderPolicy;
     private final SignatureMode signatureMode;
     private final VoterEncoding voterEncoding;
@@ -75,9 +71,9 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
     private final int messageOverheadBytes;
 
     private HotStuffConsensusConfig(Builder b) {
-        if (b.leaderPolicy == null || b.signatureMode == null) {
-            throw new IllegalArgumentException("leaderPolicy e signatureMode sao obrigatorios");
-        }
+        requireSet(b.leaderPolicy, "leaderPolicy (ADR-0015 Q8-B: STABLE no caso base, ROTATING como ablacao; sem padrao)");
+        requireSet(b.signatureMode, "signatureMode (ADR-0015 Q10-B: INDIVIDUAL no caso base, AGGREGATED como sensibilidade; sem padrao)");
+        requireSet(b.messageOverheadBytes, "messageOverheadBytes (ADR-0015 Q3-A: valor unico declarado, igual nos tres protocolos; sem padrao)");
         requireSet(b.voterEncoding, "voterEncoding (a definir com o humano: codificacao dos votantes)");
         requireSet(b.viewTimeoutSeconds, "viewTimeoutSeconds");
         requireSet(b.batchSize, "batchSize (use batchSizeFor(blockSizeKb, txSizeBytes))");
@@ -250,8 +246,8 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
     public int getMessageOverheadBytes() { return messageOverheadBytes; }
 
     public static final class Builder {
-        private LeaderPolicy leaderPolicy = DEFAULT_LEADER_POLICY;
-        private SignatureMode signatureMode = DEFAULT_SIGNATURE_MODE;
+        private LeaderPolicy leaderPolicy; // sem padrao (ADR-0015 Q8-B)
+        private SignatureMode signatureMode; // sem padrao (ADR-0015 Q10-B)
         private VoterEncoding voterEncoding; // sem padrao: a definir com o humano
         private Double viewTimeoutSeconds;
         private Long maxFutureViewHorizon; // sem padrao: a definir com o humano
@@ -260,7 +256,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
         private Integer individualSignatureSizeBytes;
         private Integer aggregatedSignatureSizeBytes;
         private Integer aggregatedShareSizeBytes;
-        private int messageOverheadBytes = DEFAULT_MESSAGE_OVERHEAD_BYTES;
+        private Integer messageOverheadBytes; // sem padrao (ADR-0015 Q3-A)
 
         private Builder() { }
 
@@ -280,7 +276,7 @@ public final class HotStuffConsensusConfig implements ConsensusAlgorithmConfig {
          * Constroi a configuracao.
          *
          * @return configuracao imutavel
-         * @throws IllegalStateException se timeout de visao, horizonte de visoes futuras, lote, tamanhos de assinatura ou codificacao dos votantes nao foram informados
+         * @throws IllegalStateException se politica de lider, modo de assinatura, overhead de mensagem, timeout de visao, horizonte de visoes futuras, lote, tamanhos de assinatura ou codificacao dos votantes nao foram informados
          * @throws IllegalArgumentException se algum valor for invalido
          */
         public HotStuffConsensusConfig build() {

@@ -25,6 +25,8 @@ public final class TempoChaveTxFilho {
             System.exit(3);
         }
         HotStuffConsensusConfig config = HotStuffConsensusConfig.builder()
+                /* FIXTURE de teste: antigo padrao do builder, escrito porque nao ha mais padrao (ADR-0015 Q3-A, Q8-B, Q10-B) */ 
+                .leaderPolicy(HotStuffConsensusConfig.LeaderPolicy.ROTATING).signatureMode(HotStuffConsensusConfig.SignatureMode.INDIVIDUAL).messageOverheadBytes(10)
                 .voterEncoding(VoterEncoding.BITMAP).viewTimeoutSeconds(60.0).maxFutureViewHorizon(1000L)
                 .batchSize(500).txSizeBytes(512).individualSignatureSizeBytes(64)
                 .aggregatedSignatureSizeBytes(96).aggregatedShareSizeBytes(96).build();

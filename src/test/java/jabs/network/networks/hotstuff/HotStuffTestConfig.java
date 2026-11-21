@@ -21,6 +21,8 @@ public final class HotStuffTestConfig {
     /** Igual a {@link #config()} com o timeout de visao dado (valor de TESTE, nao de pesquisa). */
     public static HotStuffConsensusConfig config(double viewTimeoutSeconds) {
         return HotStuffConsensusConfig.builder()
+                /* FIXTURE de teste: antigo padrao do builder, escrito porque nao ha mais padrao (ADR-0015 Q3-A, Q8-B, Q10-B) */ 
+                .leaderPolicy(HotStuffConsensusConfig.LeaderPolicy.ROTATING).signatureMode(HotStuffConsensusConfig.SignatureMode.INDIVIDUAL).messageOverheadBytes(10)
                 .voterEncoding(VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(viewTimeoutSeconds)
                 .maxFutureViewHorizon(FIXTURE_MAX_FUTURE_VIEW_HORIZON)

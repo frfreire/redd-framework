@@ -33,6 +33,8 @@ final class Fixtures {
 
     static HotStuffConsensusConfig cfg() {
         return HotStuffConsensusConfig.builder()
+                /* FIXTURE de teste: antigo padrao do builder, escrito porque nao ha mais padrao (ADR-0015 Q3-A, Q8-B, Q10-B) */ 
+                .leaderPolicy(HotStuffConsensusConfig.LeaderPolicy.ROTATING).signatureMode(HotStuffConsensusConfig.SignatureMode.INDIVIDUAL).messageOverheadBytes(10)
                 .voterEncoding(HotStuffConsensusConfig.VoterEncoding.BITMAP)
                 .viewTimeoutSeconds(10.0).maxFutureViewHorizon(1000L) /* fixture de teste */.batchSize(HotStuffConsensusConfig.batchSizeFor(1024, 512)).txSizeBytes(512)
                 .individualSignatureSizeBytes(64).aggregatedSignatureSizeBytes(96)
