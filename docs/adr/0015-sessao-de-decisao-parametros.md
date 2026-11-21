@@ -1203,3 +1203,33 @@ Duas observações que **corrigem ou refinam** o texto da Q35: (i) a "ordem de 4
 5. **Citações de linha:** conferi as de `ByzantineSweep.java`, `NetworkSizing.java`, `ByzantineConfig.java` e `MVPComparison.java` por leitura nesta sessão; as do ADR-0013 e do README da N1 vêm das leituras acima, sem reabrir cada trecho citado.
 
 **Decisões que o humano ainda deve tomar nesta fatia** (nenhuma foi tomada por mim): Q36.1 (forma da prova; recomendação A), Q36.2 (veredito da N1; recomendação A, a ser confirmada contra o código atual), Q36.3 (baseline; recomendação A), Q-PoS (variante; recomendação A = MCO2 15,0 s), n do E2 e o nível `nakamoto` (limitações L4 e L7), motor da Bateria 2 (L5), valor de g (Q35).
+
+## Registro 22/11/2026 — Seção A (Q1 a Q12): humano aceita todas as recomendações (humano)
+
+**Decisão do humano:** na sessão de decisão da Seção A, "Aceitar todas": Q1=C, Q2=C, Q3=A, Q4=C, Q5=A, Q6=A, Q7=A, Q8=B, Q9=B, Q10=B, Q11=A, Q12=A, como escritas na Seção A.6. Esta decisão fixa **convenções**, não valores numéricos.
+
+**Coerência com registros anteriores (conferida por leitura, sem contradição encontrada):** Q4-C, Q8-B, Q10-B e Q12-A já constavam como adotadas nos registros de 10/11 e 12/11; Q7 foi tratada em 12/11 e 16/11 (L = 100, varrer {10, 100, 500}). Este registro as ratifica junto com as demais.
+
+**O que continua aberto (não decidido aqui):**
+1. Os **valores numéricos** de assinatura, overhead e modo agregado (Q1, Q3, Q10), temporizadores base e deltas (Q5, Q12), e o valor final de `--hs-view-timeout`: seguem "a definir com o humano" ou dependentes do piloto, como no item (e) de 16/11.
+2. **Tarefas de código que a decisão implica e que NÃO foram abertas nem feitas:** pBFT com assinatura obrigatória e sem padrão (Q2-C); overhead obrigatório e único nos três protocolos (Q3-A); pBFT deixar a distribuição do Bitcoin para `s_tx` (Q4-C); `signatureMode` e `leaderPolicy` obrigatórios no HotStuff (Q8-B, Q10-B). Cada uma passa pelo loop 2 e pela nota de não regressão do pBFT.
+3. A **Seção B (Q13 em diante)** não foi tratada neste registro.
+
+**Efeito sobre a trava do ADR:** a Seção A fica decidida quanto às convenções; a trava ("parâmetros da Seção A decididos") só se cumpre quando os valores numéricos do item 1 forem fixados. O Estado deste ADR permanece `Proposto`.
+
+## Registro 22/11/2026 — Seção B (perguntas abertas): humano aceita todas as recomendações (humano)
+
+**Decisão do humano:** na sessão de decisão da Seção B, "Aceitar todas" para as perguntas que estavam abertas: **Q16=A, Q17=A, Q18=C, Q19=A, Q20=A, Q21=A, Q22=A, Q23=C, Q25=A, Q26=A, Q27=A, Q36=A, Q37=A, Q38=C, Q39=A, Q40=A**, como escritas em B.12 (16 perguntas). Classificação: ESCOLHIDO.
+
+**Já decididas antes (não reabertas):** Q4, Q7/Q24, Q8, Q10, Q12, Q13, Q14, Q15, Q28 a Q35 (registros de 09 a 17/11; Q31 = líder estável sem view change, decidida na sessão de 22/11 sobre a política de liderança do PBFT). Conferido por leitura dos registros deste ADR.
+
+**O que esta decisão NÃO fecha (cada item continua com o humano ou depende de passo ainda não feito):**
+1. **Valores numéricos:** níveis de W_nó e sua fonte (Q17), precisão-alvo do número de sementes (Q26), faixas de sensibilidade dos limiares (Q19), razão, passo e teto da escada de saturação (Q21), múltiplo do timeout. Seguem "a definir com o humano" ou dependentes do piloto.
+2. **Q36-A** pressupõe "fechar o veredito da N1" e "confirmar o hash `325f4e3`": o hash não foi encontrado no repositório atual (ver "Pendências desta fatia") e o veredito da N1 não foi fechado. A forma da prova está escolhida; a prova não foi feita.
+3. **Q40-A** inclui o aceite formal do ADR-0000 pelos coautores e o número no repositório, que são atos do humano e **não foram praticados**; a autorização para corrigir os YAML de `.experimento/` foi dada, **nenhum YAML foi alterado**. A citação da Lei 15.042/2024 segue não verificada.
+4. **Q39-A** autoriza `numpy`, `scipy` e `statsmodels` em versões fixas; as versões não foram fixadas nem a disponibilidade dos pacotes foi verificada.
+5. **Q27-A:** o humano ainda não indicou quem estende `scripts/jabs/nao_regressao.py`.
+6. **Variante MCO2 × TREE** (Q32, B-45): continua a confirmar.
+7. **Tarefas de código** que as decisões abrem (banda uniforme por nó, registro de Θ/U/C_nó, `--trials` e `--seed` obrigatórios, fila, gerador, saída em `-corrida.csv` e `-nos.csv`, limite do histórico no contrato): **não foram abertas** por este registro.
+
+**Efeito sobre as travas:** a Seção B fica decidida quanto às escolhas de método; o pré-registro (P8) continua bloqueado pelos itens 1 a 3 acima e pelos ADRs `Proposto` (0008, 0010, 0012, 0013, 0014 e este).
